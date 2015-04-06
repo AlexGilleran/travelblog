@@ -2,10 +2,14 @@ package com.alexgilleran.travelblog
 
 import akka.actor.Actor
 import com.alexgilleran.travelblog.data.schema.Tables
+import com.alexgilleran.travelblog.data.schema.Tables.EntryRow
 import spray.http.MediaTypes._
 import spray.http._
 import spray.routing._
 import Tables.profile.simple._
+import spray.json._
+import DefaultJsonProtocol._ // if you don't supply your own Protocol (see below)
+
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -21,27 +25,29 @@ class MyServiceActor extends Actor with MyService {
   def receive = runRoute(myRoute)
 }
 
+object JsonImplicits extends DefaultJsonProtocol {
+  implicit val impEntry = jsonFormat2(EntryRow)
+}
 
 // this trait defines our service behavior independently from the service actor
 trait MyService extends HttpService {
 
-  val thing : TableQuery[Tables.Entry] = Tables.Entry
+  import spray.httpx.SprayJsonSupport.sprayJsonMarshaller
+  import spray.httpx.SprayJsonSupport.sprayJsonUnmarshaller
+  import JsonImplicits._
+
+  val thing: TableQuery[Tables.Entry] = Tables.Entry
   val db = Database.forURL("jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd", driver = "org.postgresql.Driver")
 
 
-
   val myRoute =
-    pathPrefix("blah" / Segment) { stringArg =>
+    pathPrefix("entry" / LongNumber) { id: Long =>
       pathEnd {
         get {
-          respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
+          respondWithMediaType(`application/json`) {
             complete {
               db.withSession { implicit session =>
-                <html>
-                  <body>
-                    <h1>Say hello to <i>spray-routing</i> on <i>spray-can</i>!{ Tables.Entry.first.text}</h1>
-                  </body>
-                </html>
+                Tables.Entry.filter(_.id === id).firstOption
               }
             }
           }
