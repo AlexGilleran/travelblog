@@ -1,7 +1,7 @@
 import sbt.Keys._
 
 lazy val sharedSettings = Seq(
-  organization := "com.example",
+  organization := "com.alexgilleran.travelblog",
   version := "0.1",
   scalaVersion := "2.11.6",
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
@@ -25,7 +25,7 @@ lazy val sharedSettings = Seq(
   }
 )
 lazy val root : Project = Project(
-  id = "travelblog",
+  id = "backend",
   base = file("."),
   settings = sharedSettings
 ).dependsOn(codegenProject)
@@ -45,7 +45,7 @@ lazy val slick = TaskKey[Seq[File]]("gen-tables")
 lazy val slickCodeGenTask = (sourceManaged, dependencyClasspath in Compile, runner in Compile, streams) map { (dir, cp, r, s) =>
   val outputDir = (dir / "main").getPath // place generated files in sbt's managed sources folder
 
-val url = "jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd" // connection info for a pre-populated throw-away, in-memory db for this demo, which is freshly initialized on every run
+  val url = "jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd" // connection info for a pre-populated throw-away, in-memory db for this demo, which is freshly initialized on every run
 val jdbcDriver = "org.postgresql.Driver"
   val slickDriver = "scala.slick.driver.PostgresDriver"
   val pkg = "com.alexgilleran.travelblog.data.schema"

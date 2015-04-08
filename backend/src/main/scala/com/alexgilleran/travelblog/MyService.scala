@@ -8,7 +8,11 @@ import spray.http._
 import spray.routing._
 import Tables.profile.simple._
 import spray.json._
-import DefaultJsonProtocol._ // if you don't supply your own Protocol (see below)
+import DefaultJsonProtocol._
+
+import scala.slick.lifted.TableQuery
+
+// if you don't supply your own Protocol (see below)
 
 
 // we don't implement our route structure directly in the service actor because
@@ -26,7 +30,7 @@ class MyServiceActor extends Actor with MyService {
 }
 
 object JsonImplicits extends DefaultJsonProtocol {
-  implicit val impEntry = jsonFormat2(EntryRow)
+  implicit val impEntry = jsonFormat4(EntryRow)
 }
 
 // this trait defines our service behavior independently from the service actor
@@ -47,7 +51,7 @@ trait MyService extends HttpService {
           respondWithMediaType(`application/json`) {
             complete {
               db.withSession { implicit session =>
-                Tables.Entry.filter(_.id === id).firstOption
+                Tables.Entry.filter(_.entryId === id).firstOption
               }
             }
           }
