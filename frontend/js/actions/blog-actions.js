@@ -4,16 +4,18 @@ var api = require('../api');
 exports.constructor = function(ctx) {
   var BlogActions = Reflux.createActions({
     'loadBlog': {
-      children: ['success', 'failure']
+      asyncResult: true
     }
   });
 
   BlogActions.loadBlog.listen(function(blogId) {
     api.getBlog(blogId)
       .then(function(blog) {
-        this.success(blogId, blog);
+        this.completed(blogId, blog);
       }.bind(this))
-      .catch(this.failure(blogId));
+      .catch(function(err) {
+        this.failed(err, blogId)
+      });
   });
 
   return BlogActions;

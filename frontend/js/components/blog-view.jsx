@@ -5,7 +5,7 @@ var Router = require('react-router');
 var BlogStoreModule = require('../stores/blog-store');
 var BlogActionsModule = require('../actions/blog-actions');
 
-exports.constructor = function(ctx) {
+exports.constructor = function (ctx) {
   "use strict";
 
   var blogStore = ctx.injectSingleton(BlogStoreModule);
@@ -14,40 +14,38 @@ exports.constructor = function(ctx) {
   return React.createClass({
     mixins: [Router.State, Reflux.ListenerMixin],
 
-    getInitialState: function() {
+    getInitialState: function () {
       return {
         blog: blogStore.getBlog(this.getParams().blogId)
       }
     },
 
-    componentWillMount: function() {
+    componentWillMount: function () {
       this.listenTo(blogStore, this.onBlogChanged);
     },
 
-    onBlogChanged: function(blogId, blog) {
-      if (blogId === this.getParams().blogId) {
-        setState({
-          blog: blog
-        });
-      }
+    onBlogChanged: function () {
+      this.setState({
+        blog: blogStore.getBlog(this.getParams().blogId)
+      });
     },
 
-    componentWillReceiveProps: function(newProps) {
+    componentWillReceiveProps: function (newProps) {
     },
 
-    componentDidMount: function() {
+    componentDidMount: function () {
       if (!this.state.blog) {
         blogActions.loadBlog(this.getParams().blogId);
       }
     },
 
-    componentWillUnmount: function() {
+    componentWillUnmount: function () {
     },
 
-    render: function() {
+    render: function () {
       return (
         <div>
-          {this.state.blog ? this.state.blog.name : ''}
+          {this.state.blog ? this.state.blog.details.name : ''}
         </div>
       );
     }

@@ -47,15 +47,12 @@ trait MyService extends HttpService {
   val db = Database.forURL("jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd", driver = "org.postgresql.Driver")
   
   val myRoute =
-    pathPrefix("blog" / LongNumber) { id: Long =>
+    pathPrefix("blogs" / LongNumber) { id: Long =>
       pathEnd {
         get {
           respondWithMediaType(`application/json`) {
             complete {
               db.withSession { implicit session =>
-//                val blog : Option[BlogRow] = Tables.Blog.filter(_.blogId === id).firstOption
-//                blog.
-
                 val implicitInnerJoin = for {
                   b <- Tables.Blog if b.blogId === id
                   e <- Tables.Entry if e.blogId === b.blogId

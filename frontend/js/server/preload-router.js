@@ -7,14 +7,13 @@ var router = {
 
   },
 
-  '/blog/:blogId': function * () {
+  '/blogs/:blogId': function * (state) {
     "use strict";
 
     this.injectionContext.injectSingleton(BlogStoreModule);
-
     var blogActions = this.injectionContext.injectSingleton(BlogActionsModule);
 
-    blogActions.loadBlog(state.params.blogId);
+    yield blogActions.loadBlog.triggerPromise(state.params.blogId);
   }
 };
 

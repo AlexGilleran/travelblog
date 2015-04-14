@@ -15,7 +15,7 @@ exports.constructor = function (ctx) {
     hydrationKey: 'blog-store',
 
     init: function () {
-      this.listenTo(blogActions.loadBlog.success, this.onBlogLoad);
+      this.listenTo(blogActions.loadBlog.completed, this.onBlogLoad);
     },
 
     dehydrate: function () {
@@ -32,6 +32,7 @@ exports.constructor = function (ctx) {
 
     onBlogLoad: function(blogId, blog) {
       blogs[blogId] = blog;
+      this.trigger();
     }
   });
 
