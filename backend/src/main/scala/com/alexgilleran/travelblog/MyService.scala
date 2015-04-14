@@ -1,8 +1,9 @@
 package com.alexgilleran.travelblog
 
 import akka.actor.Actor
+import com.alexgilleran.travelblog.api.domain.ApiBlog
 import com.alexgilleran.travelblog.data.schema.Tables
-import com.alexgilleran.travelblog.data.schema.Tables.EntryRow
+import com.alexgilleran.travelblog.data.schema.Tables.{BlogRow, EntryRow}
 import spray.http.MediaTypes._
 import spray.http._
 import spray.routing._
@@ -30,7 +31,10 @@ class MyServiceActor extends Actor with MyService {
 }
 
 object JsonImplicits extends DefaultJsonProtocol {
-  implicit val impEntry = jsonFormat4(EntryRow)
+  implicit val entry = jsonFormat4(EntryRow)
+  implicit val blog = jsonFormat3(BlogRow)
+  implicit val apiBlog = jsonFormat2(ApiBlog)
+
 }
 
 // this trait defines our service behavior independently from the service actor
@@ -40,18 +44,27 @@ trait MyService extends HttpService {
   import spray.httpx.SprayJsonSupport.sprayJsonUnmarshaller
   import JsonImplicits._
 
-  val thing: TableQuery[Tables.Entry] = Tables.Entry
   val db = Database.forURL("jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd", driver = "org.postgresql.Driver")
-
-
+  
   val myRoute =
-    pathPrefix("entry" / LongNumber) { id: Long =>
+    pathPrefix("blog" / LongNumber) { id: Long =>
       pathEnd {
         get {
           respondWithMediaType(`application/json`) {
             complete {
               db.withSession { implicit session =>
-                Tables.Entry.filter(_.entryId === id).firstOption
+//                val blog : Option[BlogRow] = Tables.Blog.filter(_.blogId === id).firstOption
+//                blog.
+
+                val implicitInnerJoin = for {
+                  b <- Tables.Blog if b.blogId === id
+                  e <- Tables.Entry if e.blogId === b.blogId
+                } yield (b, e)
+
+                val blog : BlogRow = Tables.Blog.filter(_.blogId === id).first
+                val entries : Seq[EntryRow] = Tables.Entry.filter(_.blogId === id).list
+
+                new ApiBlog(blog, entries);
               }
             }
           }

@@ -5,7 +5,6 @@ lazy val sharedSettings = Seq(
   version := "0.1",
   scalaVersion := "2.11.6",
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
-
   libraryDependencies ++= {
     val akkaV = "2.3.9"
     val sprayV = "1.3.3"
@@ -19,11 +18,12 @@ lazy val sharedSettings = Seq(
       "org.specs2" %% "specs2-core" % "2.3.11" % "test",
       "com.typesafe.slick" %% "slick" % "2.1.0",
       "com.typesafe.slick" %% "slick-codegen" % "2.1.0",
-      "org.slf4j" % "slf4j-nop" % "1.6.4",
+      "ch.qos.logback" % "logback-classic" % "1.0.9",
       "org.postgresql" % "postgresql" % "9.4-1201-jdbc41"
     )
   }
 )
+
 lazy val root : Project = Project(
   id = "backend",
   base = file("."),
@@ -44,9 +44,8 @@ sourceGenerators in Compile <+= slickCodeGenTask // register automatic code gene
 lazy val slick = TaskKey[Seq[File]]("gen-tables")
 lazy val slickCodeGenTask = (sourceManaged, dependencyClasspath in Compile, runner in Compile, streams) map { (dir, cp, r, s) =>
   val outputDir = (dir / "main").getPath // place generated files in sbt's managed sources folder
-
   val url = "jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd" // connection info for a pre-populated throw-away, in-memory db for this demo, which is freshly initialized on every run
-val jdbcDriver = "org.postgresql.Driver"
+  val jdbcDriver = "org.postgresql.Driver"
   val slickDriver = "scala.slick.driver.PostgresDriver"
   val pkg = "com.alexgilleran.travelblog.data.schema"
   toError(r.run("com.alexgilleran.travelblog.CustomSourceGenerator", cp.files, Array(slickDriver, jdbcDriver, url, outputDir, pkg), s.log))
@@ -55,3 +54,6 @@ val jdbcDriver = "org.postgresql.Driver"
 }
 
 Revolver.settings
+
+//mainClass in Revolver.reStart := Some("com.alexgilleran.travelblog.Boot")
+//Revolver.reStartArgs := Seq("run", "com.alexgilleran.travelblog.MyService")
