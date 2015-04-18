@@ -12,7 +12,7 @@ exports.constructor = function(ctx) {
 
   return (
     <Route name="app" path="/" handler={RootView}>
-      <Route name="blog" path="blogs/:blogId" handler={BlogView} />
+      <Route name="blogs" path="blogs/:blogId" handler={BlogView} />
       <DefaultRoute handler={BlogView}/>
       <NotFoundRoute handler={BlogView}/>
     </Route>

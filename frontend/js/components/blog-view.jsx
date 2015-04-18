@@ -35,6 +35,7 @@ exports.constructor = function (ctx) {
     },
 
     componentWillReceiveProps: function (newProps) {
+      blogActions.loadBlog(this.getParams().blogId);
     },
 
     componentDidMount: function () {
@@ -52,7 +53,9 @@ exports.constructor = function (ctx) {
           <div className="col-2-3">
             <If condition={this.state.blog}>
               <div>
-                <div>{this.state.blog.details.name}</div>
+                <div>
+                  <h2>{this.state.blog.details.name}</h2>
+                </div>
                 <For each="entry" of={this.state.blog.entries}>
                   <EntryPreviewView key={entry.entryId} entry={entry}/>
                 </For>

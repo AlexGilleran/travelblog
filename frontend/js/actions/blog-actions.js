@@ -14,7 +14,7 @@ exports.constructor = function (ctx) {
       }.bind(this))
       .catch(function (err) {
         this.failed(err, blogId)
-      });
+      }.bind(this));
   });
 
   BlogActions.loadBlogList.listen(function () {
@@ -24,7 +24,7 @@ exports.constructor = function (ctx) {
       }.bind(this))
       .catch(function (err) {
         this.failed(err, blogList)
-      });
+      }.bind(this));
   });
 
   return BlogActions;

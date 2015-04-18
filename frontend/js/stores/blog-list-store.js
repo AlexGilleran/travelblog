@@ -27,7 +27,6 @@ exports.constructor = function (ctx) {
     },
 
     getBlogList: function () {
-      console.log(blogList);
       return blogList;
     },
 

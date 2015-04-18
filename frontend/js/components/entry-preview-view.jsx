@@ -30,7 +30,7 @@ exports.constructor = function (ctx) {
     render: function () {
       return (
         <div>
-          <div>{this.props.entry.title}</div>
+          <div><h3>{this.props.entry.title}</h3></div>
           <div>{this.props.entry.markdown}</div>
         </div>
       );

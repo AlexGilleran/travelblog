@@ -3,7 +3,7 @@ var Reflux = require('reflux');
 var Router = require('react-router');
 var BlogListStoreModule = require('../stores/blog-list-store');
 var BlogActionsModule = require('../actions/blog-actions');
-var EntryPreviewViewModule = require('../components/entry-preview-view');
+var Link = require('react-router/modules/components/Link');
 
 exports.constructor = function (ctx) {
   "use strict";
@@ -34,7 +34,9 @@ exports.constructor = function (ctx) {
       return (
         <div>
           <For each="blog" of={this.state.blogs}>
-            <div>{blog.name}</div>
+            <div key={blog.blogId}>
+              <Link to="blogs" params={blog}>{blog.name}</Link>
+            </div>
           </For>
         </div>
       );
