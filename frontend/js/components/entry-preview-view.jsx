@@ -1,34 +1,41 @@
 var React = require('react');
-var _ = require('lodash');
+var Reflux = require('reflux');
 var Router = require('react-router');
-var RouteHandler = require('react-router').RouteHandler;
-var HeaderViewModule = require('./header-view');
 
 exports.constructor = function (ctx) {
   "use strict";
 
-  var HeaderView = ctx.injectSingleton(HeaderViewModule);
-
   return React.createClass({
-    mixins: [Router.State],
-
     getInitialState: function () {
       return {};
+    },
+
+    componentWillMount: function () {
+
+    },
+
+
+    componentWillReceiveProps: function (newProps) {
+
     },
 
     componentDidMount: function () {
 
     },
 
+    componentWillUnmount: function () {
+
+    },
+
     render: function () {
       return (
         <div>
-          <HeaderView />
-          <RouteHandler />
+          <div>{this.props.entry.title}</div>
+          <div>{this.props.entry.markdown}</div>
         </div>
       );
     }
   });
 };
 
-exports.singletonKey = 'root-view';
+exports.singletonKey = 'entry-preview-view';

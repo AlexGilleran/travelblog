@@ -12,3 +12,15 @@ exports.getBlog = function(blogId) {
     });
   });
 };
+
+exports.getBlogList = function() {
+  return new Promise(function(resolve, reject) {
+    request.get(API_BASE_URL + 'blogs').end(function(err, res) {
+      if (err) {
+        reject(new Error(err));
+      } else {
+        resolve(res.body);
+      }
+    });
+  });
+};

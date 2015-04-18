@@ -1,7 +1,6 @@
 package com.alexgilleran.travelblog
 
 import akka.actor.Actor
-import com.alexgilleran.travelblog.api.domain.ApiBlog
 import com.alexgilleran.travelblog.data.schema.Tables
 import com.alexgilleran.travelblog.data.schema.Tables.{BlogRow, EntryRow}
 import spray.http.MediaTypes._
@@ -30,11 +29,13 @@ class MyServiceActor extends Actor with MyService {
   def receive = runRoute(myRoute)
 }
 
+case class ApiBlog(details: BlogRow, entries: Seq[EntryRow])
+
 object JsonImplicits extends DefaultJsonProtocol {
   implicit val entry = jsonFormat4(EntryRow)
   implicit val blog = jsonFormat3(BlogRow)
   implicit val apiBlog = jsonFormat2(ApiBlog)
-
+  //  implicit val blogList = jsonFormat1(Seq[BlogRow])
 }
 
 // this trait defines our service behavior independently from the service actor
@@ -45,11 +46,11 @@ trait MyService extends HttpService {
   import JsonImplicits._
 
   val db = Database.forURL("jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd", driver = "org.postgresql.Driver")
-  
+
   val myRoute =
-    pathPrefix("blogs" / LongNumber) { id: Long =>
-      pathEnd {
-        get {
+    get {
+      pathPrefix("blogs") {
+        path(LongNumber) { id: Long =>
           respondWithMediaType(`application/json`) {
             complete {
               db.withSession { implicit session =>
@@ -58,11 +59,17 @@ trait MyService extends HttpService {
                   e <- Tables.Entry if e.blogId === b.blogId
                 } yield (b, e)
 
-                val blog : BlogRow = Tables.Blog.filter(_.blogId === id).first
-                val entries : Seq[EntryRow] = Tables.Entry.filter(_.blogId === id).list
+                val blog: BlogRow = Tables.Blog.filter(_.blogId === id).first
+                val entries: Seq[EntryRow] = Tables.Entry.filter(_.blogId === id).list
 
                 new ApiBlog(blog, entries);
               }
+            }
+          }
+        } ~ respondWithMediaType(`application/json`) {
+          complete {
+            db.withSession { implicit session =>
+              Tables.Blog.list
             }
           }
         }

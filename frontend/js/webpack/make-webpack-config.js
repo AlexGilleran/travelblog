@@ -4,19 +4,18 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var loadersByExtension = require("./loadersByExtension");
 var joinEntry = require("./joinEntry");
 
-module.exports = function(options) {
+module.exports = function (options) {
   var defaultEntry = {
     main: './js/client/client'
     // second: reactEntry("Second")
   };
   var loaders = {
     "coffee": "coffee-redux-loader",
-    "jsx": options.hotComponents ? ["react-hot-loader", "jsx-loader?harmony"] : "jsx-loader?harmony",
+    "jsx": options.hotComponents ?
+      ["react-hot-loader", "babel-loader", "jstransform-loader?jsx-control-statements"] :
+      ["babel-loader", "!jstransform-loader?jsx-control-statements"],
     "json": "json-loader",
-    // "js": {
-      // loader: "6to5-loader",
-      // include: path.join(__dirname, "app")
-    // },
+    "js": {loader: "babel-loader", exclude: /node_modules/},
     "json5": "json5-loader",
     "txt": "raw-loader",
     "png|jpg|jpeg|gif|svg": "url-loader?limit=10000",
@@ -24,7 +23,7 @@ module.exports = function(options) {
     "ttf|eot": "file-loader",
     "wav|mp3": "file-loader",
     "html": "html-loader",
-    "md|markdown": ["html-loader", "markdown-loader"],
+    "md|markdown": ["html-loader", "markdown-loader"]
   };
   var stylesheetLoaders = {
     "css": "css-loader",
@@ -35,15 +34,9 @@ module.exports = function(options) {
   var additionalLoaders = [
     // { test: /some-reg-exp$/, loader: "any-loader" }
   ];
-  var alias = {
-
-  };
-  var aliasLoader = {
-
-  };
-  var externals = [
-
-  ];
+  var alias = {};
+  var aliasLoader = {};
+  var externals = [];
   var modulesDirectories = ["web_modules", "node_modules"];
   var extensions = ["", ".web.js", ".js", ".jsx"];
   var root = path.join(__dirname, "app");
@@ -64,9 +57,9 @@ module.exports = function(options) {
     /node_modules[\\\/]items-store[\\\/]/
   ];
   var plugins = [
-    function() {
-      if(!options.prerender) {
-        this.plugin("done", function(stats) {
+    function () {
+      if (!options.prerender) {
+        this.plugin("done", function (stats) {
           var jsonStats = stats.toJson({
             chunkModules: true,
             exclude: excludeFromStats
@@ -79,7 +72,7 @@ module.exports = function(options) {
     new webpack.PrefetchPlugin("react"),
     new webpack.PrefetchPlugin("react/lib/ReactComponentBrowserEnvironment"),
   ];
-  if(options.prerender) {
+  if (options.prerender) {
     aliasLoader["react-proxy$"] = "react-proxy/unavailable";
     externals.push(
       /^react(\/.*)?$/,
@@ -87,27 +80,27 @@ module.exports = function(options) {
       "superagent",
       "async"
     );
-    plugins.push(new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }));
+    plugins.push(new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}));
   }
-  if(options.commonsChunk) {
+  if (options.commonsChunk) {
     plugins.push(new webpack.optimize.CommonsChunkPlugin("commons", "commons.js" + (options.longTermCaching && !options.prerender ? "?[chunkhash]" : "")));
   }
 
-  Object.keys(stylesheetLoaders).forEach(function(ext) {
+  Object.keys(stylesheetLoaders).forEach(function (ext) {
     var loaders = stylesheetLoaders[ext];
-    if(Array.isArray(loaders)) loaders = loaders.join("!");
-    if(options.prerender) {
+    if (Array.isArray(loaders)) loaders = loaders.join("!");
+    if (options.prerender) {
       stylesheetLoaders[ext] = "null-loader";
-    } else if(options.separateStylesheet) {
+    } else if (options.separateStylesheet) {
       stylesheetLoaders[ext] = ExtractTextPlugin.extract("style-loader", loaders);
     } else {
       stylesheetLoaders[ext] = "style-loader!" + loaders;
     }
   });
-  if(options.separateStylesheet && !options.prerender) {
+  if (options.separateStylesheet && !options.prerender) {
     plugins.push(new ExtractTextPlugin("[name].css"));
   }
-  if(options.minimize) {
+  if (options.minimize) {
     plugins.push(
       new webpack.optimize.UglifyJsPlugin(),
       new webpack.optimize.DedupePlugin(),

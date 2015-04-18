@@ -1,8 +1,13 @@
 'use strict';
+Error.stackTraceLimit = Infinity;
 
 require('./server-url-loader').install();
-require('node-jsx').install({extension: '.jsx'});
-Error.stackTraceLimit = Infinity;
+
+var serverTransformer = require('jsx-control-statements/server-transformer');
+require('node-jsx').install({
+  extension: '.jsx',
+  additionalTransform: serverTransformer
+});
 
 var logger = require('koa-logger');
 var koa = require('koa');
@@ -53,8 +58,8 @@ app.use(function * (next) {
   var self = this;
   var routes = this.injectionContext.injectSingleton(RoutesModule);
 
-  var content = yield new Promise(function(resolve, reject) {
-    ReactRouter.run(routes, self.req.url, function(Handler, nextState) {
+  var content = yield new Promise(function (resolve, reject) {
+    ReactRouter.run(routes, self.req.url, function (Handler, nextState) {
       co(function* (resolve, reject) {
         for (var i = 0; i < nextState.routes.length; i++) {
           var path = nextState.routes[i].path;

@@ -9,7 +9,9 @@
     {/if}
   </head>
   <body>
-    <div id="root">{>content}</div>
+    <div id="root" class="grid grid-pad">
+      {>content}
+    </div>
     <script id="initial-state" type="application/json">
       {>initialState}
     </script>
