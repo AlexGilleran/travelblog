@@ -38,7 +38,7 @@ lazy val codegenProject: Project = Project(
 )
 
 slick <<= slickCodeGenTask // register manual sbt command
-sourceGenerators in Compile <+= slickCodeGenTask // register automatic code generation on every compile, remove for only manual use
+//sourceGenerators in Compile <+= slickCodeGenTask // register automatic code generation on every compile, remove for only manual use
 
 // code generation task
 lazy val slick = TaskKey[Seq[File]]("gen-tables")
