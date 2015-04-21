@@ -1,5 +1,7 @@
 import sbt.Keys._
 
+enablePlugins(JavaAppPackaging)
+
 lazy val sharedSettings = Seq(
   organization := "com.alexgilleran.travelblog",
   version := "0.1",
