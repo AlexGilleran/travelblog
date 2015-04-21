@@ -9,6 +9,7 @@ import spray.routing._
 import Tables.profile.simple._
 import spray.json._
 import DefaultJsonProtocol._
+import scala.util.Properties
 
 import scala.slick.lifted.TableQuery
 
@@ -35,7 +36,6 @@ object JsonImplicits extends DefaultJsonProtocol {
   implicit val entry = jsonFormat4(EntryRow)
   implicit val blog = jsonFormat3(BlogRow)
   implicit val apiBlog = jsonFormat2(ApiBlog)
-  //  implicit val blogList = jsonFormat1(Seq[BlogRow])
 }
 
 // this trait defines our service behavior independently from the service actor
@@ -45,7 +45,7 @@ trait MyService extends HttpService {
   import spray.httpx.SprayJsonSupport.sprayJsonUnmarshaller
   import JsonImplicits._
 
-  val db = Database.forURL("jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd", driver = "org.postgresql.Driver")
+  val db = Database.forURL(Properties.envOrElse("DATABASE_URL", "fail"), driver = "org.postgresql.Driver")
 
   val myRoute =
     get {
