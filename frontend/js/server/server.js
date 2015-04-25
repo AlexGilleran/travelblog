@@ -97,7 +97,7 @@ app.use(function * (next) {
   self.body = yield self.render('index.whiskers', templateInput);
 });
 
-app.listen(process.env.LISTEN_PORT);
+app.listen(process.env.PORT);
 
 // RING A DING DING DING DING
-console.log('*splutter* *splutter* *vroooooom* on port ' + process.env.LISTEN_PORT);
+console.log('*splutter* *splutter* *vroooooom* on port ' + process.env.PORT);

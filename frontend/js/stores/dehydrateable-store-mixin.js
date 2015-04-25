@@ -1,5 +1,5 @@
 var Reflux = require('reflux');
-var isServer = require('../../../../ns-dvarapala-web/js/util/is-server');
+var isServer = require('../util/is-server');
 var rehydrator = require('../client/rehydrator');
 
 module.exports = {
