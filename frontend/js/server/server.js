@@ -29,14 +29,12 @@ var app = koa();
 
 app.use(logger());
 
-//app.use(bodyParser());
-
 app.use(function * (next) {
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
     yield proxy({
-      url: 'http://localhost:8080/' + this.req.url.substr(index + '/api/'.length)
+      url: process.env.API_BASE + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
   } else {
     yield next;
