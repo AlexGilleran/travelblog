@@ -1,2 +1,2 @@
 dev: nodemon --harmony js/server/server.js
-prod: node --harmony js/server/server.js
+prod: npm run build && node --harmony js/server/server.js
