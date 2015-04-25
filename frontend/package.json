@@ -16,7 +16,6 @@
     "debug": "^2.0.0",
     "es6-promise": "^2.0.1",
     "extract-text-webpack-plugin": "^0.3.8",
-    "file-loader": "^0.8.1",
     "flux": "^2.0.1",
     "jsx-control-statements": "^1.0.2",
     "jsx-loader": "^0.12.2",
@@ -44,10 +43,10 @@
     "simple-oauth2": "^0.2.1",
     "superagent": "^0.21.0",
     "twix": "^0.6.2",
-    "url-loader": "^0.5.5",
     "webpack": "^1.5.3",
     "webpack-dev-server": "^1.7.0",
-    "whiskers": "^0.3.3"
+    "whiskers": "^0.3.3",
+    "jsx-control-statements": "^1.0.2"
   },
   "devDependencies": {
     "babel-core": "^5.1.10",
@@ -55,7 +54,6 @@
     "css-loader": "^0.10.1",
     "file-loader": "^0.8.1",
     "jstransform-loader": "^0.2.0",
-    "jsx-control-statements": "^1.0.2",
     "less": "^2.5.0",
     "less-loader": "^2.2.0",
     "style-loader": "^0.10.1",

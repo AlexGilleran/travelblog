@@ -3,8 +3,8 @@ module.exports = [
     // commonsChunk: true,
     longTermCaching: true,
     separateStylesheet: true,
-    minimize: true,
-    // devtool: "source-map",
+    minimize: false,
+    devtool: "source-map",
   }),
   // require("./make-webpack-config")({
   //   prerender: true,
