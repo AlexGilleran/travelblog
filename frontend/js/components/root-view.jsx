@@ -1,5 +1,4 @@
 var React = require('react');
-var _ = require('lodash');
 var Router = require('react-router');
 var RouteHandler = require('react-router').RouteHandler;
 var HeaderViewModule = require('./header-view');

@@ -1,7 +1,7 @@
 "use strict";
 
 var isServer = require('./is-server');
-var _ = require('lodash');
+var pick = require('lodash/object/pick');
 
 var CLIENT_ENV_VAR_WHITELIST = [
   'STATIC_ASSET_BASE',
@@ -22,5 +22,5 @@ exports.get = function(key) {
 };
 
 exports.getForClient = function() {
-  return _.pick(props, CLIENT_ENV_VAR_WHITELIST);
+  return pick(props, CLIENT_ENV_VAR_WHITELIST);
 };

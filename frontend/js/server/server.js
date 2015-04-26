@@ -33,8 +33,7 @@ app.use(function * (next) {
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
-    console.log('proxying to ' + props.get('API_BASE') + this.req.url.substr(index + '/api/'.length));
-    delete this.req.headers.host;
+    delete this.req.headers.host; // confuses heroku if not removed.
     yield proxy({
       url: props.get('API_BASE') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
