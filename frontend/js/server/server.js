@@ -30,6 +30,7 @@ var app = koa();
 app.use(logger());
 
 app.use(function * (next) {
+  console.log(this.req.url);
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
