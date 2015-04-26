@@ -15,6 +15,9 @@
     <script id="initial-state" type="application/json">
       {>initialState}
     </script>
+    <script id="props" type="application/json">
+      {>props}
+    </script>
     <script src="{jsBundle}"></script>
   </body>
 </html>

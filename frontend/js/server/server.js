@@ -13,12 +13,12 @@ var logger = require('koa-logger');
 var koa = require('koa');
 var koaStatic = require('koa-static');
 var debug = require('debug')('server');
-var bodyParser = require('koa-bodyparser');
 var preloadRouter = require('./preload-router');
 var RoutesModule = require('../routes.jsx');
 var InjectionContext = require('../util/injection-context');
 var views = require('koa-render');
 var co = require('co');
+var props = require('../util/props');
 
 var ReactRouter = require('react-router');
 var React = require('react');
@@ -34,7 +34,7 @@ app.use(function * (next) {
 
   if (index >= 0) {
     yield proxy({
-      url: process.env.API_BASE + this.req.url.substr(index + '/api/'.length)
+      url: props.get('API_BASE') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
   } else {
     yield next;
@@ -88,14 +88,15 @@ app.use(function * (next) {
   var templateInput = {
     content: content,
     initialState: dehydratedStores,
-    cssBundle: process.env.CSS_BUNDLE_NAME ? process.env.STATIC_ASSET_BASE + process.env.CSS_BUNDLE_NAME : null,
-    jsBundle: process.env.STATIC_ASSET_BASE + process.env.JS_BUNDLE_NAME
+    cssBundle: props.get('CSS_BUNDLE_NAME') ? props.get('STATIC_ASSET_BASE') + props.get('CSS_BUNDLE_NAME') : null,
+    jsBundle: props.get('STATIC_ASSET_BASE') + props.get('JS_BUNDLE_NAME'),
+    props: JSON.stringify(props.getForClient())
   };
 
   self.body = yield self.render('index.whiskers', templateInput);
 });
 
-app.listen(process.env.PORT);
+app.listen(props.get('PORT'));
 
 // RING A DING DING DING DING
-console.log('*splutter* *splutter* *vroooooom* on port ' + process.env.PORT);
+console.log('*splutter* *splutter* *vroooooom* on port ' + props.get('PORT'));

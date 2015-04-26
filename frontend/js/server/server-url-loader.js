@@ -1,9 +1,9 @@
 var extensions = 'png|jpg|jpeg|gif|svg'.split('|');
 var path = require('path');
 var _ = require('lodash');
-// var loaderUtils = require("loader-utils");
-// var mime = require("mime");
+var props = require('../util/props');
 var fs = require('fs');
+
 // TODO: Share config with webpack
 var limit = 10000;
 var urlLoader = require('url-loader');
@@ -23,7 +23,7 @@ exports.install = function() {
           limit: limit
         },
         resourcePath: filename
-      }, content).replace('__webpack_public_path__', process.env.STATIC_ASSET_BASE), filename);
+      }, content).replace('__webpack_public_path__', props.get('STATIC_ASSET_BASE')), filename);
     };
   });
 };
