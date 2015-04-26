@@ -30,14 +30,15 @@ var app = koa();
 app.use(logger());
 
 app.use(function * (next) {
-  console.log(this.req.url);
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
+    console.log('proxying to ' + props.get('API_BASE') + this.req.url.substr(index + '/api/'.length));
     yield proxy({
       url: props.get('API_BASE') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
   } else {
+    console.log('not proxying');
     yield next;
   }
 });
