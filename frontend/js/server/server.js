@@ -34,6 +34,7 @@ app.use(function * (next) {
 
   if (index >= 0) {
     console.log('proxying to ' + props.get('API_BASE') + this.req.url.substr(index + '/api/'.length));
+    delete this.req.headers.host;
     yield proxy({
       url: props.get('API_BASE') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);

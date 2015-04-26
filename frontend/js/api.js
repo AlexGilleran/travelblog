@@ -1,9 +1,12 @@
 var request = require('superagent');
 var props = require('./util/props');
+var isServer = require('./util/is-server');
+
+var API_BASE = isServer ? props.get('API_BASE') : props.get('AJAX_BASE');
 
 exports.getBlog = function(blogId) {
   return new Promise(function(resolve, reject) {
-    request.get(props.get('AJAX_BASE') + 'blogs/' + blogId).end(function(err, res) {
+    request.get(API_BASE + 'blogs/' + blogId).end(function(err, res) {
       if (err) {
         reject(new Error(err));
       } else {
@@ -15,7 +18,7 @@ exports.getBlog = function(blogId) {
 
 exports.getBlogList = function() {
   return new Promise(function(resolve, reject) {
-    request.get(props.get('AJAX_BASE') + 'blogs').end(function(err, res) {
+    request.get(API_BASE + 'blogs').end(function(err, res) {
       if (err) {
         reject(new Error(err));
       } else {
