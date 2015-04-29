@@ -26,7 +26,11 @@ exports.constructor = function (ctx) {
     },
 
     getBlog: function (blogId) {
-      return blogs[blogId];
+      if (blogs[blogId]) {
+        return blogs[blogId];
+      } else {
+        blogActions.loadBlog(blogId);
+      }
     },
 
     onBlogLoad: function(blogId, blog) {

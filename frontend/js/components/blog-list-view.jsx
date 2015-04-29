@@ -2,14 +2,12 @@ var React = require('react');
 var Reflux = require('reflux');
 var Router = require('react-router');
 var BlogListStoreModule = require('../stores/blog-list-store');
-var BlogActionsModule = require('../actions/blog-actions');
 var Link = require('react-router/modules/components/Link');
 
 exports.constructor = function (ctx) {
   "use strict";
 
   var blogListStore = ctx.injectSingleton(BlogListStoreModule);
-  var blogActions = ctx.injectSingleton(BlogActionsModule);
 
   return React.createClass({
     mixins: [Router.State, Reflux.ListenerMixin],

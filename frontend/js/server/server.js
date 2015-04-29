@@ -38,7 +38,6 @@ app.use(function * (next) {
       url: props.get('API_BASE') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
   } else {
-    console.log('not proxying');
     yield next;
   }
 });

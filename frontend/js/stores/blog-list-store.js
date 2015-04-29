@@ -26,7 +26,11 @@ exports.constructor = function (ctx) {
     },
 
     getBlogList: function () {
-      return blogList;
+      if (blogList) {
+        return blogList;
+      } else {
+        blogActions.loadBlogList();
+      }
     },
 
     onBlogListLoaded: function(newBlogList) {

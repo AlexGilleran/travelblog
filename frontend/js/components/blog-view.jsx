@@ -1,9 +1,7 @@
-var newMoment = require('moment');
 var React = require('react');
 var Reflux = require('reflux');
 var Router = require('react-router');
 var BlogStoreModule = require('../stores/blog-store');
-var BlogActionsModule = require('../actions/blog-actions');
 var BlogListViewModule = require('./blog-list-view');
 var EntryPreviewViewModule = require('./entry-preview-view');
 
@@ -11,7 +9,6 @@ exports.constructor = function (ctx) {
   "use strict";
 
   var blogStore = ctx.injectSingleton(BlogStoreModule);
-  var blogActions = ctx.injectSingleton(BlogActionsModule);
   var EntryPreviewView = ctx.injectSingleton(EntryPreviewViewModule);
   var BlogListView = ctx.injectSingleton(BlogListViewModule);
 
@@ -35,13 +32,11 @@ exports.constructor = function (ctx) {
     },
 
     componentWillReceiveProps: function (newProps) {
-      blogActions.loadBlog(this.getParams().blogId);
+      this.setState(this.getInitialState());
     },
 
     componentDidMount: function () {
-      if (!this.state.blog) {
-        blogActions.loadBlog(this.getParams().blogId);
-      }
+
     },
 
     componentWillUnmount: function () {
