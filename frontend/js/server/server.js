@@ -60,13 +60,17 @@ app.use(function * (next) {
   var content = yield new Promise(function (resolve, reject) {
     ReactRouter.run(routes, self.req.url, function (Handler, nextState) {
       co(function* (resolve, reject) {
+        var preloadYields = [];
+
         for (var i = 0; i < nextState.routes.length; i++) {
           var path = nextState.routes[i].path;
 
           if (preloadRouter[path]) {
-            yield preloadRouter[path].call(self, nextState);
+            preloadYields.push(preloadRouter[path].call(self, nextState));
           }
         }
+
+        yield preloadYields;
       }).then(afterPreload, onPreloadError);
 
       function afterPreload() {

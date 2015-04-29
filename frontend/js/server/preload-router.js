@@ -12,7 +12,6 @@ var router = {
     var blogActions = this.injectionContext.injectSingleton(BlogActionsModule);
     this.injectionContext.injectSingleton(BlogListStoreModule);
 
-    // TODO: Yield to all these at once
     yield blogActions.loadBlogList.triggerPromise();
   },
 
