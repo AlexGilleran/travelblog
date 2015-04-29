@@ -73,6 +73,16 @@ trait MyService extends HttpService {
             }
           }
         }
+      } ~ pathPrefix("entries") {
+        path(LongNumber) { id: Long =>
+          respondWithMediaType(`application/json`) {
+            complete {
+              db.withSession { implicit session =>
+                Tables.Entry.filter(_.entryId === id).first
+              }
+            }
+          }
+        }
       }
     }
 }
