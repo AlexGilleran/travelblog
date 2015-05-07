@@ -84,5 +84,13 @@ trait MyService extends HttpService {
           }
         }
       }
+    } ~ post {
+      path("login") {
+        setCookie(new HttpCookie(name = "Cookie", content = "Cookie")) {
+          complete {
+            "Logged In"
+          }
+        }
+      }
     }
 }
