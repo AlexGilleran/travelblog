@@ -1,8 +1,7 @@
 package com.alexgilleran.travelblog.routes
 
-import com.alexgilleran.travelblog.data.schema.Tables
-import com.alexgilleran.travelblog.data.schema.Tables.profile.simple._
-import com.alexgilleran.travelblog.data.schema.Tables.{BlogRow, EntryRow}
+import com.alexgilleran.travelblog.data.{PostGresSlickDAO, GeneralDAO}
+import com.alexgilleran.travelblog.data.schema.Tables.{Blog, Entry}
 import spray.http.HttpCookie
 import spray.http.MediaTypes._
 import spray.json.DefaultJsonProtocol
@@ -10,21 +9,24 @@ import spray.routing.HttpService
 
 import scala.util.Properties
 
-case class ApiBlog(details: BlogRow, entries: Seq[EntryRow])
 
-object JsonImplicits extends DefaultJsonProtocol {
-  implicit val entry = jsonFormat4(EntryRow)
-  implicit val blog = jsonFormat3(BlogRow)
+case class ApiBlog(details: Blog, entries: Seq[Entry])
+
+object BlogJsonImplicits extends DefaultJsonProtocol {
+  implicit val entry = jsonFormat4(Entry)
+  implicit val blog = jsonFormat4(Blog)
   implicit val apiBlog = jsonFormat2(ApiBlog)
 }
 
 // this trait defines our service behavior independently from the service actor
 trait BlogService extends HttpService {
+
   import spray.httpx.SprayJsonSupport.sprayJsonMarshaller
   import spray.httpx.SprayJsonSupport.sprayJsonUnmarshaller
-  import JsonImplicits._
+  import BlogJsonImplicits._
+  import com.alexgilleran.travelblog.data.schema.Tables.{Blog, Entry}
 
-  val db = Database.forURL(Properties.envOrElse("DATABASE_URL", "fail"), driver = "org.postgresql.Driver")
+  private val dao: GeneralDAO = PostGresSlickDAO
 
   val blogRoutes =
     pathPrefix("blogs") {
@@ -32,37 +34,26 @@ trait BlogService extends HttpService {
         path(LongNumber) { id: Long =>
           respondWithMediaType(`application/json`) {
             complete {
-              db.withSession { implicit session =>
-                val implicitInnerJoin = for {
-                  b <- Tables.Blog if b.blogId === id
-                  e <- Tables.Entry if e.blogId === b.blogId
-                } yield (b, e)
-
-                val blog: BlogRow = Tables.Blog.filter(_.blogId === id).first
-                val entries: Seq[EntryRow] = Tables.Entry.filter(_.blogId === id).list
-
-                new ApiBlog(blog, entries);
-              }
+              val blog: Blog = dao.getBlog(id)
+              val entries: Seq[Entry] = dao.getEntriesForBlog(id, 5)
+              new ApiBlog(blog, entries)
             }
           }
         } ~ respondWithMediaType(`application/json`) {
           complete {
-            db.withSession { implicit session =>
-              Tables.Blog.list
-            }
+            dao.getBlogs(20)
           }
         }
-      } ~ pathPrefix("entries") {
+      }
+    } ~ pathPrefix("entries") {
+      get {
         path(LongNumber) { id: Long =>
           respondWithMediaType(`application/json`) {
             complete {
-              db.withSession { implicit session =>
-                Tables.Entry.filter(_.entryId === id).first
-              }
+              dao.getEntry(id)
             }
           }
         }
       }
     }
 }
-

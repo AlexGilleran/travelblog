@@ -4,8 +4,13 @@ import akka.actor.{Actor, ActorSystem, Props}
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
-import com.alexgilleran.travelblog.routes.{SessionService, BlogService}
+import com.alexgilleran.travelblog.data.{PostGresSlickDAO, GeneralDAO}
+import com.alexgilleran.travelblog.routes.{UserService, BlogService}
 import spray.can.Http
+import spray.routing.ExceptionHandler
+import spray.util.LoggingContext
+import spray.http.StatusCodes._
+import spray.routing._
 
 import scala.concurrent.duration._
 import scala.util.Properties
@@ -26,7 +31,8 @@ object Boot extends App {
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class ServiceActor extends Actor with BlogService with SessionService {
+class ServiceActor extends Actor with BlogService with UserService {
+  val dao: GeneralDAO = PostGresSlickDAO
 
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
@@ -35,5 +41,15 @@ class ServiceActor extends Actor with BlogService with SessionService {
   // this actor only runs our route, but you could add
   // other things here, like request stream processing
   // or timeout handling
-  def receive = runRoute(blogRoutes ~ loginRoutes)
+  def receive = runRoute(blogRoutes ~ userRoutes)
+
+  implicit def myExceptionHandler(implicit log: LoggingContext) =
+    ExceptionHandler {
+      case e: Exception =>
+        requestUri { uri =>
+          log.error(e, "Request for {} failed", uri)
+          complete(InternalServerError, "Guru Meditation Error")
+        }
+    }
 }
+
