@@ -56,6 +56,3 @@ lazy val slickCodeGenTask = (sourceDirectory, dependencyClasspath in Compile, ru
 }
 
 Revolver.settings
-
-//mainClass in Revolver.reStart := Some("com.alexgilleran.travelblog.Boot")
-//Revolver.reStartArgs := Seq("run", "com.alexgilleran.travelblog.MyService")
