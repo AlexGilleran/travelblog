@@ -1,4 +1,3 @@
-require('es6-promise').polyfill();
 require("../../less/style.less");
 
 var InjectionContext = require('../util/injection-context');

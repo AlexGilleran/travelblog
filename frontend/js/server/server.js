@@ -2,12 +2,7 @@
 Error.stackTraceLimit = Infinity;
 
 require('./server-url-loader').install();
-
-var serverTransformer = require('jsx-control-statements/server-transformer');
-require('node-jsx').install({
-  extension: '.jsx',
-  additionalTransform: serverTransformer
-});
+require("babel/register");
 
 var logger = require('koa-logger');
 var koa = require('koa');

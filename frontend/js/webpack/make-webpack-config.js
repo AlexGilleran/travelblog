@@ -12,8 +12,8 @@ module.exports = function (options) {
   var loaders = {
     "coffee": "coffee-redux-loader",
     "jsx": options.hotComponents ?
-      ["react-hot-loader", "babel-loader", "jstransform-loader?jsx-control-statements"] :
-      ["babel-loader", "jstransform-loader?jsx-control-statements"],
+      ["react-hot-loader", "babel-loader"] :
+      ["babel-loader"],
     "json": "json-loader",
     "js": {loader: "babel-loader", exclude: /node_modules/},
     "json5": "json5-loader",
