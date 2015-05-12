@@ -40,6 +40,14 @@ trait SessionDirectives {
     }
   }
 
+  def createSessionCookie(user : User) : Directive1[Session] = {
+    val (id: String, session: Session) = sessionManager.newSession(user)
+    val cookie: HttpCookie = new HttpCookie(name = "id", content = id)
+    setCookie(cookie).hmap { _ =>
+      session
+    }
+  }
+
   private def optionalSession() : Directive1[Option[Session]] = {
     optionalCookie("id").hflatMap {
       case Some(cookie: HttpCookie) :: HNil =>
@@ -57,11 +65,7 @@ trait SessionDirectives {
 
   private def createSessionCookie(loginDetails: LoginDetails): Directive1[Session] = {
     val user: User = dao.getUserByEmail(loginDetails.email)
-    val (id: String, session: Session) = sessionManager.newSession(user)
-    val cookie: HttpCookie = new HttpCookie(name = "id", content = id)
-    setCookie(cookie).hmap { _ =>
-      session
-    }
+    createSessionCookie(user)
   }
 }
 

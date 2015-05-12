@@ -14,4 +14,5 @@ trait GeneralDAO {
   def getBlogs(limit: Int = GENERIC_LIST_LIMIT) : List[Blog]
   def getUser(id : Long) : User
   def getUserByEmail(email : String) : User
+  def insertUser(user : User) : Long
 }

@@ -47,6 +47,11 @@ trait PostGresSlickDAO extends GeneralDAO {
       UserTable.filter(_.email === email).first
     }
   }
+  override def insertUser(user: Tables.User): Long = {
+    db.withSession( implicit session =>
+      UserTable returning (UserTable.map(_.userId)) += user
+    )
+  }
 }
 
 // Singleton for now, think about DI later.
