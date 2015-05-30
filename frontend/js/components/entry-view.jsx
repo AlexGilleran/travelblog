@@ -1,57 +1,38 @@
 var React = require('react');
-var Reflux = require('reflux');
-var Router = require('react-router');
 var EntryStoreModule = require('../stores/entry-store');
-var Link = require('react-router/modules/components/Link');
+var {Link} =  require('react-router');
 
-exports.constructor = function (ctx) {
-  "use strict";
+export default class EntryView extends React.Component {
+  function() {
+    return (
+      <FluxComponent connectToStores={{
+          entry: store => {
+            store.getEntry(this.params.entryId)
+          }
+        }}>
+        <Inner />
+      </FluxComponent>
+    );
+  }
+}
 
-  var entryStore = ctx.injectSingleton(EntryStoreModule);
+class Inner extends React.Component {
+  render() {
+    return (
+      <div>
+        <h2 className="col-1-1">
+          {this.state.title}
+        </h2>
 
-  return React.createClass({
-    mixins: [Router.State, Reflux.ListenerMixin],
-
-    getInitialState: function () {
-      return entryStore.getEntry(this.getParams().entryId) || {};
-    },
-
-    componentWillMount: function () {
-      this.listenTo(entryStore, this.onEntryChanged);
-    },
-
-    onEntryChanged: function () {
-      this.setState(this.getInitialState());
-    },
-
-    componentWillReceiveProps: function (newProps) {
-      this.setState(this.getInitialState());
-    },
-
-    componentDidMount: function () {
-    },
-
-    componentWillUnmount: function () {
-    },
-
-    render: function () {
-      return (
-        <div>
-          <h2 className="col-1-1">
-            {this.state.title}
-          </h2>
-          <div className="col-1-1">
-            {this.state.markdown}
-          </div>
-          <div className="col-1-1">
-            <If condition={this.state.blogId}>
-              <Link to="blogs" params={this.state}>Back to Blog</Link>
-            </If>
-          </div>
+        <div className="col-1-1">
+          {this.state.markdown}
         </div>
-      );
-    }
-  });
-};
-
-exports.singletonKey = 'entry-view';
+        <div className="col-1-1">
+          <If condition={this.props.entry.blogId}>
+            <Link to="blogs" params={this.props.entry}>Back to Blog</Link>
+          </If>
+        </div>
+      </div>
+    );
+  }
+}

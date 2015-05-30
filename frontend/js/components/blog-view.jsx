@@ -1,71 +1,40 @@
 var React = require('react');
-var Reflux = require('reflux');
-var Router = require('react-router');
 var BlogStoreModule = require('../stores/blog-store');
 var BlogListViewModule = require('./blog-list-view');
 var EntryPreviewViewModule = require('./entry-preview-view');
 
-exports.constructor = function (ctx) {
-  "use strict";
+export default class BlogView extends React.Component {
+  render() {
+    return (
+      <FluxComponent flux={this.props.flux} connectToStores={{
+        blog: store => ({
+          blog: store.getBlog(this.params.blogId)
+        })
+      }}/>
+    );
+  }
+}
 
-  var blogStore = ctx.injectSingleton(BlogStoreModule);
-  var EntryPreviewView = ctx.injectSingleton(EntryPreviewViewModule);
-  var BlogListView = ctx.injectSingleton(BlogListViewModule);
-
-  return React.createClass({
-    mixins: [Router.State, Reflux.ListenerMixin],
-
-    getInitialState: function () {
-      return {
-        blog: blogStore.getBlog(this.getParams().blogId)
-      }
-    },
-
-    componentWillMount: function () {
-      this.listenTo(blogStore, this.onBlogChanged);
-    },
-
-    onBlogChanged: function () {
-      this.setState({
-        blog: blogStore.getBlog(this.getParams().blogId)
-      });
-    },
-
-    componentWillReceiveProps: function (newProps) {
-      this.setState(this.getInitialState());
-    },
-
-    componentDidMount: function () {
-
-    },
-
-    componentWillUnmount: function () {
-    },
-
-    render: function () {
-      return (
-        <div>
-          <div className="col-2-3">
-            <If condition={this.state.blog}>
+class Inner extends React.Component {
+  render() {
+    return (
+      <div>
+        <div className="col-2-3">
+          <If condition={this.props.blog}>
+            <div>
               <div>
-                <div>
-                  <h2>{this.state.blog.details.name}</h2>
-                </div>
-                <For each="entry" of={this.state.blog.entries}>
-                  <EntryPreviewView key={entry.entryId} entry={entry}/>
-                </For>
+                <h2>{this.props.blog.details.name}</h2>
               </div>
-            </If>
-          </div>
-          <div className="col-1-3">
-            <BlogListView />
-          </div>
+              <For each="entry" of={this.props.blog.entries}>
+                <EntryPreviewView key={entry.entryId} entry={entry}/>
+              </For>
+            </div>
+          </If>
         </div>
-      );
-    }
-
-
-  });
-};
-
-exports.singletonKey = 'blog-view';
+        <div className="col-1-3">
+          <BlogListView />
+        </div>
+      </div>
+    );
+  }
+}

@@ -1,45 +1,20 @@
-var Reflux = require('reflux');
-var DehydrateableStoreMixin = require('./dehydrateable-store-mixin');
-var BlogActionsModule = require('../actions/blog-actions');
+import BaseAjaxStore from './base-ajax-store';
 
-exports.constructor = function (ctx) {
-  "use strict";
+export default class BlogListStore extends BaseAjaxStore {
+  constructor(flux) {
+    super();
 
-  var blogActions = ctx.injectSingleton(BlogActionsModule);
+    this.state = {};
 
-  var blogList;
+    this.blogActions = flux.getActions('blog');
 
-  var BlogListStore = Reflux.createStore({
-    mixins: [DehydrateableStoreMixin],
-    hydrationKey: 'blog-list-store',
+    this.registerAsync(this.blogActions.getBlogList, this.onLoading, this.onSuccess.bind(this, 'blogList'), this.onFailure);
+  }
 
-    init: function () {
-      this.listenTo(blogActions.loadBlogList.completed, this.onBlogListLoaded);
-    },
-
-    dehydrate: function () {
-      return blogList;
-    },
-
-    rehydrate: function (dehydratedData) {
-      blogList = dehydratedData;
-    },
-
-    getBlogList: function () {
-      if (blogList) {
-        return blogList;
-      } else {
-        blogActions.loadBlogList();
-      }
-    },
-
-    onBlogListLoaded: function(newBlogList) {
-      blogList = newBlogList;
-      this.trigger();
+  getStateAsObject() {
+    if (!this.state.blogList && !this.state.loading) {
+      this.blogActions.getBlogList();
     }
-  });
-
-  return BlogListStore;
-};
-
-exports.singletonKey = 'blog-list-store';
+    return this.state;
+  }
+}

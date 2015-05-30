@@ -9,21 +9,21 @@ var koa = require('koa');
 var koaStatic = require('koa-static');
 var debug = require('debug')('server');
 var preloadRouter = require('./preload-router');
-var RoutesModule = require('../routes.jsx');
-var InjectionContext = require('../util/injection-context');
+var routes = require('../routes.jsx');
 var views = require('koa-render');
 var co = require('co');
 var props = require('../util/props');
 
 var ReactRouter = require('react-router');
 var React = require('react');
-var dehydrator = require('./dehydrator');
 var proxy = require('koa-proxy');
+var Flux = require('../flux');
 
 var app = koa();
 
 app.use(logger());
 
+// Proxy API calls
 app.use(function * (next) {
   var index = this.req.url.indexOf('/api/');
 
@@ -41,16 +41,15 @@ app.use(koaStatic('.'));
 
 // Add an injection context to the request.
 app.use(function * (next) {
-  this.injectionContext = new InjectionContext();
+  this.flux = new Flux();
   yield next;
 });
 
 app.use(views('templates'));
 
-// React router running isomorphically in node (zomg!)
+// React router running isomorphically
 app.use(function * (next) {
   var self = this;
-  var routes = this.injectionContext.injectSingleton(RoutesModule);
 
   var content = yield new Promise(function (resolve, reject) {
     ReactRouter.run(routes, self.req.url, function (Handler, nextState) {
@@ -66,24 +65,20 @@ app.use(function * (next) {
         }
 
         yield preloadYields;
-      }).then(afterPreload, onPreloadError);
-
-      function afterPreload() {
-        var handler = React.createElement(Handler);
+      }).then(function() {
+        var handler = React.createElement(Handler, {flux: self.flux});
         try {
           resolve(React.renderToString(handler));
         } catch (e) {
           reject(e);
         }
-      }
-
-      function onPreloadError(err) {
+      }).catch(function onPreloadError(err) {
         reject(err);
-      }
+      });
     });
   });
 
-  var dehydratedStores = dehydrator(this.injectionContext.getStores());
+  var dehydratedStores = this.flux.serialize();
 
   var templateInput = {
     content: content,

@@ -1,45 +1,29 @@
 var React = require('react');
-var Reflux = require('reflux');
-var Router = require('react-router');
-var BlogListStoreModule = require('../stores/blog-list-store');
-var Link = require('react-router/modules/components/Link');
+var {Link} =  require('react-router');
+var FluxComponent = require('flummox/component');
 
-exports.constructor = function (ctx) {
-  "use strict";
+export default class BlogListView extends React.Component {
+  render() {
+    return (
+      <FluxComponent flux={this.props.flux} connectToStores="blog-list">
+        <Inner />
+      </FluxComponent>
+    );
+  }
+}
 
-  var blogListStore = ctx.injectSingleton(BlogListStoreModule);
-
-  return React.createClass({
-    mixins: [Router.State, Reflux.ListenerMixin],
-
-    getInitialState: function () {
-      return {
-        blogs: blogListStore.getBlogList() || []
-      }
-    },
-
-    componentWillMount: function () {
-      this.listenTo(blogListStore, this.onBlogsChanged);
-    },
-
-    onBlogsChanged: function () {
-      this.setState({
-        blogs: blogListStore.getBlogList() || []
-      });
-    },
-
-    render: function () {
-      return (
-        <div>
-          <For each="blog" of={this.state.blogs}>
+class Inner extends React.Component {
+  render() {
+    return (
+      <div>
+        <If condition={this.props.blogList}>
+          <For each="blog" of={this.props.blogList}>
             <div key={blog.blogId}>
               <Link to="blogs" params={blog}>{blog.name}</Link>
             </div>
           </For>
-        </div>
-      );
-    }
-  });
-};
-
-exports.singletonKey = 'blog-list-view';
+        </If>
+      </div>
+    );
+  }
+}

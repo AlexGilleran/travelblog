@@ -1,17 +1,15 @@
-var Reflux = require('reflux');
-var api = require('../api');
-var bindToApi = require('../util/bind-to-api');
+import {Actions} from 'flummox';
+import api from '../api';
+import actionUtils from './action-utils';
 
-exports.constructor = function (ctx) {
-  var EntryActions = Reflux.createActions({
-    'createEntry': {asyncResult: true},
-    'loadEntry': {asyncResult: true}
-  });
+export default class EntryActions extends Actions {
+  async createEntry(entry) {
+    return await api.createEntry(entry);
+  }
 
-  EntryActions.createEntry.listen(bindToApi(api.createEntry));
-  EntryActions.loadEntry.listen(bindToApi(api.getEntry));
-
-  return EntryActions;
+  async getEntry(id) {
+    const entry = await actionUtils.catchArguments(api.getEntry, id);
+    entry.id = id;
+    return entry;
+  }
 }
-
-exports.singletonKey = 'entry-actions';

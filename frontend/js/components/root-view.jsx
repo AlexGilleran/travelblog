@@ -1,33 +1,14 @@
 var React = require('react');
-var Router = require('react-router');
-var RouteHandler = require('react-router').RouteHandler;
-var HeaderViewModule = require('./header-view');
+var {RouteHandler} = require('react-router');
+var HeaderView = require('./header-view');
 
-exports.constructor = function (ctx) {
-  "use strict";
-
-  var HeaderView = ctx.injectSingleton(HeaderViewModule);
-
-  return React.createClass({
-    mixins: [Router.State],
-
-    getInitialState: function () {
-      return {};
-    },
-
-    componentDidMount: function () {
-
-    },
-
-    render: function () {
-      return (
-        <div>
-          <HeaderView />
-          <RouteHandler />
-        </div>
-      );
-    }
-  });
-};
-
-exports.singletonKey = 'root-view';
+export default class RootView {
+  render() {
+    return (
+      <div>
+        <HeaderView />
+        <RouteHandler flux={this.props.flux} />
+      </div>
+    );
+  }
+}

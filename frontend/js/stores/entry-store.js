@@ -1,45 +1,18 @@
-var Reflux = require('reflux');
-var DehydrateableStoreMixin = require('./dehydrateable-store-mixin');
-var EntryActionsModule = require('../actions/entry-actions');
+import IdBasedAjaxStore from './id-based-ajax-store';
 
-exports.constructor = function (ctx) {
-  "use strict";
+export default class BlogStore extends IdBasedAjaxStore {
+  constructor(flux) {
+    super();
 
-  var entryActions = ctx.injectSingleton(EntryActionsModule);
+    this.entryActions = flux.getActions('entry');
+    this.registerAsync(this.entryActions.getBlogList, this.onLoading, this.onSuccess, this.onFailure);
+  }
 
-  var entries = {};
-
-  var EntryStore = Reflux.createStore({
-    mixins: [DehydrateableStoreMixin],
-    hydrationKey: 'entry-store',
-
-    init: function () {
-      this.listenTo(entryActions.loadEntry.completed, this.onEntryLoaded);
-    },
-
-    dehydrate: function () {
-      return entries;
-    },
-
-    rehydrate: function (dehydratedData) {
-      entries = dehydratedData;
-    },
-
-    getEntry: function (entryId) {
-      if (entries[entryId]) {
-        return entries[entryId];
-      } else {
-        entryActions.loadEntry(entryId);
-      }
-    },
-
-    onEntryLoaded: function(entry) {
-      entries[entry.entryId] = entry;
-      this.trigger();
+  getEntry(entryId) {
+    if (this.entries[entryId]) {
+      return this.entries[entryId];
+    } else {
+      this.entryActions.loadEntry(entryId);
     }
-  });
-
-  return EntryStore;
-};
-
-exports.singletonKey = 'entry-store';
+  }
+}
