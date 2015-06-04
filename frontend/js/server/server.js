@@ -53,28 +53,26 @@ app.use(function * (next) {
 
   var content = yield new Promise(function (resolve, reject) {
     ReactRouter.run(routes, self.req.url, function (Handler, nextState) {
-      co(function* (resolve, reject) {
-        var preloadYields = [];
+      var preloadActions = [];
 
-        for (var i = 0; i < nextState.routes.length; i++) {
-          var path = nextState.routes[i].path;
+      for (var i = 0; i < nextState.routes.length; i++) {
+        var path = nextState.routes[i].path;
 
-          if (preloadRouter[path]) {
-            preloadYields.push(preloadRouter[path].call(self, nextState));
-          }
+        if (preloadRouter[path]) {
+          preloadActions.push(preloadRouter[path].call(self, nextState));
         }
+      }
 
-        yield preloadYields;
-      }).then(function() {
-        var handler = React.createElement(Handler, {flux: self.flux});
-        try {
+
+
+      Promise.all(preloadActions)
+        .then(function () {
+          var handler = React.createElement(Handler, {flux: self.flux, routerState: nextState});
+
           resolve(React.renderToString(handler));
-        } catch (e) {
-          reject(e);
-        }
-      }).catch(function onPreloadError(err) {
-        reject(err);
-      });
+        }).catch(function (err) {
+          reject(err);
+        });
     });
   });
 

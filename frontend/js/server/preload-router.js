@@ -8,16 +8,16 @@ var EntryActionsModule = require('../actions/entry-actions');
 "use strict";
 
 var router = {
-  '/': function * (state) {
-    yield this.flux.getActions('blog').getBlogList();
+  '/': function (state) {
+    return this.flux.getActions('blog').getBlogList();
   },
 
-  '/blogs/:blogId': function * (state) {
-    yield this.flux.getActions('blog').getBlog(state.params.blogId);
+  '/blogs/:blogId': function (state) {
+    return this.flux.getActions('blog').getBlog(state.params.blogId);
   },
 
-  '/entries/:entryId': function * (state) {
-    yield this.flux.getActions('entry').getEntry(state.params.entryId);
+  '/entries/:entryId': function (state) {
+    return this.flux.getActions('entry').getEntry(state.params.entryId);
   }
 };
 

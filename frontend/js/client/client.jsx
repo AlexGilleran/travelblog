@@ -16,5 +16,5 @@ if (initialStateElement) {
 }
 
 Router.run(routes, Router.HistoryLocation, function (Handler, state) {
-  React.render(<Handler flux={flux} />, document.getElementById("root"));
+  React.render(<Handler flux={flux} routerState={state} />, document.getElementById("root"));
 });

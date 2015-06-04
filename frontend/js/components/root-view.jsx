@@ -7,7 +7,7 @@ export default class RootView {
     return (
       <div>
         <HeaderView />
-        <RouteHandler flux={this.props.flux} />
+        <RouteHandler {...this.props} />
       </div>
     );
   }

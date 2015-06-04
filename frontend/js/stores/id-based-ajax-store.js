@@ -1,15 +1,15 @@
 import Store from './base-store';
 
 export default class IdBasedAjaxStore extends Store {
-  constructor(dataName) {
+  constructor(idGetter) {
     super();
 
-    this.dataName = dataName;
+    this.idGetter = idGetter;
 
     this.state = {
-      status: {}
+      status: {},
+      data: {}
     };
-    this.state[dataName] = {};
   }
 
   onFailure(error) {
@@ -21,7 +21,7 @@ export default class IdBasedAjaxStore extends Store {
     this.forceUpdate();
   }
 
-  onLoading(id) {
+  onLoading({actionArgs: [id]}) {
     this.state.status[id] = {
       failed: false,
       loading: true
@@ -29,12 +29,17 @@ export default class IdBasedAjaxStore extends Store {
     this.forceUpdate();
   }
 
-  onSuccess(result) {
-    this.state.status[result.id] = {
+  onSuccess(idKey, {body: result}) {
+    const id = this.idGetter(result);
+    this.state.status[id] = {
       failed: false,
       loading: false
     };
-    this.state[result.id] = result.data;
+    this.state.data[id] = result;
     this.forceUpdate();
+  }
+
+  isLoading(id) {
+    return this.state.status[id] && this.state.status[id].loading;
   }
 }

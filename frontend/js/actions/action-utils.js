@@ -1,4 +1,4 @@
-export async function catchId() {
+export async function catchArguments() {
   var fn = arguments[0];
   var args = Array.slice(arguments, 1);
 
