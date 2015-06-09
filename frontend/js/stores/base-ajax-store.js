@@ -1,6 +1,6 @@
-import Store from './base-store';
+import BaseStore from './base-store';
 
-export default class BaseAjaxStore extends Store {
+export default class BaseAjaxStore extends BaseStore {
   onFailure() {
     this.setState({
       failed: true,

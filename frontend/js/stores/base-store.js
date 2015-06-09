@@ -1,12 +1,11 @@
 import {Store} from 'flummox';
 
 export default class BaseStore extends Store {
-  serialize() {
-    console.log('state: ' + JSON.stringify(this.state));
-    return JSON.stringify(this.state);
+  static serialize(state) {
+    return JSON.stringify(state);
   }
 
-  deserialize() {
-    return JSON.parse(this.state);
+  static deserialize(state) {
+    return JSON.parse(state);
   }
 }
