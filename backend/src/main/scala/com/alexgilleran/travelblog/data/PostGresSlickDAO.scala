@@ -24,9 +24,9 @@ trait PostGresSlickDAO extends GeneralDAO {
     }
   }
 
-  override def getEntry(id: Long): Entry = {
+  override def getEntry(entryId: Long): Entry = {
     db.withSession { implicit session =>
-      EntryTable.filter(_.blogId === id).first
+      EntryTable.filter(_.entryId === entryId).first
     }
   }
 
