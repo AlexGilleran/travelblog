@@ -44,8 +44,8 @@ trait Tables {
     /** Database column blog_id DBType(bigserial), AutoInc, PrimaryKey */
     val blogId: Column[Long] = column[Long]("blog_id", O.AutoInc, O.PrimaryKey)
     
-    /** Foreign key referencing UserTable (database name user_user_id_fkey) */
-    lazy val userTableFk = foreignKey("user_user_id_fkey", userId, UserTable)(r => r.userId, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
+    /** Foreign key referencing UserTable (database name blog_user_id_fkey) */
+    lazy val userTableFk = foreignKey("blog_user_id_fkey", userId, UserTable)(r => r.userId, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
   }
   /** Collection-like TableQuery object for table BlogTable */
   lazy val BlogTable = new TableQuery(tag => new BlogTable(tag))
@@ -78,8 +78,8 @@ trait Tables {
     /** Database column entry_id DBType(bigserial), AutoInc, PrimaryKey */
     val entryId: Column[Long] = column[Long]("entry_id", O.AutoInc, O.PrimaryKey)
     
-    /** Foreign key referencing BlogTable (database name blog_blog_id_fkey) */
-    lazy val blogTableFk = foreignKey("blog_blog_id_fkey", blogId, BlogTable)(r => r.blogId, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
+    /** Foreign key referencing BlogTable (database name entry_blog_id_fkey) */
+    lazy val blogTableFk = foreignKey("entry_blog_id_fkey", blogId, BlogTable)(r => r.blogId, onUpdate=ForeignKeyAction.Cascade, onDelete=ForeignKeyAction.Cascade)
   }
   /** Collection-like TableQuery object for table EntryTable */
   lazy val EntryTable = new TableQuery(tag => new EntryTable(tag))
@@ -120,11 +120,6 @@ trait Tables {
     val passwordHash: Column[String] = column[String]("password_hash", O.Length(255,varying=true))
     /** Database column user_id DBType(bigserial), AutoInc, PrimaryKey */
     val userId: Column[Long] = column[Long]("user_id", O.AutoInc, O.PrimaryKey)
-    
-    /** Uniqueness Index over (email) (database name user_email_key) */
-    val index1 = index("user_email_key", email, unique=true)
-    /** Uniqueness Index over (userName) (database name user_user_name_key) */
-    val index2 = index("user_user_name_key", userName, unique=true)
   }
   /** Collection-like TableQuery object for table UserTable */
   lazy val UserTable = new TableQuery(tag => new UserTable(tag))

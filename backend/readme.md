@@ -1,0 +1,1 @@
+To run from root, `sbt backend/run`.
