@@ -1,14 +1,15 @@
 var React = require('react');
 var EntryStoreModule = require('../stores/entry-store');
 var {Link} =  require('react-router');
+import FluxComponent from 'flummox/component';
 
 export default class EntryView extends React.Component {
-  function() {
+  render() {
     return (
-      <FluxComponent connectToStores={{
-          entry: store => {
-            store.getEntry(this.params.entryId)
-          }
+      <FluxComponent flux={this.props.flux} connectToStores={{
+          entry: store => ({
+            entry: store.getEntry(this.props.routerState.params.entryId)
+          })
         }}>
         <Inner />
       </FluxComponent>
@@ -19,20 +20,24 @@ export default class EntryView extends React.Component {
 class Inner extends React.Component {
   render() {
     return (
-      <div>
-        <h2 className="col-1-1">
-          {this.state.title}
-        </h2>
+      <If condition={this.props.entry}>
+        <div>
+          <h2 className="col-1-1">
+            {this.props.entry.title}
+          </h2>
 
-        <div className="col-1-1">
-          {this.state.markdown}
+          <div className="col-1-1">
+            {this.props.entry.markdown}
+          </div>
+          <div className="col-1-1">
+            <If condition={this.props.entry.blogId}>
+              <Link to="blogs" params={this.props.entry}>Back to Blog</Link>
+            </If>
+          </div>
         </div>
-        <div className="col-1-1">
-          <If condition={this.props.entry.blogId}>
-            <Link to="blogs" params={this.props.entry}>Back to Blog</Link>
-          </If>
-        </div>
-      </div>
+      <Else />
+        <div>No entry data</div>
+      </If>
     );
   }
 }

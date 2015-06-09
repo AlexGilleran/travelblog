@@ -1,0 +1,9 @@
+{
+  "ext": "js jsx",
+  "ignore": [
+    ".hg",
+    "node_modules",
+    ".idea"
+  ],
+  "verbose": true
+}

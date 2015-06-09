@@ -63,8 +63,6 @@ app.use(function * (next) {
         }
       }
 
-
-
       Promise.all(preloadActions)
         .then(function () {
           var handler = React.createElement(Handler, {flux: self.flux, routerState: nextState});

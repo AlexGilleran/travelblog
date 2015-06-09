@@ -5,7 +5,7 @@ export default class HeaderView extends React.Component {
     return (
       <div className="col-1-1">
         <div className="content">
-          <h1>Travel Blog</h1>
+          <h1>Blog</h1>
         </div>
       </div>
     );

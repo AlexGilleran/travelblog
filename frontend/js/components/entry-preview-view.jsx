@@ -1,17 +1,7 @@
 var React = require('react');
-var {Link} =  require('react-router');
+import {Link} from 'react-router';
 
 export default class EntryPreviewView extends React.Component {
-  render() {
-    return (
-      <FluxComponent>
-        <Inner />
-      </FluxComponent>
-    );
-  }
-};
-
-class Inner extends React.Component {
   render() {
     return (
       <div>

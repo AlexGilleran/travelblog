@@ -1,7 +1,6 @@
 var React = require('react');
-var BlogStoreModule = require('../stores/blog-store');
-var BlogListViewModule = require('./blog-list-view');
-var EntryPreviewViewModule = require('./entry-preview-view');
+var BlogListView = require('./blog-list-view');
+var EntryPreviewView = require('./entry-preview-view');
 import FluxComponent from 'flummox/component';
 
 export default class BlogView extends React.Component {
@@ -11,7 +10,9 @@ export default class BlogView extends React.Component {
         blog: store => ({
           blog: store.getBlog(this.props.routerState.params.blogId)
         })
-      }}/>
+      }}>
+        <Inner />
+      </FluxComponent>
     );
   }
 }
@@ -33,7 +34,7 @@ class Inner extends React.Component {
           </If>
         </div>
         <div className="col-1-3">
-          <BlogListView />
+          <BlogListView flux={this.props.flux} />
         </div>
       </div>
     );
