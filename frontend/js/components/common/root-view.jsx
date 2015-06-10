@@ -6,7 +6,7 @@ export default class RootView {
   render() {
     return (
       <div>
-        <HeaderView />
+        <HeaderView flux={this.props.flux} />
         <RouteHandler {...this.props} />
       </div>
     );

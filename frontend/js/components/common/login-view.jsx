@@ -42,9 +42,9 @@ class Inner extends React.Component {
               <input type="password" placeholder="Password" ref="password" />
               <label>
                 <input type="checkbox" value="rememberMe" ref="rememberMe" />
-                Remember Me
+                Remember
               </label>
-              <input type="submit">Login</input>
+              <input type="submit" value="Login" />
             </form>
           </If>
       </div>
