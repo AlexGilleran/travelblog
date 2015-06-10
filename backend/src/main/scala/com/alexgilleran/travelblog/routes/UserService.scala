@@ -9,14 +9,14 @@ import spray.httpx.SprayJsonSupport
 import spray.json._
 import spray.routing.HttpService
 
-case class LoginDetails(email: String, password: String)
+case class LoginDetails(emailAddress: String, password: String)
 
 object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val LoginDetailsFormat = jsonFormat2(LoginDetails)
 
   implicit object UserFormat extends RootJsonFormat[User] {
     def write(user: User) = JsObject(
-      "email" -> JsString(user.email),
+      "emailAddress" -> JsString(user.email),
       "userName" -> JsString(user.userName),
       "displayName" -> JsString(user.displayName.orNull),
       "bio" -> JsString(user.bio.orNull),

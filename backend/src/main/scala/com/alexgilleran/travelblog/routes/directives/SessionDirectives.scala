@@ -64,7 +64,7 @@ trait SessionDirectives {
   }
 
   private def createSessionCookie(loginDetails: LoginDetails): Directive1[Session] = {
-    val user: User = dao.getUserByEmail(loginDetails.email)
+    val user: User = dao.getUserByEmail(loginDetails.emailAddress)
     createSessionCookie(user)
   }
 }
