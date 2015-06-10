@@ -1,31 +1,29 @@
 "use strict";
 
-var request = require('superagent');
+var request = require('./util/superagent-promise');
 var props = require('./util/props');
 var isServer = require('./util/is-server');
 
 var API_BASE = isServer ? props.get('API_BASE') : props.get('AJAX_BASE');
 
 exports.getBlog = function(blogId) {
-  return get('blogs/' + blogId);
+  return request.get(API_BASE + 'blogs/' + blogId).end();
 };
 
 exports.getBlogList = function() {
-  return get('blogs');
+  return request.get(API_BASE + 'blogs');
 };
 
 exports.getEntry = function(entryId) {
-  return get('entries/' + entryId);
+  return request.get(API_BASE + 'entries/' + entryId).end();
 };
 
-function get(path) {
-  return new Promise(function(resolve, reject) {
-    request.get(API_BASE + path).end(function(err, res) {
-      if (err) {
-        reject(new Error(err));
-      } else {
-        resolve(res.body);
-      }
-    });
-  });
-}
+exports.login = function(emailAddress, password, rememberMe) {
+  return request.post(API_BASE + 'login')
+    .send({
+      emailAddress: emailAddress,
+      password: password,
+      rememberMe: rememberMe
+    })
+    .end();
+};

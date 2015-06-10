@@ -1,6 +1,12 @@
 import BaseStore from './base-store';
 
 export default class BaseAjaxStore extends BaseStore {
+  constructor(dataKey) {
+    super();
+
+    this.dataKey = dataKey;
+  }
+
   onFailure() {
     this.setState({
       failed: true,
@@ -15,12 +21,14 @@ export default class BaseAjaxStore extends BaseStore {
     });
   }
 
-  onSuccess(key, data) {
+  onSuccess(data) {
     var newState = {
       loading: false,
       failed: false
     };
-    newState[key] = data;
+    if (this.dataKey) {
+      newState[this.dataKey] = data;
+    }
 
     this.setState(newState);
   }

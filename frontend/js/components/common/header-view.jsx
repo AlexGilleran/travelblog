@@ -7,6 +7,9 @@ export default class HeaderView extends React.Component {
         <div className="content">
           <h1>Blog</h1>
         </div>
+        <div className="pull-right">
+
+        </div>
       </div>
     );
   }

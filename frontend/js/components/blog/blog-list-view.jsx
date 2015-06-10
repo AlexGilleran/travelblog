@@ -16,7 +16,7 @@ class Inner extends React.Component {
   render() {
     return (
       <div>
-        <If condition={this.props.blogList}>
+        <If condition={this.props.blogList && this.props.blogList.map}>
           <For each="blog" of={this.props.blogList}>
             <div key={blog.blogId}>
               <Link to="blogs" params={blog}>{blog.name}</Link>

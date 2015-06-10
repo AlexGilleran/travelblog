@@ -2,13 +2,13 @@ import BaseAjaxStore from './base-ajax-store';
 
 export default class BlogListStore extends BaseAjaxStore {
   constructor(flux) {
-    super();
+    super('blogList');
 
     this.state = {};
 
     this.blogActions = flux.getActions('blog');
 
-    this.registerAsync(this.blogActions.getBlogList, this.onLoading, this.onSuccess.bind(this, 'blogList'), this.onFailure);
+    this.registerAsync(this.blogActions.getBlogList, this.onLoading, this.onSuccess, this.onFailure);
   }
 
   getStateAsObject() {

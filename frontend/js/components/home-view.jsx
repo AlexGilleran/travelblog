@@ -1,5 +1,5 @@
 var React = require('react');
-var BlogListView = require('./blog-list-view');
+var BlogListView = require('./blog/blog-list-view');
 
 export default class HomeView extends React.Component {
     render() {

@@ -1,7 +1,7 @@
 var React = require('react');
 var BlogListView = require('./blog-list-view');
-var EntryPreviewView = require('./entry-preview-view');
-import FluxComponent from 'flummox/component';
+var EntryPreviewView = require('./../entry/entry-preview-view');
+import FluxComponent from '../../../node_modules/flummox/component';
 
 export default class BlogView extends React.Component {
   render() {
