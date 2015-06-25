@@ -32,3 +32,8 @@ class SessionManagerStub extends SessionManager {
     (uuid, session)
   }
 }
+
+// singleton for now TODO: DI
+object SessionManagerStub extends SessionManagerStub {
+
+}

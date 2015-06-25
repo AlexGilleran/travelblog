@@ -9,15 +9,22 @@ var EntryActionsModule = require('../actions/entry-actions');
 
 var router = {
   '/': function (state) {
-    return this.flux.getActions('blog').getBlogList();
+    var actions = [this.flux.getActions('blog').getBlogList()];
+
+    const sessionId = this.cookies.get('id');
+    if (sessionId) {
+      actions.push(this.flux.getActions('login-state').initWithSession(sessionId));
+    }
+
+    return actions;
   },
 
   '/blogs/:blogId': function (state) {
-    return this.flux.getActions('blog').getBlog(state.params.blogId);
+    return [this.flux.getActions('blog').getBlog(state.params.blogId)];
   },
 
   '/entries/:entryId': function (state) {
-    return this.flux.getActions('entry').getEntry(state.params.entryId);
+    return [this.flux.getActions('entry').getEntry(state.params.entryId)];
   }
 };
 

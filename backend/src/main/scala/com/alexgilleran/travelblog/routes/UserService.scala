@@ -4,7 +4,7 @@ import com.alexgilleran.travelblog.data.schema.Tables
 import com.alexgilleran.travelblog.data.schema.Tables.User
 import com.alexgilleran.travelblog.data.{GeneralDAO, PostGresSlickDAO}
 import com.alexgilleran.travelblog.routes.directives.SessionDirectives._
-import com.alexgilleran.travelblog.session.Session
+import com.alexgilleran.travelblog.session.{SessionManagerStub, SessionManager, Session}
 import spray.httpx.SprayJsonSupport
 import spray.json._
 import spray.routing.HttpService
@@ -34,6 +34,7 @@ trait UserService extends HttpService {
   import LoginJsonImplicits._
 
   private val dao: GeneralDAO = PostGresSlickDAO
+  private val sessionManager: SessionManager = SessionManagerStub
 
   val userRoutes =
     path("login") {
@@ -41,16 +42,8 @@ trait UserService extends HttpService {
         entity(as[LoginDetails]) { loginDetails =>
           createSession(loginDetails) { session: Session =>
             complete {
-              "Logged In"
+              session.user
             }
-          }
-        }
-      }
-    } ~ path("whoami") {
-      get {
-        withSession() { session: Session =>
-          complete {
-            session.user.userName
           }
         }
       }
@@ -61,14 +54,27 @@ trait UserService extends HttpService {
 
           createSessionCookie(user) { session: Session =>
             complete {
-              "Registered as " + id
+              session.user
             }
           }
         }
       }
     } ~ pathPrefix("users") {
       get {
-        path(LongNumber) { id =>
+        pathPrefix("withSession") {
+          path(Segment) { sessionId: String =>
+            sessionManager.getSession(sessionId) match {
+              case Some(session: Session) => complete(Some(session.user))
+              case None => reject
+            }
+          } ~ pathEnd {
+            withSession() { session: Session =>
+              complete {
+                session.user
+              }
+            }
+          }
+        } ~ path(LongNumber) { id =>
           complete {
             dao.getUser(id)
           }

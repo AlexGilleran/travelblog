@@ -54,6 +54,6 @@ trait PostGresSlickDAO extends GeneralDAO {
   }
 }
 
-// Singleton for now, think about DI later.
+// Singleton for now, TODO think about DI later.
 object PostGresSlickDAO extends PostGresSlickDAO {
 }

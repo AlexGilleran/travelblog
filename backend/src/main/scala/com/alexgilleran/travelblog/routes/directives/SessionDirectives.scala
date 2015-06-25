@@ -17,8 +17,8 @@ import spray.routing.directives.BasicDirectives
  */
 trait SessionDirectives {
 
-  val sessionManager: SessionManager = new SessionManagerStub
-  val dao: GeneralDAO = PostGresSlickDAO
+  private val sessionManager: SessionManager = SessionManagerStub
+  private val dao: GeneralDAO = PostGresSlickDAO
 
   def withSession(): Directive1[Session] = {
     optionalSession().hflatMap {
@@ -42,7 +42,7 @@ trait SessionDirectives {
 
   def createSessionCookie(user : User) : Directive1[Session] = {
     val (id: String, session: Session) = sessionManager.newSession(user)
-    val cookie: HttpCookie = new HttpCookie(name = "id", content = id)
+    val cookie: HttpCookie = new HttpCookie(name = "id", content = id, path = Some("/"))
     setCookie(cookie).hmap { _ =>
       session
     }

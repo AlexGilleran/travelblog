@@ -23,14 +23,15 @@ PromiseRequest.prototype.then = function (resolve, reject) {
 
 function convertToPromise(cb) {
   return new Promise(function (accept, reject) {
-    console.log(superagent.Request.prototype.end);
     superagent.Request.prototype.end.call(this, function (err, response) {
       if (cb) {
         cb(err, response.body);
       }
 
       // TODO: parse error from API if available.
-      if (response.error) {
+      if (!response) {
+        reject(new Error('No response'));
+      } else if (response.error) {
         reject(response.error);
       } else {
         accept(response.body);

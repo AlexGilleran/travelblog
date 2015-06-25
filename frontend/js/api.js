@@ -11,7 +11,7 @@ exports.getBlog = function(blogId) {
 };
 
 exports.getBlogList = function() {
-  return request.get(API_BASE + 'blogs');
+  return request.get(API_BASE + 'blogs').end();
 };
 
 exports.getEntry = function(entryId) {
@@ -26,4 +26,12 @@ exports.login = function(emailAddress, password, rememberMe) {
       rememberMe: rememberMe
     })
     .end();
+};
+
+exports.getUserForSession = function(sessionId) {
+  return request.get(API_BASE + 'users/withSession/' + sessionId).end();
+};
+
+exports.getCurrentUser = function() {
+  return request.get(API_BASE + 'users/withSession').end();
 };

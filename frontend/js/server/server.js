@@ -59,7 +59,7 @@ app.use(function * (next) {
         var path = nextState.routes[i].path;
 
         if (preloadRouter[path]) {
-          preloadActions.push(preloadRouter[path].call(self, nextState));
+          preloadActions = preloadActions.concat(preloadRouter[path].call(self, nextState));
         }
       }
 
