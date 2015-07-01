@@ -18,12 +18,11 @@ exports.getEntry = function(entryId) {
   return request.get(API_BASE + 'entries/' + entryId).end();
 };
 
-exports.login = function(emailAddress, password, rememberMe) {
+exports.login = function(emailAddress, password) {
   return request.post(API_BASE + 'login')
     .send({
       emailAddress: emailAddress,
-      password: password,
-      rememberMe: rememberMe
+      password: password
     })
     .end();
 };
@@ -35,3 +34,9 @@ exports.getUserForSession = function(sessionId) {
 exports.getCurrentUser = function() {
   return request.get(API_BASE + 'users/withSession').end();
 };
+
+exports.register = function(userDetails) {
+  return request.post(API_BASE + 'register')
+    .send(userDetails)
+    .end();
+}

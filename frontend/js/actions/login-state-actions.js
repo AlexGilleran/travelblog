@@ -4,8 +4,8 @@ import {catchArguments} from './action-utils';
 import isServer from '../util/is-server';
 
 export default class LoginStateActions extends Actions {
-  async login(email, password, rememberMe) {
-    const userDetails = await api.login(email, password, rememberMe);
+  async login(email, password) {
+    const userDetails = await api.login(email, password);
 
     this.notifyLoggedIn(userDetails);
 
@@ -24,11 +24,11 @@ export default class LoginStateActions extends Actions {
     return true;
   }
 
-  //setSessionId(sessionId) {
-  //  if (!isServer) {
-  //    throw new Error('Trying to manually set session id when not on the server, this is not allowed');
-  //  }
-  //
-  //  return sessionId;
-  //}
+  async register(userDetails) {
+    const loggedInUserDetails = await api.register(userDetails);
+
+    this.notifyLoggedIn(loggedInUserDetails);
+
+    return loggedInUserDetails;
+  }
 }

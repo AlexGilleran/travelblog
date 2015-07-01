@@ -18,11 +18,10 @@ class Inner extends React.Component {
 
     const email = React.findDOMNode(this.refs.email).value;
     const password = React.findDOMNode(this.refs.password).value;
-    const rememberMe = React.findDOMNode(this.refs.rememberMe).checked;
 
     const login = this.props.flux.getActions('login-state').login;
 
-    login(email, password, rememberMe);
+    login(email, password);
   }
 
   render() {

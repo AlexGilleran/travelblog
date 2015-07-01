@@ -16,7 +16,7 @@ object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit object UserFormat extends RootJsonFormat[User] {
     def write(user: User) = JsObject(
-      "emailAddress" -> JsString(user.email),
+      "email" -> JsString(user.email),
       "userName" -> JsString(user.userName),
       "displayName" -> JsString(user.displayName.orNull),
       "bio" -> JsString(user.bio.orNull),
@@ -51,8 +51,9 @@ trait UserService extends HttpService {
       post {
         entity(as[User]) { user: User =>
           val id: Long = dao.insertUser(user)
+          val newUser = user.copy(userId = Option(id))
 
-          createSessionCookie(user) { session: Session =>
+          createSessionCookie(newUser) { session: Session =>
             complete {
               session.user
             }
