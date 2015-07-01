@@ -2,6 +2,7 @@ var React = require('react');
 var {Link} =  require('react-router');
 var FluxComponent = require('flummox/component');
 var EditUserView = require('./edit-user-view');
+var {Navigation} = require('react-router');
 
 export default class RegisterView extends React.Component {
   render() {
@@ -13,8 +14,20 @@ export default class RegisterView extends React.Component {
   }
 }
 
-class Inner extends React.Component {
-  onSubmit(event) {
+var Inner = React.createClass({
+  mixins: [Navigation],
+
+  componentWillReceiveProps: function(props) {
+    this.redirectIfLoggedIn(props);
+  },
+
+  redirectIfLoggedIn: function(props) {
+    if (props.userDetails) {
+      this.replaceWith('/');
+    }
+  },
+
+  onSubmit: function(event) {
     event.preventDefault();
 
     const userDetails = this.refs.editUserView.getUserDetails();
@@ -22,16 +35,16 @@ class Inner extends React.Component {
     const register = this.props.flux.getActions('login-state').register;
 
     register(this.refs.editUserView.getUserDetails());
-  }
+  },
 
-  render() {
+  render: function() {
     return (
       <div>
-          <form onSubmit={this.onSubmit.bind(this)}>
+          <form onSubmit={this.onSubmit}>
             <EditUserView userDetails={this.props.userDetails} ref="editUserView" />
             <input type="submit" value="Register" />
           </form>
       </div>
     );
   }
-}
+});
