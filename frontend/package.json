@@ -20,7 +20,7 @@
     "es6-promise": "^2.0.1",
     "extract-text-webpack-plugin": "^0.3.8",
     "file-loader": "^0.8.1",
-    "flummox": "^4.0.0-alpha2",
+    "flummox": "3.5.2",
     "flux": "^2.0.1",
     "jstransform-loader": "^0.2.0",
     "jsx-control-statements": "^1.1.0",
