@@ -34,12 +34,13 @@ class Inner extends React.Component {
             <span>Login failed: {this.props.loginFailureReason}</span>
           </If>
           <If condition={this.props.userDetails}>
-            <span>You are already logged in as {this.props.userDetails.userName}.</span>
+            <span>Logged in as {this.props.userDetails.userName}.</span>
           <Else />
             <form onSubmit={this.onSubmit.bind(this)}>
               <input type="text" placeholder="Email Address" ref="email" />
               <input type="password" placeholder="Password" ref="password" />
               <input type="submit" value="Login" />
+              <Link to="register">Sign Up</Link>
             </form>
           </If>
       </div>
