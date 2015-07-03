@@ -30,7 +30,7 @@ app.use(function * (next) {
   if (index >= 0) {
     delete this.req.headers.host; // confuses heroku if not removed.
     yield proxy({
-      url: props.get('API_BASE') + this.req.url.substr(index + '/api/'.length)
+      url: props.get('apiBase') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
   } else {
     yield next;
@@ -79,15 +79,15 @@ app.use(function * (next) {
   var templateInput = {
     content: content,
     initialState: dehydratedStores,
-    cssBundle: props.get('CSS_BUNDLE_NAME') ? props.get('STATIC_ASSET_BASE') + props.get('CSS_BUNDLE_NAME') : null,
-    jsBundle: props.get('STATIC_ASSET_BASE') + props.get('JS_BUNDLE_NAME'),
+    cssBundle: props.get('cssBundleName') ? props.get('staticAssetBase') + props.get('cssBundleName') : null,
+    jsBundle: props.get('staticAssetBase') + props.get('jsBundleName'),
     props: JSON.stringify(props.getForClient())
   };
 
   self.body = yield self.render('index.whiskers', templateInput);
 });
 
-app.listen(props.get('PORT'));
+app.listen(props.get('port'));
 
 // RING A DING DING DING DING
-console.log('*splutter* *splutter* *vroooooom* on port ' + props.get('PORT'));
+console.log('*splutter* *splutter* *vroooooom* on port ' + props.get('port'));

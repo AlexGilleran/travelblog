@@ -4,7 +4,7 @@ var request = require('./util/superagent-promise');
 var props = require('./util/props');
 var isServer = require('./util/is-server');
 
-var API_BASE = isServer ? props.get('API_BASE') : props.get('AJAX_BASE');
+var API_BASE = isServer ? props.get('apiBase') : props.get('ajaxBase');
 
 exports.getBlog = function(blogId) {
   return request.get(API_BASE + 'blogs/' + blogId).end();

@@ -23,7 +23,7 @@ exports.install = function() {
           limit: limit
         },
         resourcePath: filename
-      }, content).replace('__webpack_public_path__', props.get('STATIC_ASSET_BASE')), filename);
+      }, content).replace('__webpack_public_path__', props.get('staticAssetBase')), filename);
     };
   });
 };

@@ -1,26 +1,26 @@
 "use strict";
 
 var isServer = require('./is-server');
-var pick = require('lodash/object/pick');
+var reduce = require('lodash/collection/reduce');
+var config = require('config');
 
 var CLIENT_ENV_VAR_WHITELIST = [
-  'STATIC_ASSET_BASE',
-  'JS_BUNDLE_NAME',
-  'CSS_BUNDLE_NAME',
-  'AJAX_BASE'
+  'staticAssetBase',
+  'jsBundleName',
+  'cssBundleName',
+  'ajaxBase'
 ];
 
-var props;
 if (isServer) {
-  props = process.env;
+  exports.get = key => config.get(key);
 } else {
-  props = JSON.parse(document.getElementById('props').innerHTML);
+  const props = JSON.parse(document.getElementById('props').innerHTML);
+  exports.get = key => props[key];
 }
 
-exports.get = function(key) {
-  return props[key];
-};
-
-exports.getForClient = function() {
-  return pick(props, CLIENT_ENV_VAR_WHITELIST);
+exports.getForClient = function () {
+  return reduce(CLIENT_ENV_VAR_WHITELIST, function (acc, key) {
+    acc[key] = config.get(key);
+    return acc;
+  }, {});
 };
