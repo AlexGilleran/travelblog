@@ -21,7 +21,8 @@ lazy val sharedSettings = Seq(
       "com.typesafe.slick" %% "slick" % "2.1.0",
       "com.typesafe.slick" %% "slick-codegen" % "2.1.0",
       "ch.qos.logback" % "logback-classic" % "1.0.9",
-      "org.postgresql" % "postgresql" % "9.4-1201-jdbc41"
+      "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
+      "net.ceedubs" %% "ficus" % "1.1.2"
     )
   }
 )

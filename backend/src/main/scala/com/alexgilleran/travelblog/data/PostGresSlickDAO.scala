@@ -1,5 +1,6 @@
 package com.alexgilleran.travelblog.data
 
+import com.alexgilleran.travelblog.config.Config
 import com.alexgilleran.travelblog.data.schema.Tables
 import com.alexgilleran.travelblog.data.schema.Tables._
 import com.alexgilleran.travelblog.data.schema.Tables.profile.simple._
@@ -10,7 +11,7 @@ import scala.util.Properties
  * Created by Alex on 2015-05-09.
  */
 trait PostGresSlickDAO extends GeneralDAO {
-  val db = Database.forURL(Properties.envOrElse("DATABASE_URL", "fail"), driver = "org.postgresql.Driver")
+  val db = Database.forURL(Config.app.getString("databaseUrl"), driver = "org.postgresql.Driver")
 
   override def getBlog(id: Long): Blog = {
     db.withSession { implicit session =>

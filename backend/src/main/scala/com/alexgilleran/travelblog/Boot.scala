@@ -15,10 +15,12 @@ import spray.routing._
 import scala.concurrent.duration._
 import scala.util.Properties
 
+import com.alexgilleran.travelblog.config.Config
+
 object Boot extends App {
 
   // we need an ActorSystem to host our application in
-  implicit val system = ActorSystem("on-spray-can")
+  implicit val system = ActorSystem("on-spray-can", Config.conf)
 
   // create and start our service actor
   val service = system.actorOf(Props[ServiceActor], "demo-service")
@@ -26,7 +28,7 @@ object Boot extends App {
   implicit val timeout = Timeout(5.seconds)
 
   // start a new HTTP server on port 8080 with our service actor as the handler
-  IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = Properties.envOrElse("PORT", "8080").toInt)
+  IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = Config.app.getInt("listenPort"))
 }
 
 // we don't implement our route structure directly in the service actor because
