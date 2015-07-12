@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "start": "node --harmony js/server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev-server": "webpack-dev-server --config js/webpack/dev-server.config.js --progress --colors --port 2992 --inline",
     "dev-server-test": "webpack-dev-server --config js/webpack/dev-server-test.config.js --progress --colors --port 2992 --inline",
