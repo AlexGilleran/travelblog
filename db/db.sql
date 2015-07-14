@@ -13,7 +13,7 @@ SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 
-DROP DATABASE "TravelBlog";
+DROP DATABASE IF EXISTS "TravelBlog";
 --
 -- TOC entry 2292 (class 1262 OID 16540)
 -- Name: TravelBlog; Type: DATABASE; Schema: -; Owner: postgres

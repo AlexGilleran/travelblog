@@ -2,7 +2,6 @@
 
 var isServer = require('./is-server');
 var reduce = require('lodash/collection/reduce');
-var config = require('config');
 
 var CLIENT_ENV_VAR_WHITELIST = [
   'staticAssetBase',
@@ -12,6 +11,7 @@ var CLIENT_ENV_VAR_WHITELIST = [
 ];
 
 if (isServer) {
+  var config = require('config');
   exports.get = key => config.get(key);
 } else {
   const props = JSON.parse(document.getElementById('props').innerHTML);

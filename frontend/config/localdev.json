@@ -3,6 +3,6 @@
   "staticAssetBase": "http://localhost:2992/_assets/",
   "jsBundleName": "main.js",
   "cssBundleName": "main.css",
-  "apiBase": {"blah": "http://localhost:8080/"},
+  "apiBase": "http://localhost:8080/",
   "ajaxBase": "http://localhost:3000/api/"
 }

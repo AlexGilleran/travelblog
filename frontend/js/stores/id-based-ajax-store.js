@@ -21,7 +21,7 @@ export default class IdBasedAjaxStore extends Store {
     this.forceUpdate();
   }
 
-  onLoading({actionArgs: [id]}) {
+  onLoading(id) {
     this.state.status[id] = {
       failed: false,
       loading: true
@@ -29,7 +29,7 @@ export default class IdBasedAjaxStore extends Store {
     this.forceUpdate();
   }
 
-  onSuccess(idKey, {body: result}) {
+  onSuccess(result) {
     const id = this.idGetter(result);
     this.state.status[id] = {
       failed: false,

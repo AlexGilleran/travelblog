@@ -90,4 +90,4 @@ app.use(function * (next) {
 app.listen(props.get('port'));
 
 // RING A DING DING DING DING
-console.log('*splutter* *splutter* *vroooooom* on port ' + props.get('port'));
+console.log('*splutter* *splutter* *vroooooom* on port ' + props.get('port') + ' with env ' + process.env.NODE_ENV);

@@ -3,7 +3,9 @@ node:
     file: docker-compose-base.yml
     service: node
   environment:
-    NODE_ENV: local
+    NODE_ENV: localdocker
+    STATIC_ASSET_BASE:
+    AJAX_BASE:
   links:
    - api
 api:
@@ -11,7 +13,7 @@ api:
     file: docker-compose-base.yml
     service: api
   environment:
-    SCALA_ENV: local
+    SCALA_ENV: localdocker
   links:
     - db
 db:

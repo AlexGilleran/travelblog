@@ -1,8 +1,8 @@
 {
   "port": 3000,
-  "staticAssetBase": "http://localhost:2992/_assets/",
+  "staticAssetBase": "http://travelblog-dev.alexgilleran.com/build/",
   "jsBundleName": "main.js",
   "cssBundleName": "main.css",
-  "apiBase": "http://localhost:8080/",
-  "ajaxBase": "http://localhost:3000/api/"
+  "apiBase": "http://api:8080/",
+  "ajaxBase": "http://travelblog-dev.alexgilleran.com/api/"
 }
