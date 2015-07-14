@@ -36,3 +36,5 @@ build/Release
 node_modules
 
 frontend/build/
+build
+dist

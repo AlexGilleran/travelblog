@@ -8,7 +8,5 @@ api:
     - "8080"
 db:
   build: db
-  volumes:
-    db/data: /var/lib/postgresql/data
   expose:
     - "5432"
