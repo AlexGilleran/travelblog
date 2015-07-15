@@ -4,6 +4,7 @@ node:
     service: node
   environment:
     NODE_ENV: dev
+  dockerfile: local.dockerfile
   links:
    - api
 api:

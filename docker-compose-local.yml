@@ -6,6 +6,9 @@ node:
     NODE_ENV: localdocker
     STATIC_ASSET_BASE:
     AJAX_BASE:
+  dockerfile: local.dockerfile
+  volumes:
+    - frontend/:/usr/src/app
   links:
    - api
 api:
@@ -14,12 +17,21 @@ api:
     service: api
   environment:
     SCALA_ENV: localdocker
+  dockerfile: local.dockerfile
+  volumes:
+    - backend/:/usr/src/app
   links:
     - db
+  ports:
+    - "8080:8080"
 db:
   extends:
     file: docker-compose-base.yml
     service: db
+  volumes:
+    - db/data/:/var/lib/postgresql/data
   environment:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: p4ssw0rd
+  ports:
+    - "5432:5432"
