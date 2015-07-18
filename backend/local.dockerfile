@@ -11,8 +11,6 @@ COPY src /usr/src/app/src
 COPY project /usr/src/app/project
 COPY build.sbt /usr/src/app/build.sbt
 
-
-RUN sbt
-RUN sbt re-start
+VOLUME /root/.ivy2
 
 CMD sbt ~re-start

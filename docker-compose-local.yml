@@ -10,7 +10,10 @@ node:
   volumes:
     - frontend/:/usr/src/app
   links:
-   - api
+    - api
+  ports:
+    - "2992:2992"
+    - "3000:3000"
 api:
   extends:
     file: docker-compose-base.yml
@@ -28,10 +31,14 @@ db:
   extends:
     file: docker-compose-base.yml
     service: db
-  volumes:
-    - db/data/:/var/lib/postgresql/data
   environment:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: p4ssw0rd
   ports:
     - "5432:5432"
+  volumes_from:
+    - dbstorage
+dbstorage:
+  image: postgres:9.4
+  volumes:
+    - /var/lib/postgresql/data
