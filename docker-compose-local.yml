@@ -6,6 +6,7 @@ node:
     NODE_ENV: localdocker
     STATIC_ASSET_BASE:
     AJAX_BASE:
+    IP:
   dockerfile: local.dockerfile
   volumes:
     - frontend/:/usr/src/app
@@ -39,6 +40,6 @@ db:
   volumes_from:
     - dbstorage
 dbstorage:
-  image: postgres:9.4
+  image: debian:jessie
   volumes:
     - /var/lib/postgresql/data
