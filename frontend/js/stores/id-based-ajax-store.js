@@ -14,32 +14,32 @@ export default class IdBasedAjaxStore extends Store {
 
   onFailure(error) {
     this.state.status[error.arguments[0]] = {
-      failed: true,
-      error: error,
-      loading: false
+      type: 'error',
+      error: error
     };
+
     this.forceUpdate();
   }
 
   onLoading(id) {
-    this.state.status[id] = {
-      failed: false,
-      loading: true
-    };
+    this.state.status[id] = {type: 'loading'};
     this.forceUpdate();
   }
 
   onSuccess(result) {
     const id = this.idGetter(result);
-    this.state.status[id] = {
-      failed: false,
-      loading: false
-    };
+    this.state.status[id] = {type: 'success'};
     this.state.data[id] = result;
     this.forceUpdate();
   }
 
-  isLoading(id) {
-    return this.state.status[id] && this.state.status[id].loading;
+  onUpdating(object) {
+    const id = this.idGetter(object)
+    this.state.status[id] = {type: 'updating'};
+    this.forceUpdate();
+  }
+
+  getStatus(id) {
+    return this.state.status[id] || {};
   }
 }

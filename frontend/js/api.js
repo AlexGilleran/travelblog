@@ -6,45 +6,55 @@ var isServer = require('./util/is-server');
 
 var API_BASE = isServer ? props.get('apiBase') : props.get('ajaxBase');
 
-exports.getBlog = function(blogId) {
-  return get(API_BASE + 'blogs/' + blogId);
+exports.getBlog = function (blogId) {
+  return get('blogs/' + blogId);
 };
 
-exports.getBlogList = function() {
-  return get(API_BASE + 'blogs');
+exports.getBlogList = function () {
+  return get('blogs');
 };
 
-exports.getEntry = function(entryId) {
-  return get(API_BASE + 'entries/' + entryId);
+exports.getEntry = function (entryId) {
+  return get('entries/' + entryId);
 };
 
-exports.login = function(emailAddress, password) {
-  return request.post(API_BASE + 'login')
-    .send({
-      emailAddress: emailAddress,
-      password: password
-    })
-    .end();
+exports.updateEntry = function (entry) {
+  return post('entries/' + entry.entryId, entry);
 };
 
-exports.getUserForSession = function(sessionId) {
-  return get(API_BASE + 'users/withSession/' + sessionId);
+exports.login = function (emailAddress, password) {
+  return post('login', {
+    emailAddress: emailAddress,
+    password: password
+  });
 };
 
-exports.getCurrentUser = function() {
-  return get(API_BASE + 'users/withSession');
+exports.getUserForSession = function (sessionId) {
+  return get('users/withSession/' + sessionId);
 };
 
-exports.register = function(userDetails) {
+exports.getCurrentUser = function () {
+  return get('users/withSession');
+};
+
+exports.register = function (userDetails) {
   return request.post(API_BASE + 'register')
     .send(userDetails)
     .end();
 }
 
 function get(url) {
-  return request.get(url).end().catch(onGetError.bind(null, url));
+  return request.get(API_BASE + url).end().catch(onError.bind(null, url));
 }
 
-function onGetError(url, error) {
-  console.error('Failed to GET from ' + url + ': ' + error);
+function post(url, data) {
+  return request.post(API_BASE + url)
+    .send(data)
+    .end()
+    .catch(onError.bind(null, url));
+}
+
+function onError(url, error) {
+  console.error('Failed for ' + url + ': ' + error);
+  throw error;
 }

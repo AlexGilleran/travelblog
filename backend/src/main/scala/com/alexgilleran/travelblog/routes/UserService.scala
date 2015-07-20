@@ -21,7 +21,7 @@ object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
       "displayName" -> JsString(user.displayName.orNull),
       "bio" -> JsString(user.bio.orNull),
       "avatarUrl" -> JsString(user.bio.orNull),
-      "userId" -> JsNumber(user.userId.get)
+      "userId" -> JsString(user.userId.get.toString)
     )
 
     def read(value: JsValue) = jsonFormat7(User).read(value)

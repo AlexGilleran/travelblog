@@ -23,9 +23,13 @@ var router = {
     return [this.flux.getActions('blog').getBlog(state.params.blogId)];
   },
 
-  '/entries/:entryId': function (state) {
-    return [this.flux.getActions('entry').getEntry(state.params.entryId)];
-  }
+  '/entries/:entryId': populateEntry,
+
+  '/entries/:entryId/edit': populateEntry
 };
+
+function populateEntry(state) {
+  return [this.flux.getActions('entry').getEntry(state.params.entryId)];
+}
 
 module.exports = router;

@@ -19,7 +19,7 @@ class Inner extends React.Component {
         <If condition={this.props.blogList && this.props.blogList.map}>
           <For each="blog" of={this.props.blogList}>
             <div key={blog.blogId}>
-              <Link to="blogs" params={blog}>{blog.name}</Link>
+              <Link to="blog" params={blog}>{blog.name}</Link>
             </div>
           </For>
         </If>

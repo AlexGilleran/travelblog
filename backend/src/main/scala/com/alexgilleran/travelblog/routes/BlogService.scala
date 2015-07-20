@@ -1,20 +1,21 @@
 package com.alexgilleran.travelblog.routes
 
 import com.alexgilleran.travelblog.data.{PostGresSlickDAO, GeneralDAO}
-import com.alexgilleran.travelblog.data.schema.Tables.{Blog, Entry}
-import spray.http.HttpCookie
+import com.alexgilleran.travelblog.data.schema.Tables.{User, Blog, Entry}
+import spray.http.{StatusCodes, StatusCode, HttpCookie}
 import spray.http.MediaTypes._
-import spray.json.DefaultJsonProtocol
+import spray.json._
 import spray.routing.HttpService
 
+import scala.None
 import scala.util.Properties
 
 
 case class ApiBlog(details: Blog, entries: Seq[Entry])
 
 object BlogJsonImplicits extends DefaultJsonProtocol {
-  implicit val entry = jsonFormat4(Entry)
   implicit val blog = jsonFormat4(Blog)
+  implicit val entry = jsonFormat4(Entry)
   implicit val apiBlog = jsonFormat2(ApiBlog)
 }
 
@@ -46,14 +47,23 @@ trait BlogService extends HttpService {
         }
       }
     } ~ pathPrefix("entries") {
-      get {
-        path(LongNumber) { id: Long =>
+      path(LongNumber) { id: Long =>
+        get {
           respondWithMediaType(`application/json`) {
             complete {
               dao.getEntry(id)
             }
           }
+        } ~ post {
+          entity(as[Entry]) { entry: Entry =>
+            dao.updateEntry(id, entry)
+
+            Thread.sleep(1000)
+
+            complete(StatusCodes.NoContent)
+          }
         }
       }
     }
+
 }

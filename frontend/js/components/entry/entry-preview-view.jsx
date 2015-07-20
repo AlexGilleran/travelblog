@@ -7,7 +7,7 @@ export default class EntryPreviewView extends React.Component {
       <div>
         <div>
           <h3>
-            <Link to="entries" params={this.props.entry}>{this.props.entry.title}</Link>
+            <Link to="viewEntry" params={this.props.entry}>{this.props.entry.title}</Link>
           </h3>
         </div>
         <div>{this.props.entry.markdown}</div>

@@ -4,32 +4,44 @@ export default class BaseAjaxStore extends BaseStore {
   constructor(dataKey) {
     super();
 
+    this.state = {
+      status: {}
+    };
+
     this.dataKey = dataKey;
   }
 
-  onFailure() {
+  onFailure(error) {
     this.setState({
-      failed: true,
-      loading: false
+      status: {
+        type: 'error',
+        error: error
+      }
     });
   }
 
   onLoading() {
     this.setState({
-      failed: false,
-      loading: true
+      status: {
+        type: 'loading',
+      }
     });
   }
 
   onSuccess(data) {
     var newState = {
-      loading: false,
-      failed: false
+      status: {
+        type: 'success'
+      }
     };
     if (this.dataKey) {
       newState[this.dataKey] = data;
     }
 
     this.setState(newState);
+  }
+
+  getStatus() {
+    return this.state.status || {};
   }
 }
