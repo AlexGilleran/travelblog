@@ -13,7 +13,16 @@ export default class IdBasedAjaxStore extends Store {
   }
 
   onFailure(error) {
-    this.state.status[error.arguments[0]] = {
+    this.state.status[error.args[0]] = {
+      type: 'error',
+      error: error
+    };
+
+    this.forceUpdate();
+  }
+
+  onUpdateFailure(error) {
+    this.state.status[this.idGetter(error.args[0])] = {
       type: 'error',
       error: error
     };

@@ -5,7 +5,7 @@ import com.alexgilleran.travelblog.data.schema.Tables.User
 import com.alexgilleran.travelblog.routes.LoginDetails
 import com.alexgilleran.travelblog.session.{SessionManagerStub, Session, SessionManager}
 import shapeless._
-import spray.http.{HttpHeaders, HttpCookie}
+import spray.http.{StatusCodes, HttpHeaders, HttpCookie}
 import spray.routing._
 import directives.CookieDirectives._
 import directives.BasicDirectives._
@@ -25,7 +25,7 @@ trait SessionDirectives {
       case Some(session: Session) :: HNil =>
         provide(session)
       case None :: HNil => {
-        reject
+        complete(StatusCodes.Unauthorized)
       }
     }
   }

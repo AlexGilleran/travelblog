@@ -10,6 +10,9 @@ export default class EntryView extends React.Component {
           entry: store => ({
             entry: store.getEntry(this.props.routerState.params.entryId),
             status: store.getStatus(this.props.routerState.params.entryId)
+          }),
+          'login-state': store => ({
+
           })
         }}>
         <Inner />

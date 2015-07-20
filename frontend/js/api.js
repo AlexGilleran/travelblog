@@ -7,54 +7,54 @@ var isServer = require('./util/is-server');
 var API_BASE = isServer ? props.get('apiBase') : props.get('ajaxBase');
 
 exports.getBlog = function (blogId) {
-  return get('blogs/' + blogId);
+  return get('blogs/' + blogId, arguments);
 };
 
 exports.getBlogList = function () {
-  return get('blogs');
+  return get('blogs', arguments);
 };
 
 exports.getEntry = function (entryId) {
-  return get('entries/' + entryId);
+  return get('entries/' + entryId, arguments);
 };
 
 exports.updateEntry = function (entry) {
-  return post('entries/' + entry.entryId, entry);
+  return post('entries/' + entry.entryId, arguments, entry);
 };
 
 exports.login = function (emailAddress, password) {
-  return post('login', {
+  return post('login', arguments, {
     emailAddress: emailAddress,
     password: password
   });
 };
 
 exports.getUserForSession = function (sessionId) {
-  return get('users/withSession/' + sessionId);
+  return get('users/withSession/' + sessionId, arguments);
 };
 
 exports.getCurrentUser = function () {
-  return get('users/withSession');
+  return get('users/withSession', arguments);
 };
 
 exports.register = function (userDetails) {
-  return request.post(API_BASE + 'register')
-    .send(userDetails)
-    .end();
+  return post(API_BASE + 'register', arguments, userDetails);
 }
 
-function get(url) {
-  return request.get(API_BASE + url).end().catch(onError.bind(null, url));
+function get(url, args) {
+  return request.get(API_BASE + url).end().catch(onError.bind(null, url, args));
 }
 
-function post(url, data) {
-  return request.post(API_BASE + url)
+function post(url, args, data) {
+  return request.post(API_BASE + url, args)
     .send(data)
     .end()
-    .catch(onError.bind(null, url));
+    .catch(onError.bind(null, url, args));
 }
 
-function onError(url, error) {
+function onError(url, args, error) {
+  error = error || new Error("Unknown cause");
   console.error('Failed for ' + url + ': ' + error);
+  error.args = args;
   throw error;
 }

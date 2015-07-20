@@ -37,6 +37,12 @@ trait PostGresSlickDAO extends GeneralDAO {
     }
   }
 
+  override def getEntryOwnerId(entryId: Long) : Long = {
+    db.withSession { implicit session =>
+      (EntryTable.filter (_.entryId === entryId) innerJoin BlogTable on (_.blogId === _.blogId) first)._2.userId
+    }
+  }
+
   override def getBlogs(limit: Int = GENERIC_LIST_LIMIT): List[Blog] = {
     db.withSession { implicit session =>
       BlogTable.list.take(limit)

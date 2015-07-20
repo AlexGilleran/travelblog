@@ -12,8 +12,8 @@ export default class LoginStateStore extends BaseStore {
     this.register(this.loginStateActions.notifyLoggedOut, this.onLoggedOut);
     this.registerAsync(this.loginStateActions.login, this.onLoginStarted, this.onLoginSuccess, this.onLoginFailure);
 
-    // This is async, but because it's only ever exec'd server side we don' need to keep track of loading state.
-    this.register(this.loginStateActions.initWithSession, this.onInitWithSessionSuccess);
+    // because it's only ever exec'd server side we don' need to keep track of loading state.
+    this.registerAsync(this.loginStateActions.initWithSession, function() {}, this.onInitWithSessionSuccess, this.onInitWithSessionFailure);
   }
 
   onLoginStarted() {
@@ -44,20 +44,6 @@ export default class LoginStateStore extends BaseStore {
       userDetails: undefined
     });
   }
-  //
-  //onSessionIdSet(sessionId) {
-  //  this.setState({
-  //    sessionId: sessionId
-  //  });
-  //}
-
-  //onWhoAmIStarted() {
-  //  this.setState({
-  //    whoAmIInProgress: true,
-  //    whoAmIFailed: false,
-  //    userDetails: undefined
-  //  });
-  //}
 
   onInitWithSessionSuccess(userDetails) {
     this.setState({
@@ -65,10 +51,10 @@ export default class LoginStateStore extends BaseStore {
     });
   }
 
-  //onWhoAmIFailure(error) {
-  //  this.setState({
-  //    whoAmIInProgress: false,
-  //    whoAmInFailed: true
-  //  });
-  //}  }
+  onInitWithSessionFailure(error) {
+    console.log("session failure");
+    this.setState({
+      userDetails: undefined
+    });
+  }
 }

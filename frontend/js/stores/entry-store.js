@@ -6,7 +6,7 @@ export default class EntryStore extends IdBasedAjaxStore {
 
     this.entryActions = flux.getActions('entry');
     this.registerAsync(this.entryActions.getEntry, this.onLoading, this.onSuccess, this.onFailure);
-    this.registerAsync(this.entryActions.updateEntry, this.onUpdating, this.onSuccess, this.onFailure);
+    this.registerAsync(this.entryActions.updateEntry, this.onUpdating, this.onSuccess, this.onUpdateFailure);
   }
 
   getEntry(entryId) {

@@ -28,7 +28,7 @@ app.use(function * (next) {
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
-    delete this.req.headers.host; // confuses heroku if not removed.
+    //delete this.req.headers.host; // confuses heroku if not removed.
     yield proxy({
       url: props.get('apiBase') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
@@ -64,13 +64,18 @@ app.use(function * (next) {
       }
 
       Promise.all(preloadActions)
-        .then(function () {
-          var handler = React.createElement(Handler, {flux: self.flux, routerState: nextState});
+        .then(afterPromises)
+        .catch(function (err) {
+          console.log(err);
 
-          resolve(React.renderToString(handler));
-        }).catch(function (err) {
-          reject(err);
+          afterPromises();
         });
+
+      function afterPromises() {
+        var handler = React.createElement(Handler, {flux: self.flux, routerState: nextState});
+
+        resolve(React.renderToString(handler));
+      }
     });
   });
 

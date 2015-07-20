@@ -56,6 +56,6 @@ lazy val slickCodeGenTask = (sourceDirectory, dependencyClasspath in Compile, ru
   Seq(file(fname))
 }
 
-test in assembly := {}
+//test in assembly := {}
 
 Revolver.settings

@@ -2,6 +2,8 @@ package com.alexgilleran.travelblog.routes
 
 import com.alexgilleran.travelblog.data.{PostGresSlickDAO, GeneralDAO}
 import com.alexgilleran.travelblog.data.schema.Tables.{User, Blog, Entry}
+import com.alexgilleran.travelblog.routes.directives.SessionDirectives._
+import com.alexgilleran.travelblog.session.Session
 import spray.http.{StatusCodes, StatusCode, HttpCookie}
 import spray.http.MediaTypes._
 import spray.json._
@@ -55,15 +57,18 @@ trait BlogService extends HttpService {
             }
           }
         } ~ post {
-          entity(as[Entry]) { entry: Entry =>
-            dao.updateEntry(id, entry)
-
-            Thread.sleep(1000)
-
-            complete(StatusCodes.NoContent)
+          withSession() { session: Session =>
+            if (dao.getEntryOwnerId(id) == session.user.userId.get) {
+              entity(as[Entry]) { entry: Entry =>
+                dao.updateEntry(id, entry)
+                complete(StatusCodes.NoContent)
+              }
+            } else {
+              complete(StatusCodes.Unauthorized)
+            }
           }
+
         }
       }
     }
-
 }
