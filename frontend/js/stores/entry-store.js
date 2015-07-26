@@ -2,7 +2,7 @@ import IdBasedAjaxStore from './id-based-ajax-store';
 
 export default class EntryStore extends IdBasedAjaxStore {
   constructor(flux) {
-    super(result => result.entryId);
+    super(result => result.entry.entryId);
 
     this.entryActions = flux.getActions('entry');
     this.registerAsync(this.entryActions.getEntry, this.onLoading, this.onSuccess, this.onFailure);
@@ -10,7 +10,7 @@ export default class EntryStore extends IdBasedAjaxStore {
   }
 
   getEntry(entryId) {
-    if (!this.state.data[entryId] && !this.isLoading(entryId)) {
+    if (!this.state.data[entryId] && this.getStatus(entryId) !== 'loading') {
       this.entryActions.getEntry(entryId);
     }
 

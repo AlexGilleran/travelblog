@@ -7,12 +7,18 @@ export default class EntryView extends React.Component {
   render() {
     return (
       <FluxComponent flux={this.props.flux} connectToStores={{
-          entry: store => ({
-            entry: store.getEntry(this.props.routerState.params.entryId),
-            status: store.getStatus(this.props.routerState.params.entryId)
-          }),
-          'login-state': store => ({
+          entry: store => {
+            const entryId = this.props.routerState.params.entryId;
+            const entryData = store.getEntry(this.props.routerState.params.entryId) || {};
 
+            return {
+              entry: entryData.entry,
+              blog: entryData.blog,
+              status: store.getStatus(this.props.routerState.params.entryId)
+            }
+          },
+          'login-state': store => ({
+            userDetails: store.getUserDetails() || {}
           })
         }}>
         <Inner />
@@ -28,6 +34,10 @@ class Inner extends React.Component {
         <If condition={this.props.entry}>
           <div>
             <RouteHandler {...this.props} />
+
+            <div className="col-1-1">
+              <Link to="blog" params={this.props.blog}>Back to Blog</Link>
+            </div>
           </div>
           <Else />
 

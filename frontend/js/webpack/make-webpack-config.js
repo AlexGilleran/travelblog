@@ -71,7 +71,7 @@ module.exports = function (options) {
     },
     new webpack.PrefetchPlugin("react"),
     new webpack.PrefetchPlugin("react/lib/ReactComponentBrowserEnvironment"),
-    new webpack.IgnorePlugin(new RegExp("config"))
+    new webpack.IgnorePlugin(/config$/)
   ];
   if (options.prerender) {
     aliasLoader["react-proxy$"] = "react-proxy/unavailable";

@@ -14,11 +14,13 @@ import scala.util.Properties
 
 
 case class ApiBlog(details: Blog, entries: Seq[Entry])
+case class ApiEntry(entry: Entry, blog: Blog)
 
 object BlogJsonImplicits extends DefaultJsonProtocol {
   implicit val blog = jsonFormat4(Blog)
   implicit val entry = jsonFormat4(Entry)
   implicit val apiBlog = jsonFormat2(ApiBlog)
+  implicit val apiEntry = jsonFormat2(ApiEntry)
 }
 
 // this trait defines our service behavior independently from the service actor
@@ -53,12 +55,13 @@ trait BlogService extends HttpService {
         get {
           respondWithMediaType(`application/json`) {
             complete {
-              dao.getEntry(id)
+              val entryTuple = dao.getEntry(id)
+              new ApiEntry(entryTuple._1, entryTuple._2)
             }
           }
         } ~ post {
           withSession() { session: Session =>
-            if (dao.getEntryOwnerId(id) == session.user.userId.get) {
+            if (dao.getEntry(id)._2.blogId == session.user.userId) {
               entity(as[Entry]) { entry: Entry =>
                 dao.updateEntry(id, entry)
                 complete(StatusCodes.NoContent)

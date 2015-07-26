@@ -9,7 +9,7 @@ export default class BlogStore extends IdBasedAjaxStore {
   }
 
   getBlog(blogId) {
-    if (!this.state.data[blogId] && !this.isLoading(blogId)) {
+    if (!this.state.data[blogId] && this.getStatus(blogId) !== 'loading') {
       this.blogActions.getBlog(blogId);
     }
 

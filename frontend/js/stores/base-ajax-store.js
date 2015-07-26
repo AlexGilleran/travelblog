@@ -12,27 +12,22 @@ export default class BaseAjaxStore extends BaseStore {
   }
 
   onFailure(error) {
+    const status = 'error';
+    status.error = error;
     this.setState({
-      status: {
-        type: 'error',
-        error: error
-      }
+      status: status
     });
   }
 
   onLoading() {
     this.setState({
-      status: {
-        type: 'loading',
-      }
+      status: 'loading'
     });
   }
 
   onSuccess(data) {
     var newState = {
-      status: {
-        type: 'success'
-      }
+      status: 'success'
     };
     if (this.dataKey) {
       newState[this.dataKey] = data;
@@ -42,6 +37,6 @@ export default class BaseAjaxStore extends BaseStore {
   }
 
   getStatus() {
-    return this.state.status || {};
+    return this.state.status;
   }
 }

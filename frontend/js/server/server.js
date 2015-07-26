@@ -72,9 +72,12 @@ app.use(function * (next) {
         });
 
       function afterPromises() {
-        var handler = React.createElement(Handler, {flux: self.flux, routerState: nextState});
-
-        resolve(React.renderToString(handler));
+        try {
+          var handler = React.createElement(Handler, {flux: self.flux, routerState: nextState});
+          resolve(React.renderToString(handler));
+        } catch (e) {
+          reject(e);
+        }
       }
     });
   });

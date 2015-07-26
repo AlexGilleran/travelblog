@@ -25,21 +25,15 @@ trait PostGresSlickDAO extends GeneralDAO {
     }
   }
 
-  override def getEntry(entryId: Long): Entry = {
+  override def getEntry(entryId: Long): (Entry, Blog) = {
     db.withSession { implicit session =>
-      EntryTable.filter(_.entryId === entryId).first
+      EntryTable.filter (_.entryId === entryId) innerJoin BlogTable on (_.blogId === _.blogId) first
     }
   }
 
   override def updateEntry(entryId: Long, entry: Entry) = {
     db.withSession { implicit session =>
       EntryTable.filter(_.entryId === entryId).update(entry)
-    }
-  }
-
-  override def getEntryOwnerId(entryId: Long) : Long = {
-    db.withSession { implicit session =>
-      (EntryTable.filter (_.entryId === entryId) innerJoin BlogTable on (_.blogId === _.blogId) first)._2.userId
     }
   }
 

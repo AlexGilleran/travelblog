@@ -57,4 +57,12 @@ export default class LoginStateStore extends BaseStore {
       userDetails: undefined
     });
   }
+
+  isLoggedIn() {
+    return !!this.state.userDetails;
+  }
+
+  getUserDetails() {
+    return this.state.userDetails;
+  }
 }

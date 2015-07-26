@@ -49,6 +49,7 @@
     "react-hot-loader": "^1.2.7",
     "react-proxy-loader": "^0.3.2",
     "react-router": "^0.13.3",
+    "remarkable": "^1.6.0",
     "request": "^2.51.0",
     "simple-oauth2": "^0.2.1",
     "style-loader": "^0.10.1",

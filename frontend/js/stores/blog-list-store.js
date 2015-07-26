@@ -12,7 +12,7 @@ export default class BlogListStore extends BaseAjaxStore {
   }
 
   getStateAsObject() {
-    if (!this.state.blogList && !this.state.loading) {
+    if (!this.state.blogList && this.getStatus() !== 'loading') {
       this.blogActions.getBlogList();
     }
     return this.state;
