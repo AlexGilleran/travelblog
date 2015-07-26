@@ -2,7 +2,7 @@ var React = require('react');
 var EntryStoreModule = require('../../stores/entry-store');
 var {Link} =  require('react-router');
 import FluxComponent from 'flummox/component';
-import BlogEditor from './blog-editor';
+import BlogEditor from './editor/blog-editor';
 var Remarkable = require('remarkable');
 var md = new Remarkable();
 
