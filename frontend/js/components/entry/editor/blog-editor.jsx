@@ -5,7 +5,6 @@ import FluxComponent from 'flummox/component';
 import {serialiseSelection, restoreSelection} from './save-selection';
 import toMarkdownEscd from './to-markdown-escaped';
 const clone = require('lodash/lang/clone');
-const reduce = require('lodash/collection/reduce');
 
 const SPACE_REGEX = new RegExp('\\s\\s', 'g');
 
@@ -23,7 +22,7 @@ const BlogElementWrapper = React.createClass({
   }
 });
 
-const replacements = [
+const INLINE_FORMATTERS = [
   {
     symbol: '_',
     wrap: toWrap => (<em>{toWrap}</em>)
@@ -52,22 +51,6 @@ class BlogParagraph extends React.Component {
   getContents() {
     const md = this.props.element.text;
 
-    //function getIndexes(md) {
-    //  const indexes = reduce(replacements, (acc, replacement) => {
-    //      acc[replacement.symbol] = [];
-    //      return acc;
-    //    },
-    //    {});
-    //
-    //  for (let i = 0; i < md.length; i++) {
-    //    const char = md.charAt(i);
-    //
-    //    if (indexes[char]) {
-    //      indexes[char].push(i);
-    //    }
-    //  }
-    //}
-
     function parse(formatters, md, outerInBlock = false) {
       if (!formatters.length) {
         return [md, false];
@@ -76,7 +59,7 @@ class BlogParagraph extends React.Component {
       const formatter = formatters[0];
       const restOfFormatters = formatters.slice(1);
 
-      const splitMd = md.split(formatter.symbol);
+      const splitMd = splitWithEscaping(md, formatter.symbol, '\\');
 
       let innerInBlock = false;
       return [splitMd.map(function (block, index) {
@@ -91,7 +74,7 @@ class BlogParagraph extends React.Component {
       }), outerInBlock];
     }
 
-    return parse(replacements, this.props.element.text)[0];
+    return parse(INLINE_FORMATTERS, this.props.element.text)[0];
   }
 
   render() {
@@ -117,7 +100,7 @@ const TYPE_TO_COMPONENT_MAP = {
 const EXAMPLE_TB_DOM = [
   {
     type: 'para',
-    text: 'Blah _b*l*a_h *b_l_a*h _h*e_l*o *b_l*a_h mcblah'
+    text: 'Blah _b*l*a_h *b_l_a*h _h*e_l*o *b\\_l*a\\_h mcblah'
   }, {
     type: 'para',
     text: 'this is para 2'
@@ -131,6 +114,26 @@ const EXAMPLE_TB_DOM = [
   }
 ];
 
+function splitWithEscaping(string, char, escapeChar) {
+  const acc = [[]];
+
+  for (let i = 0; i < string.length; i++) {
+    const thisChar = string.charAt(i);
+    const lastChar = i > 0 ? string.charAt(i - 1) : undefined;
+
+    if (thisChar === char && lastChar !== escapeChar) {
+      acc.push([]);
+    } else {
+      if (thisChar === char) {
+        acc[acc.length - 1].pop();
+      }
+
+      acc[acc.length - 1].push(thisChar);
+    }
+  }
+
+  return acc.map(arr => arr.join(''));
+}
 
 export default class BlogEditor extends React.Component {
   constructor(props) {
