@@ -5,6 +5,7 @@ import FluxComponent from 'flummox/component';
 import {serialiseSelection, restoreSelection} from './save-selection';
 import toMarkdownEscd from './to-markdown-escaped';
 const clone = require('lodash/lang/clone');
+const reduce = require('lodash/collection/reduce');
 
 const SPACE_REGEX = new RegExp('\\s\\s', 'g');
 
@@ -22,6 +23,16 @@ const BlogElementWrapper = React.createClass({
   }
 });
 
+const replacements = [
+  {
+    symbol: '_',
+    wrap: toWrap => (<em>{toWrap}</em>)
+  }, {
+    symbol: '*',
+    wrap: toWrap => (<strong>{toWrap}</strong>)
+  }
+];
+
 class BlogParagraph extends React.Component {
   onKeyPress(event) {
     const char = String.fromCharCode(event.charCode);
@@ -38,10 +49,57 @@ class BlogParagraph extends React.Component {
     event.preventDefault();
   }
 
+  getContents() {
+    const md = this.props.element.text;
+
+    //function getIndexes(md) {
+    //  const indexes = reduce(replacements, (acc, replacement) => {
+    //      acc[replacement.symbol] = [];
+    //      return acc;
+    //    },
+    //    {});
+    //
+    //  for (let i = 0; i < md.length; i++) {
+    //    const char = md.charAt(i);
+    //
+    //    if (indexes[char]) {
+    //      indexes[char].push(i);
+    //    }
+    //  }
+    //}
+
+    function parse(formatters, md, outerInBlock = false) {
+      if (!formatters.length) {
+        return [md, false];
+      }
+
+      const formatter = formatters[0];
+      const restOfFormatters = formatters.slice(1);
+
+      const splitMd = md.split(formatter.symbol);
+
+      let innerInBlock = false;
+      return [splitMd.map(function (block, index) {
+        const lastSplit = index < splitMd.length - 1;
+        const [inner, _inBlock] = parse(restOfFormatters, block, innerInBlock);
+        innerInBlock = _inBlock;
+
+        const val = outerInBlock ? formatter.wrap(inner) : inner;
+        outerInBlock = lastSplit ? !outerInBlock : outerInBlock;
+
+        return val;
+      }), outerInBlock];
+    }
+
+    return parse(replacements, this.props.element.text)[0];
+  }
+
   render() {
-    // TODO: Parse subset of markdown.
-    return <span ref="editable" contentEditable="true"
-                 onKeyPress={this.onKeyPress.bind(this)}>{this.props.element.text}</span>;
+    return (
+      <span ref="editable" contentEditable="true" onKeyPress={this.onKeyPress.bind(this)}>
+        {this.getContents()}
+      </span>
+    );
   }
 }
 
@@ -56,10 +114,10 @@ const TYPE_TO_COMPONENT_MAP = {
   image: BlogImage
 };
 
-const exampleTbDom = [
+const EXAMPLE_TB_DOM = [
   {
     type: 'para',
-    text: 'Blah blah blah _hello_ blah *mcblah*'
+    text: 'Blah _b*l*a_h *b_l_a*h _h*e_l*o *b_l*a_h mcblah'
   }, {
     type: 'para',
     text: 'this is para 2'
@@ -79,7 +137,7 @@ export default class BlogEditor extends React.Component {
     super(props);
 
     this.state = {
-      tbDom: exampleTbDom
+      tbDom: EXAMPLE_TB_DOM
     };
   }
 
