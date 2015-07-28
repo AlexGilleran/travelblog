@@ -52,6 +52,7 @@
     "remarkable": "^1.6.0",
     "request": "^2.51.0",
     "simple-oauth2": "^0.2.1",
+    "stmd": "^0.1.0",
     "style-loader": "^0.10.1",
     "superagent": "^0.21.0",
     "twix": "^0.6.2",
