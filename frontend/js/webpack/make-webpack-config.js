@@ -137,7 +137,14 @@ module.exports = function (options) {
     plugins: plugins,
     devServer: {
       stats: {
-        exclude: excludeFromStats
+        exclude: excludeFromStats,
+        assets: false,
+        colors: true,
+        version: false,
+        hash: false,
+        timings: false,
+        chunks: false,
+        chunkModules: false
       }
     }
   };

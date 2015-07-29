@@ -4,8 +4,8 @@ import RootView from './components/common/root-view';
 import BlogView from './components/blog/blog-view';
 import HomeView from './components/home-view';
 import EntryWrapperView from './components/entry/entry-wrapper-view';
-import EntryEditView from './components/entry/entry-edit-view';
-import EntryReadView from './components/entry/entry-read-view';
+import EntryEditView from './components/entry/editor/entry-edit-view';
+import EntryReadView from './components/entry/view/entry-read-view';
 import RegisterView from './components/user/register-view';
 
 export default (

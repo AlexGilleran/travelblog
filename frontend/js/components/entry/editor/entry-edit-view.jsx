@@ -1,40 +1,34 @@
-var React = require('react');
-var EntryStoreModule = require('../../stores/entry-store');
-var {Link} =  require('react-router');
-import FluxComponent from 'flummox/component';
-import BlogEditor from './editor/blog-editor';
-var Remarkable = require('remarkable');
-var md = new Remarkable();
+const React = require('react');
+const EntryStoreModule = require('../../../stores/entry-store');
+const {Link} =  require('react-router');
+const FluxComponent = require('flummox/component');
+const EntryContentEditView = require('./entry-content-edit-view');
 
-export default class EntryEditView extends React.Component {
-  onSubmit(event) {
+module.exports = React.createClass({
+  onSubmit: function(event) {
     event.preventDefault();
 
     this.props.flux.getActions('entry').updateEntry(this.getEntryDetails());
-  }
+  },
 
-  getEntryDetails() {
+  getEntryDetails: function() {
     return {
       entryId: parseInt(this.props.params.entryId),
       blogId: this.props.entry.blogId,
       title: this.refs.title.getDOMNode().value,
       markdown: this.refs.markdown.getDOMNode().value
     };
-  }
-
-  onKeypress() {
-
-  }
+  },
 
   render() {
     return (
-      <form onSubmit={this.onSubmit.bind(this)}>
+      <form onSubmit={this.onSubmit}>
         <div className="col-1-1">
           <input type="text" ref="title" defaultValue={this.props.entry.title}/>
         </div>
 
         <div className="col-1-1">
-          <BlogEditor markdown={this.props.entry.markdown} />
+          <EntryContentEditView content={this.props.entry.content} />
         </div>
 
         <div className="col-1-1">
@@ -43,4 +37,4 @@ export default class EntryEditView extends React.Component {
       </form>
     );
   }
-}
+});
