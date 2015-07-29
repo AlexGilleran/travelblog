@@ -5,6 +5,8 @@ import FluxComponent from 'flummox/component';
 import {serialiseSelection, restoreSelection} from './save-selection';
 import toMarkdownEscd from './to-markdown-escaped';
 const clone = require('lodash/lang/clone');
+const reduce = require('lodash/collection/reduce');
+const indexBy = require('lodash/collection/indexBy');
 
 const SPACE_REGEX = new RegExp('\\s\\s', 'g');
 
@@ -36,9 +38,10 @@ class BlogParagraph extends React.Component {
   onKeyPress(event) {
     const char = String.fromCharCode(event.charCode);
     const selection = serialiseSelection(this.refs.editable.getDOMNode());
-    const text = event.target.innerText;
 
-    this.props.element.text = text.substring(0, selection.start) + char + text.substring(selection.start);
+    const text = this.props.element.text;
+    const index = selection.start + calcOffset(text, selection.start);
+    this.props.element.text = text.substring(0, index) + char + text.substring(index);
 
     selection.start += 1;
     selection.end += 1;
@@ -113,6 +116,35 @@ const EXAMPLE_TB_DOM = [
     text: 'this is para 3'
   }
 ];
+
+const INLINE_FORMATTERS_LOOKUP = indexBy(INLINE_FORMATTERS, formatter => formatter.symbol);
+
+function calcOffset(md, index) {
+  let mdCharCount = 0;
+  let nonMdCharCount = 0;
+  let i = 0;
+
+  while (nonMdCharCount < index) {
+    const char = md.charAt(i);
+    const hasFormatter = !!INLINE_FORMATTERS_LOOKUP[char];
+
+    if (hasFormatter) {
+      mdCharCount++;
+    } else {
+      nonMdCharCount++;
+    }
+
+    i++;
+  }
+
+  // Make sure we don't stop between an escaped md char and the escaping slash
+  const secondLastChar = i > 0 ? md.charAt(i - 1) : null;
+  if (INLINE_FORMATTERS_LOOKUP[md.charAt(i)] && secondLastChar === '\\') {
+    mdCharCount++;
+  }
+
+  return mdCharCount;
+}
 
 function splitWithEscaping(string, char, escapeChar) {
   const acc = [[]];
