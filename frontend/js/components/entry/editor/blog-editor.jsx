@@ -35,6 +35,7 @@ const INLINE_FORMATTERS = [
 ];
 
 class BlogParagraph extends React.Component {
+
   onKeyPress(event) {
     const char = String.fromCharCode(event.charCode);
     const selection = serialiseSelection(this.refs.editable.getDOMNode());
@@ -49,6 +50,23 @@ class BlogParagraph extends React.Component {
     this.props.onChange(this.refs.editable.getDOMNode(), selection, this.props.element);
 
     event.preventDefault();
+  }
+
+  onKeyDown(event) {
+    if (event.keyCode === 8) {
+      const selection = serialiseSelection(this.refs.editable.getDOMNode());
+
+      const text = this.props.element.text;
+      const index = selection.start + calcOffset(text, selection.start);
+      this.props.element.text = text.substring(0, index - 1) + text.substring(index);
+
+      selection.start--;
+      selection.end--;
+
+      this.props.onChange(this.refs.editable.getDOMNode(), selection, this.props.element);
+
+      event.preventDefault();
+    }
   }
 
   getContents() {
@@ -82,7 +100,7 @@ class BlogParagraph extends React.Component {
 
   render() {
     return (
-      <span ref="editable" contentEditable="true" onKeyPress={this.onKeyPress.bind(this)}>
+      <span ref="editable" contentEditable="true" onKeyPress={this.onKeyPress.bind(this)} onKeyDown={this.onKeyDown.bind(this)}>
         {this.getContents()}
       </span>
     );
