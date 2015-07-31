@@ -7,7 +7,7 @@ module.exports = React.createClass({
 
   render: function () {
     return (
-      <p>
+      <p {...this.props}>
         {this.props.children}
       </p>
     );
