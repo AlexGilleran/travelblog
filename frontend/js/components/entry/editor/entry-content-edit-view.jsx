@@ -23,9 +23,13 @@ module.exports = React.createClass({
 
   componentDidUpdate: function () {
     if (this.state.selection) {
-      restoreSelection(this.refs['fragment-' + this.state.selection.fragmentIndex].getDOMNode(), this.state.selection.textIndexes);
+      restoreSelection(this.getWrapperForIndex(this.state.selection.fragmentIndex).getDOMNode(), this.state.selection.textIndexes);
       this.setState({selection: undefined});
     }
+  },
+
+  getWrapperForIndex: function(index) {
+    return this.refs['fragment-' + index];
   },
 
   onInput: function () {
@@ -35,10 +39,11 @@ module.exports = React.createClass({
 
   onKeyPress: function (event) {
     const char = String.fromCharCode(event.charCode);
-    const selection = serialiseSelection(this.refs.editable.getDOMNode());
+    const [fragmentIndex, domNode] = getFragmentWrapper(window.getSelection().baseNode);
+    const selection = serialiseSelection(domNode);
 
-    const text = this.props.element.text;
-    const index = selection.start + calcOffset(text, selection.start);
+    const text = this.state.content[fragmentIndex];
+    const index = selection.start;
     this.props.element.text = text.substring(0, index) + char + text.substring(index);
 
     selection.start += 1;
@@ -52,9 +57,9 @@ module.exports = React.createClass({
   onKeyDown: function (event) {
     if (event.keyCode === 8) {
       this.deleteSelection();
+      event.preventDefault();
     }
 
-    event.preventDefault();
   },
 
   deleteSelection: function() {
@@ -121,29 +126,29 @@ function getFragmentWrapper(element) {
   }
 }
 
-function calcOffset(md, index) {
-  let mdCharCount = 0;
-  let nonMdCharCount = 0;
-  let i = 0;
-
-  while (nonMdCharCount < index) {
-    const char = md.charAt(i);
-    const hasFormatter = !!INLINE_FORMATTERS_LOOKUP[char];
-
-    if (hasFormatter) {
-      mdCharCount++;
-    } else {
-      nonMdCharCount++;
-    }
-
-    i++;
-  }
-
-  // Make sure we don't stop between an escaped md char and the escaping slash
-  const secondLastChar = i > 0 ? md.charAt(i - 1) : null;
-  if (INLINE_FORMATTERS_LOOKUP[md.charAt(i)] && secondLastChar === '\\') {
-    mdCharCount++;
-  }
-
-  return mdCharCount;
-}
+//function calcOffset(md, index) {
+//  let mdCharCount = 0;
+//  let nonMdCharCount = 0;
+//  let i = 0;
+//
+//  while (nonMdCharCount < index) {
+//    const char = md.charAt(i);
+//    const hasFormatter = !!INLINE_FORMATTERS_LOOKUP[char];
+//
+//    if (hasFormatter) {
+//      mdCharCount++;
+//    } else {
+//      nonMdCharCount++;
+//    }
+//
+//    i++;
+//  }
+//
+//  // Make sure we don't stop between an escaped md char and the escaping slash
+//  const secondLastChar = i > 0 ? md.charAt(i - 1) : null;
+//  if (INLINE_FORMATTERS_LOOKUP[md.charAt(i)] && secondLastChar === '\\') {
+//    mdCharCount++;
+//  }
+//
+//  return mdCharCount;
+//}

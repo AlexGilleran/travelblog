@@ -20,7 +20,11 @@ export default class EntryActions extends Actions {
     entry.entry.content = [
       {
         type: 'para',
-        text: 'Blah _b*l*a_h *b_l_a*h _h*e_l*o *b\\_l*a\\_h mcblah'
+        text: 'Blah blah blah blah hello mcblah',
+        formatting: {
+          bold: [3, 8, 10, 15],
+          italic: [6, 9, 15, 20]
+        }
       }, {
         type: 'para',
         text: 'this is para 2'
