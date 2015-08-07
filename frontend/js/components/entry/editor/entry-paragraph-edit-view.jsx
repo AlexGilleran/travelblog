@@ -21,10 +21,6 @@ module.exports = React.createClass({
     return renderText(fragment.text, combinedIndexes);
   },
 
-  onInput: function (e) {
-    //e.preventDefault();
-  },
-
   render: function () {
     return (
       <span ref="editable">
@@ -46,29 +42,6 @@ function combineIndexes(text, formatterToIndexesMap) {
 
   return map(byIndex, (value, key) => ({index: key, formatterNames: value}));
 }
-
-//function buildFullLookup(text, indexMap) {
-//  return reduce(indexMap, (acc, indexes, name) => {
-//    acc[name] = constructLookup(indexes, text.length);
-//    return acc;
-//  }, {});
-//}
-
-//function constructLookup(flipLocations, length) {
-//  let applied = false;
-//  let currentFlipIndex = 0;
-//  const lookup = [];
-//
-//  for (let i = 0; i < length; i++) {
-//    if (i === flipLocations[currentFlipIndex]) {
-//      applied = !applied;
-//    }
-//
-//    lookup[i] = applied;
-//  }
-//
-//  return lookup;
-//}
 
 function renderText(text, combinedIndexes) {
   const applying = {};
@@ -97,25 +70,3 @@ function renderText(text, combinedIndexes) {
 
   return result;
 }
-
-//function parse2(fragment, formatters, applyFormatting = false) {
-//  if (!formatters.length) {
-//    return [fragment, false];
-//  }
-//
-//  const formatter = formatters[0];
-//  //const restOfFormatters = formatters.slice(1);
-//
-//  const indexes = [0].concat(fragment.formatting[formatter.name]).concat([fragment.text.length - 1]);
-//  const list = [];
-//
-//  for (let i = 1; i < indexes.length; i++) {
-//    const startIndex = indexes[i - 1];
-//    const endIndex = indexes[i];
-//    const text = fragment.text.substring(startIndex, endIndex);
-//
-//
-//    list.push(applyFormatting ? formatter(text) : text);
-//    applyFormatting = !applyFormatting;
-//  }
-//};
