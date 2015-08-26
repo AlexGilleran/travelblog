@@ -84,8 +84,14 @@ module.exports = React.createClass({
 
   deleteSelection: function (defaultDelta) {
     const windowSelection = window.getSelection();
-    const [beginFragmentIndex, beginDOMNode] = getFragmentWrapper(windowSelection.extentNode);
-    const [endFragmentIndex, endDOMNode] = getFragmentWrapper(windowSelection.baseNode);
+    let [beginFragmentIndex, beginDOMNode] = getFragmentWrapper(windowSelection.extentNode);
+    let [endFragmentIndex, endDOMNode] = getFragmentWrapper(windowSelection.baseNode);
+
+    // If begin and end are upside down, swap them so beginFragmentIndex is always higher up the page.
+    if (beginFragmentIndex > endFragmentIndex) {
+      [beginFragmentIndex, beginDOMNode, endFragmentIndex, endDOMNode] =
+        [endFragmentIndex, endDOMNode, beginFragmentIndex, beginDOMNode];
+    }
 
     // Sanitise selection
     const selectionToDelete = serialiseSelection(beginDOMNode, windowSelection);
@@ -102,8 +108,9 @@ module.exports = React.createClass({
 
     if (beginFragmentIndex !== endFragmentIndex) {
       // Delete middle fragments if they exist
-      for (let i = Math.min(beginFragmentIndex, endFragmentIndex) + 1; i < Math.max(beginFragmentIndex, endFragmentIndex); i++) {
-        this.deleteWholeFragment(i);
+      while (beginFragmentIndex + 1 < endFragmentIndex) {
+        this.deleteWholeFragment(beginFragmentIndex + 1);
+        endFragmentIndex--;
       }
 
       // Delete partial from end fragment
@@ -124,7 +131,7 @@ module.exports = React.createClass({
     });
   },
 
-  mergeFragments: function(startFragIndex, endFragIndex) {
+  mergeFragments: function (startFragIndex, endFragIndex) {
     const newFrag = concatFragments(this.state.content[startFragIndex], this.state.content[endFragIndex]);
 
     this.mutateFragment(startFragIndex, newFrag);
@@ -141,14 +148,12 @@ module.exports = React.createClass({
   },
 
   deleteWholeFragment: function (fragmentIndex) {
-    const fragments = _.clone(this.state.content);
+    this.state.content.splice(fragmentIndex, 1);
 
-    fragments.splice(fragmentIndex, 1);
-
-    this.setState({content: fragments});
+    this.setState({content: this.state.content});
   },
 
-  getFragForEditing: function(fragmentIndex) {
+  getFragForEditing: function (fragmentIndex) {
     return _.clone(this.state.content[fragmentIndex]);
   },
 
