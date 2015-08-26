@@ -1,15 +1,16 @@
+
+
 export function serialiseSelection(containerEl) {
   var range = window.getSelection().getRangeAt(0);
   var preSelectionRange = range.cloneRange();
   preSelectionRange.selectNodeContents(containerEl);
   preSelectionRange.setEnd(range.startContainer, range.startOffset);
-  const preSelectionRangeText = preSelectionRange.toString()
+  const preSelectionRangeText = preSelectionRange.toString();
   var start = preSelectionRangeText.length;
 
   return {
     start: start,
-    end: start + range.toString().length,
-    containerText: preSelectionRangeText
+    end: start + range.toString().length
   };
 };
 

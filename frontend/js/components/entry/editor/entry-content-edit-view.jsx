@@ -2,13 +2,11 @@ const React = require('react');
 const EntryStoreModule = require('../../../stores/entry-store');
 const {Link} =  require('react-router');
 const FluxComponent = require('flummox/component');
-const clone = require('lodash/lang/clone');
 const EntryElementWrapper = require('../entry-element-wrapper');
 const EntryImageView = require('../view/entry-image-view');
 const EntryParagraphEditView = require('./entry-paragraph-edit-view');
 const {serialiseSelection, restoreSelection} = require('./save-selection');
-const assign = require('lodash/object/assign');
-const reduce = require('lodash/collection/reduce');
+const _ = require('lodash');
 
 const TYPE_TO_COMPONENT_MAP = {
   para: EntryParagraphEditView,
@@ -18,7 +16,8 @@ const TYPE_TO_COMPONENT_MAP = {
 module.exports = React.createClass({
   getInitialState() {
     return {
-      content: this.props.content
+      content: this.props.content,
+      remountCount: 0
     }
   },
 
@@ -33,9 +32,12 @@ module.exports = React.createClass({
     return this.refs['fragment-' + index];
   },
 
-  onInput: function (event) {
-    // if the user actually manages to edit the document in some way we haven't caught, immediately revert it.
-    this.forceUpdate();
+  remount: function (event) {
+    // if the user actually manages to edit the document in some way we haven't caught, immediately revert it otherwise
+    // react will cry because we've modified its DOM without telling it.
+
+    // this is a bit of a hack - changing the key on a node completely remounts it.
+    this.setState({remountCount: this.state.remountCount + 1});
   },
 
   onKeyPress: function (event) {
@@ -43,11 +45,11 @@ module.exports = React.createClass({
     const [fragmentIndex, domNode] = getFragmentWrapper(window.getSelection().baseNode);
     const selection = serialiseSelection(domNode);
 
-    const element = clone(this.state.content[fragmentIndex]);
+    const element = _.clone(this.state.content[fragmentIndex]);
     const index = selection.start;
     const text = element.text.substring(0, index) + char + element.text.substring(index);
 
-    this.changeFragment(fragmentIndex, {
+    this.mutateFragment(fragmentIndex, {
       text: text,
       formatting: shiftFormatting(element.formatting, index, 1)
     });
@@ -70,49 +72,89 @@ module.exports = React.createClass({
       case 8:
         this.deleteSelection(-1);
         event.preventDefault();
+        event.stopPropagation();
         break;
       case 46:
         this.deleteSelection(1);
         event.preventDefault();
+        event.stopPropagation();
         break;
     }
   },
 
   deleteSelection: function (defaultDelta) {
     const windowSelection = window.getSelection();
-    const [beginFragmentIndex, beginDOMNode] = getFragmentWrapper(windowSelection.baseNode);
-    const [endFragmentIndex, endDOMNode] = getFragmentWrapper(windowSelection.extentNode);
+    const [beginFragmentIndex, beginDOMNode] = getFragmentWrapper(windowSelection.extentNode);
+    const [endFragmentIndex, endDOMNode] = getFragmentWrapper(windowSelection.baseNode);
 
-    if (beginFragmentIndex === endFragmentIndex) {
-      const selection = serialiseSelection(beginDOMNode, windowSelection);
-      if (selection.start === selection.end) {
-        if (defaultDelta < 0) {
-          selection.start += defaultDelta;
-        } else {
-          selection.end += defaultDelta;
-        }
+    // Sanitise selection
+    const selectionToDelete = serialiseSelection(beginDOMNode, windowSelection);
+    if (selectionToDelete.start === selectionToDelete.end) {
+      if (defaultDelta < 0) {
+        selectionToDelete.start += defaultDelta;
+      } else {
+        selectionToDelete.end += defaultDelta;
+      }
+    }
+
+    // Delete partial from start fragment
+    this.deletePartOfFragment(beginFragmentIndex, selectionToDelete.start, selectionToDelete.end);
+
+    if (beginFragmentIndex !== endFragmentIndex) {
+      // Delete middle fragments if they exist
+      for (let i = Math.min(beginFragmentIndex, endFragmentIndex) + 1; i < Math.max(beginFragmentIndex, endFragmentIndex); i++) {
+        this.deleteWholeFragment(i);
       }
 
-      const fragment = this.state.content[beginFragmentIndex];
-      this.changeFragment(beginFragmentIndex, {
-        text: deleteFromFragment(fragment.text, selection.start, selection.end),
-        formatting: shiftFormatting(fragment.formatting, selection.start, selection.start - selection.end)
-      });
+      // Delete partial from end fragment
+      // FIXME: zomg this next line egh.
+      this.deletePartOfFragment(endFragmentIndex, 0, window.getSelection().getRangeAt(0).endOffset);
 
-      selection.end = selection.start;
-      this.setState({
-        selection: {
-          textIndexes: selection,
-          fragmentIndex: beginFragmentIndex
-        }
-      });
+      this.mergeFragments(beginFragmentIndex, endFragmentIndex);
     }
+
+    this.setState({
+      selection: {
+        textIndexes: {
+          start: selectionToDelete.start,
+          end: selectionToDelete.start
+        },
+        fragmentIndex: beginFragmentIndex
+      }
+    });
   },
 
-  changeFragment: function (fragmentIndex, partialNewElement) {
-    const fragments = clone(this.state.content);
-    assign(fragments[fragmentIndex], partialNewElement);
+  mergeFragments: function(startFragIndex, endFragIndex) {
+    const newFrag = concatFragments(this.state.content[startFragIndex], this.state.content[endFragIndex]);
+
+    this.mutateFragment(startFragIndex, newFrag);
+    this.deleteWholeFragment(endFragIndex);
+  },
+
+  deletePartOfFragment: function (fragmentIndex, begin, end) {
+    const fragment = this.state.content[fragmentIndex];
+
+    this.mutateFragment(fragmentIndex, {
+      text: deleteFromFragment(fragment.text, begin, end),
+      formatting: shiftFormatting(fragment.formatting, begin, begin - end)
+    });
+  },
+
+  deleteWholeFragment: function (fragmentIndex) {
+    const fragments = _.clone(this.state.content);
+
+    fragments.splice(fragmentIndex, 1);
+
     this.setState({content: fragments});
+  },
+
+  getFragForEditing: function(fragmentIndex) {
+    return _.clone(this.state.content[fragmentIndex]);
+  },
+
+  mutateFragment: function (fragmentIndex, partialNewElement) {
+    _.assign(this.state.content[fragmentIndex], partialNewElement);
+    this.setState({content: this.state.content});
   },
 
   getComponentForElement: function (fragment, index) {
@@ -122,8 +164,8 @@ module.exports = React.createClass({
 
   render: function () {
     return (
-      <div contentEditable="true" onChange={this.onInput} onInput={this.onInput} onKeyPress={this.onKeyPress}
-           onKeyDown={this.onKeyDown}>
+      <div contentEditable="true" onChange={this.remount} onInput={this.remount} onKeyPress={this.onKeyPress}
+           onKeyDown={this.onKeyDown} key={this.state.remountCount}>
         <For each="fragment" of={this.state.content} index="idx">
           <EntryElementWrapper ref={'fragment-' + idx} data-index={idx} key={idx}>
             {this.getComponentForElement(fragment, idx)}
@@ -154,7 +196,7 @@ function getFragmentWrapper(element) {
 }
 
 function shiftFormatting(formatting, startIndex, delta) {
-  return reduce(formatting, (acc, list, name) => {
+  return _.reduce(formatting, (acc, list, name) => {
     const newList = [];
 
     for (let i = 0; i < list.length; i++) {
@@ -176,4 +218,18 @@ function shiftFormatting(formatting, startIndex, delta) {
     acc[name] = newList;
     return acc;
   }, {});
+}
+
+function concatFragments(firstFrag, secondFrag) {
+  if (firstFrag.type !== 'para' || secondFrag.type !== 'para') {
+    throw new Error('Attempting to concat two non-text fragments!');
+  }
+
+  const newFrag = _.clone(firstFrag);
+  newFrag.text = firstFrag.text + secondFrag.text;
+
+  const shiftedSecondFragFormatting = shiftFormatting(secondFrag.formatting, 0, firstFrag.text.length);
+  newFrag.formatting = _.mapValues(firstFrag.formatting, (value, key) => value.concat(shiftedSecondFragFormatting[key] || []));
+
+  return newFrag;
 }
