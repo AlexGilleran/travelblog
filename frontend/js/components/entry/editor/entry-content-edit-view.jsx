@@ -42,7 +42,7 @@ module.exports = React.createClass({
 
   onKeyPress: function (event) {
     const char = String.fromCharCode(event.charCode);
-    const [fragmentIndex, domNode] = getFragmentWrapper(window.getSelection().baseNode);
+    const [fragmentIndex, domNode] = getFragmentWrapper(window.getSelection().anchorNode);
     const selection = serialiseSelection(domNode);
 
     const element = _.clone(this.state.content[fragmentIndex]);
@@ -84,8 +84,8 @@ module.exports = React.createClass({
 
   deleteSelection: function (defaultDelta) {
     const windowSelection = window.getSelection();
-    let [beginFragmentIndex, beginDOMNode] = getFragmentWrapper(windowSelection.extentNode);
-    let [endFragmentIndex, endDOMNode] = getFragmentWrapper(windowSelection.baseNode);
+    let [beginFragmentIndex, beginDOMNode] = getFragmentWrapper(windowSelection.anchorNode);
+    let [endFragmentIndex, endDOMNode] = getFragmentWrapper(windowSelection.focusNode);
 
     // If begin and end are upside down, swap them so beginFragmentIndex is always higher up the page.
     if (beginFragmentIndex > endFragmentIndex) {
