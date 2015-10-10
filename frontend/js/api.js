@@ -38,7 +38,7 @@ exports.getCurrentUser = function () {
 };
 
 exports.register = function (userDetails) {
-  return post(API_BASE + 'register', arguments, userDetails);
+  return post('register', arguments, userDetails);
 }
 
 function get(url, args) {
