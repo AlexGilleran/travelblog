@@ -45,6 +45,12 @@ module.exports = React.createClass({
     const [fragmentIndex, domNode] = getFragmentWrapper(window.getSelection().anchorNode);
     const selection = serialiseSelection(domNode);
 
+    // If a text range is selected, delete it first.
+    if (selection.start !== selection.end) {
+      this.deleteSelection(0);
+      selection.end = selection.start;
+    }
+
     const element = _.clone(this.state.content[fragmentIndex]);
     const index = selection.start;
     const text = element.text.substring(0, index) + char + element.text.substring(index);
