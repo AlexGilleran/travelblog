@@ -75,7 +75,7 @@ module.exports = React.createClass({
 
       this.mutateFragment(fragmentIndex, {
         text: text,
-        formatting: shiftFormatting(fragment.formatting, index, 1)
+        formatting: shiftFormatting(fragment.formatting, Math.max(0, index - 1), 1)
       });
     }
 
