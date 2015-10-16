@@ -41,7 +41,6 @@ module.exports = React.createClass({
   },
 
   onKeyPress: function (event) {
-    const char = String.fromCharCode(event.charCode);
     const [fragmentIndex, domNode] = getFragmentWrapper(window.getSelection().anchorNode);
     const selection = serialiseSelection(domNode);
 
@@ -51,22 +50,39 @@ module.exports = React.createClass({
       selection.end = selection.start;
     }
 
-    const element = _.clone(this.state.content[fragmentIndex]);
+    const fragment = _.clone(this.state.content[fragmentIndex]);
     const index = selection.start;
-    const text = element.text.substring(0, index) + char + element.text.substring(index);
 
-    this.mutateFragment(fragmentIndex, {
-      text: text,
-      formatting: shiftFormatting(element.formatting, index, 1)
-    });
+    let text, selectionFragmentIndex;
 
-    selection.start += 1;
-    selection.end += 1;
+    if (event.charCode === 13) { // enter
+      const firstFrag = deleteFromFragment(fragment, index);
+      const secondFrag = deleteFromFragment(fragment, 0, index);
+
+      this.mutateFragment(fragmentIndex, firstFrag);
+      this.addFragment(fragmentIndex, secondFrag);
+
+      selectionFragmentIndex = fragmentIndex + 1;
+      selection.start = 0;
+      selection.end = 0;
+    } else {
+      const char = String.fromCharCode(event.charCode);
+      text = fragment.text.substring(0, index) + char + fragment.text.substring(index);
+      selectionFragmentIndex = fragmentIndex;
+
+      selection.start += 1;
+      selection.end += 1;
+
+      this.mutateFragment(fragmentIndex, {
+        text: text,
+        formatting: shiftFormatting(fragment.formatting, index, 1)
+      });
+    }
 
     this.setState({
       selection: {
         textIndexes: selection,
-        fragmentIndex: fragmentIndex
+        fragmentIndex: selectionFragmentIndex
       }
     });
 
@@ -147,10 +163,7 @@ module.exports = React.createClass({
   deletePartOfFragment: function (fragmentIndex, begin, end) {
     const fragment = this.state.content[fragmentIndex];
 
-    this.mutateFragment(fragmentIndex, {
-      text: deleteFromFragment(fragment.text, begin, end),
-      formatting: shiftFormatting(fragment.formatting, begin, begin - end)
-    });
+    this.mutateFragment(fragmentIndex, deleteFromFragment(fragment, begin, end));
   },
 
   deleteWholeFragment: function (fragmentIndex) {
@@ -165,6 +178,11 @@ module.exports = React.createClass({
 
   mutateFragment: function (fragmentIndex, partialNewElement) {
     _.assign(this.state.content[fragmentIndex], partialNewElement);
+    this.setState({content: this.state.content});
+  },
+
+  addFragment: function(addAfterFragmentIndex, newFragment) {
+    this.state.content.splice(addAfterFragmentIndex + 1, 0, newFragment);
     this.setState({content: this.state.content});
   },
 
@@ -187,7 +205,14 @@ module.exports = React.createClass({
   }
 });
 
-function deleteFromFragment(fragmentText, textIndexStart = 0, textIndexEnd = undefined) {
+function deleteFromFragment(fragment, begin, end = fragment.text.length) {
+  return _.extend(_.clone(fragment), {
+    text: sliceText(fragment.text, begin, end),
+    formatting: shiftFormatting(fragment.formatting, begin, begin - end)
+  });
+}
+
+function sliceText(fragmentText, textIndexStart = 0, textIndexEnd = undefined) {
   textIndexEnd = textIndexEnd || fragmentText.length
 
   return fragmentText.substring(0, textIndexStart) + fragmentText.substring(textIndexEnd);
@@ -208,25 +233,25 @@ function getFragmentWrapper(element) {
 
 function shiftFormatting(formatting, startIndex, delta) {
   return _.reduce(formatting, (acc, list, name) => {
-    const newList = [];
+    const shiftedFormatting = [];
 
     for (let i = 0; i < list.length; i++) {
       const formattingIndex = list[i];
 
       if (formattingIndex <= startIndex) {
-        newList.push(formattingIndex);
+        shiftedFormatting.push(formattingIndex);
       } else {
-        const newIndex = formattingIndex + delta;
-        if (newIndex === newList[newList.length - 1]) {
+        const shiftedFormattingIndex = formattingIndex + delta;
+        if (shiftedFormattingIndex === shiftedFormatting[shiftedFormatting.length - 1]) {
           // If this is the same as the last index, both cancel each other out so just pop the last one.
-          newList.pop();
+          shiftedFormatting.pop();
         } else {
-          newList.push(Math.max(newIndex, startIndex));
+          shiftedFormatting.push(Math.max(shiftedFormattingIndex, startIndex));
         }
       }
     }
 
-    acc[name] = newList;
+    acc[name] = shiftedFormatting;
     return acc;
   }, {});
 }
