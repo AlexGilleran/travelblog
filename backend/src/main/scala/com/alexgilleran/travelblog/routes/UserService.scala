@@ -1,8 +1,8 @@
 package com.alexgilleran.travelblog.routes
 
-import com.alexgilleran.travelblog.data.schema.Tables
-import com.alexgilleran.travelblog.data.schema.Tables.User
+import com.alexgilleran.travelblog.data.schema.Tables.{User, Entry, Blog}
 import com.alexgilleran.travelblog.data.{GeneralDAO, PostGresSlickDAO}
+import com.alexgilleran.travelblog.routes.BlogJsonImplicits._
 import com.alexgilleran.travelblog.routes.directives.SessionDirectives._
 import com.alexgilleran.travelblog.session.{SessionManagerStub, SessionManager, Session}
 import spray.httpx.SprayJsonSupport
@@ -10,13 +10,13 @@ import spray.json._
 import spray.routing.HttpService
 
 case class LoginDetails(emailAddress: String, password: String)
+case class ApiUser(details: User, activity: Seq[Entry], blogs: Seq[Blog])
 
 object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
-  implicit val LoginDetailsFormat = jsonFormat2(LoginDetails)
+  import BlogJsonImplicits.{entry, blog}
 
-  implicit object UserFormat extends RootJsonFormat[User] {
+  class PublicUserFormat extends RootJsonFormat[User] {
     def write(user: User) = JsObject(
-      "email" -> JsString(user.email),
       "userName" -> JsString(user.userName),
       "displayName" -> JsString(user.displayName.orNull),
       "bio" -> JsString(user.bio.orNull),
@@ -27,6 +27,18 @@ object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
     def read(value: JsValue) = jsonFormat7(User).read(value)
   }
 
+  implicit object PublicUserFormat extends PublicUserFormat
+
+  object PrivateUserFormat extends PublicUserFormat {
+    override def write(user: User): JsObject = {
+      val obj: JsObject = super.write(user)
+
+      new JsObject(obj.fields.updated("email", JsString(user.email)))
+    }
+  }
+
+  implicit val LoginDetailsFormat = jsonFormat2(LoginDetails)
+  implicit val BigUserFormat = jsonFormat3(ApiUser)
 }
 
 trait UserService extends HttpService {
@@ -42,7 +54,7 @@ trait UserService extends HttpService {
         entity(as[LoginDetails]) { loginDetails =>
           createSession(loginDetails) { session: Session =>
             complete {
-              session.user
+              PrivateUserFormat.write(session.user)
             }
           }
         }
@@ -55,7 +67,7 @@ trait UserService extends HttpService {
 
           createSessionCookie(newUser) { session: Session =>
             complete {
-              session.user
+              PrivateUserFormat.write(session.user)
             }
           }
         }
@@ -65,19 +77,19 @@ trait UserService extends HttpService {
         pathPrefix("withSession") {
           path(Segment) { sessionId: String =>
             sessionManager.getSession(sessionId) match {
-              case Some(session: Session) => complete(Some(session.user))
+              case Some(session: Session) => complete(Some(PrivateUserFormat.write(session.user)))
               case None => reject
             }
           } ~ pathEnd {
             withSession() { session: Session =>
               complete {
-                session.user
+                PrivateUserFormat.write(session.user)
               }
             }
           }
         } ~ path(LongNumber) { id =>
           complete {
-            dao.getUser(id)
+            new ApiUser(dao.getUser(id), dao.getEntriesForUser(id), dao.getBlogsForUser(id))
           }
         }
       }

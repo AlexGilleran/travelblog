@@ -60,6 +60,19 @@ trait PostGresSlickDAO extends GeneralDAO {
       UserTable returning (UserTable.map(_.userId)) += user
     )
   }
+
+  override def getEntriesForUser(userId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Tables.Entry] = {
+    db.withSession { implicit session =>
+      (BlogTable.filter (_.userId === userId) innerJoin EntryTable on (_.blogId === _.blogId)
+        map((row : (BlogTable, EntryTable)) => row._2) list) take(limit)
+    }
+  }
+
+  override def getBlogsForUser(userId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Blog] = {
+    db.withSession { implicit session =>
+      (BlogTable.filter (_.userId === userId) list) take(limit)
+    }
+  }
 }
 
 // Singleton for now, TODO think about DI later.

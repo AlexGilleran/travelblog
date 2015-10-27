@@ -70,7 +70,6 @@ trait BlogService extends HttpService {
               complete(StatusCodes.Unauthorized)
             }
           }
-
         }
       }
     }
