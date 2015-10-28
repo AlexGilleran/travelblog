@@ -25,6 +25,12 @@ trait PostGresSlickDAO extends GeneralDAO {
     )
   }
 
+  override def updateBlog(blogId: Long, blog: Blog) = {
+    db.withSession { implicit session =>
+      BlogTable.filter(_.blogId === blogId).update(blog.copy(blogId = Some(blogId)))
+    }
+  }
+
   override def getEntriesForBlog(blogId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Entry] = {
     db.withSession { implicit session =>
       EntryTable.filter(_.blogId === blogId).take(limit).list

@@ -4,6 +4,7 @@ import com.alexgilleran.travelblog.data.{PostGresSlickDAO, GeneralDAO}
 import com.alexgilleran.travelblog.data.schema.Tables.{User, Blog, Entry}
 import com.alexgilleran.travelblog.routes.directives.SessionDirectives._
 import com.alexgilleran.travelblog.session.Session
+import spray.http.StatusCodes.{ClientError, CustomStatusCode}
 import spray.http.{StatusCodes, StatusCode, HttpCookie}
 import spray.http.MediaTypes._
 import spray.json._
@@ -54,10 +55,26 @@ trait BlogService extends HttpService {
               userId = session.user.userId.get
             )
 
-            val id : Long = dao.insertBlog(blog)
+            val id: Long = dao.insertBlog(blog)
 
-            complete {
-              blog.copy(blogId = Some(id))
+            complete(StatusCodes.Created, blog.copy(blogId = Some(id)))
+          }
+        }
+      } ~ post {
+        withSession() { session: Session =>
+          path(LongNumber) { id: Long =>
+            val existing: Blog = dao.getBlog(id)
+
+            if (existing.userId == session.user.userId.get) {
+              entity(as[Map[String, String]]) { map: Map[String, String] =>
+                dao.updateBlog(id, existing.copy(
+                  name = map.get("name").get,
+                  description = map.get("description")
+                ))
+                complete(StatusCodes.NoContent)
+              }
+            } else {
+              complete(StatusCodes.Forbidden)
             }
           }
         }
@@ -73,13 +90,13 @@ trait BlogService extends HttpService {
           }
         } ~ post {
           withSession() { session: Session =>
-            if (dao.getEntry(id)._2.blogId == session.user.userId) {
+            if (dao.getEntry(id)._2.userId == session.user.userId.get) {
               entity(as[Entry]) { entry: Entry =>
                 dao.updateEntry(id, entry)
                 complete(StatusCodes.NoContent)
               }
             } else {
-              complete(StatusCodes.Unauthorized)
+              complete(StatusCodes.Forbidden)
             }
           }
         }
