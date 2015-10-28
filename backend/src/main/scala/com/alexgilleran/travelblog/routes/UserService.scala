@@ -15,7 +15,7 @@ case class ApiUser(details: User, activity: Seq[Entry], blogs: Seq[Blog])
 
 object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
 
-  import BlogJsonImplicits.{entry, blog}
+  import BlogJsonImplicits.{entry, blogFormat}
 
   class PublicUserFormat extends RootJsonFormat[User] {
     def write(user: User) = JsObject(

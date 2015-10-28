@@ -19,6 +19,12 @@ trait PostGresSlickDAO extends GeneralDAO {
     }
   }
 
+  override def insertBlog(blog : Blog) : Long = {
+    db.withSession(implicit session =>
+      BlogTable returning (BlogTable.map(_.blogId)) += blog
+    )
+  }
+
   override def getEntriesForBlog(blogId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Entry] = {
     db.withSession { implicit session =>
       EntryTable.filter(_.blogId === blogId).take(limit).list

@@ -10,6 +10,8 @@ trait GeneralDAO {
   val GENERIC_LIST_LIMIT = 100
 
   def getBlog(id : Long) : Blog
+  def insertBlog(blog : Blog) : Long
+
   def getEntriesForBlog(blogId : Long, limit: Int = GENERIC_LIST_LIMIT) : Seq[Entry]
   def getEntry(id : Long) : (Entry, Blog)
   def updateEntry(entryId: Long, entry: Entry)

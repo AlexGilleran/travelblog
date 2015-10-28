@@ -14,10 +14,11 @@ import scala.util.Properties
 
 
 case class ApiBlog(details: Blog, entries: Seq[Entry])
+
 case class ApiEntry(entry: Entry, blog: Blog)
 
 object BlogJsonImplicits extends DefaultJsonProtocol {
-  implicit val blog = jsonFormat4(Blog)
+  implicit val blogFormat = jsonFormat4(Blog)
   implicit val entry = jsonFormat4(Entry)
   implicit val apiBlog = jsonFormat2(ApiBlog)
   implicit val apiEntry = jsonFormat2(ApiEntry)
@@ -29,7 +30,6 @@ trait BlogService extends HttpService {
   import spray.httpx.SprayJsonSupport.sprayJsonMarshaller
   import spray.httpx.SprayJsonSupport.sprayJsonUnmarshaller
   import BlogJsonImplicits._
-  import com.alexgilleran.travelblog.data.schema.Tables.{Blog, Entry}
 
   private val dao: GeneralDAO = PostGresSlickDAO
 
@@ -37,16 +37,28 @@ trait BlogService extends HttpService {
     pathPrefix("blogs") {
       get {
         path(LongNumber) { id: Long =>
-          respondWithMediaType(`application/json`) {
-            complete {
-              val blog: Blog = dao.getBlog(id)
-              val entries: Seq[Entry] = dao.getEntriesForBlog(id, 5)
-              new ApiBlog(blog, entries)
-            }
-          }
-        } ~ respondWithMediaType(`application/json`) {
           complete {
-            dao.getBlogs(20)
+            val blog: Blog = dao.getBlog(id)
+            val entries: Seq[Entry] = dao.getEntriesForBlog(id, 5)
+            new ApiBlog(blog, entries)
+          }
+        } ~ complete {
+          dao.getBlogs(20)
+        }
+      } ~ put {
+        withSession() { session: Session =>
+          entity(as[Map[String, String]]) { map: Map[String, String] =>
+            val blog: Blog = new Blog(
+              name = map.get("name").get,
+              description = map.get("description"),
+              userId = session.user.userId.get
+            )
+
+            val id : Long = dao.insertBlog(blog)
+
+            complete {
+              blog.copy(blogId = Some(id))
+            }
           }
         }
       }
