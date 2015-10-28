@@ -10,9 +10,11 @@ import spray.json._
 import spray.routing.HttpService
 
 case class LoginDetails(emailAddress: String, password: String)
+
 case class ApiUser(details: User, activity: Seq[Entry], blogs: Seq[Blog])
 
 object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
+
   import BlogJsonImplicits.{entry, blog}
 
   class PublicUserFormat extends RootJsonFormat[User] {
@@ -87,9 +89,10 @@ trait UserService extends HttpService {
               }
             }
           }
-        } ~ path(LongNumber) { id =>
-          complete {
-            new ApiUser(dao.getUser(id), dao.getEntriesForUser(id), dao.getBlogsForUser(id))
+        } ~ path(Segment) { userName: String =>
+          dao.getFullUser(userName) match {
+            case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
+            case None => reject
           }
         }
       }

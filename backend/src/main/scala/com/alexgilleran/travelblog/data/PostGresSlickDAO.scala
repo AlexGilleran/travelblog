@@ -21,13 +21,13 @@ trait PostGresSlickDAO extends GeneralDAO {
 
   override def getEntriesForBlog(blogId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Entry] = {
     db.withSession { implicit session =>
-      EntryTable.filter(_.blogId === blogId).list.take(limit)
+      EntryTable.filter(_.blogId === blogId).take(limit).list
     }
   }
 
   override def getEntry(entryId: Long): (Entry, Blog) = {
     db.withSession { implicit session =>
-      EntryTable.filter (_.entryId === entryId) innerJoin BlogTable on (_.blogId === _.blogId) first
+      EntryTable.filter(_.entryId === entryId) innerJoin BlogTable on (_.blogId === _.blogId) first
     }
   }
 
@@ -39,7 +39,7 @@ trait PostGresSlickDAO extends GeneralDAO {
 
   override def getBlogs(limit: Int = GENERIC_LIST_LIMIT): List[Blog] = {
     db.withSession { implicit session =>
-      BlogTable.list.take(limit)
+      BlogTable.take(limit).list
     }
   }
 
@@ -55,24 +55,41 @@ trait PostGresSlickDAO extends GeneralDAO {
     }
   }
 
+  override def getUserByUserName(userName: String): Tables.User = {
+    db.withSession { implicit session =>
+      UserTable.filter(_.userName === userName).first
+    }
+  }
+
   override def insertUser(user: Tables.User): Long = {
     db.withSession(implicit session =>
       UserTable returning (UserTable.map(_.userId)) += user
     )
   }
 
-  override def getEntriesForUser(userId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Tables.Entry] = {
+  override def getFullUser(userName: String, limit: Int = GENERIC_LIST_LIMIT): Option[(User, Seq[Tables.Entry], Seq[Tables.Blog])] = {
     db.withSession { implicit session =>
-      (BlogTable.filter (_.userId === userId) innerJoin EntryTable on (_.blogId === _.blogId)
-        map((row : (BlogTable, EntryTable)) => row._2) list) take(limit)
+      val userOption: Option[User] = UserTable.filter(_.userName === userName) firstOption
+
+      userOption match {
+        case None => None
+        case Some(user: User) => {
+          val blogs: Seq[Blog] = BlogTable.filter(_.userId === user.userId) take (limit) list
+          val blogIds: Set[Long] = blogs.map(blog => blog.blogId.get).toSet
+          val entries: Seq[Entry] = EntryTable.filter(_.blogId inSet blogIds) take (limit) list
+
+          Some(user, entries, blogs)
+        }
+      }
+
     }
   }
 
-  override def getBlogsForUser(userId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Blog] = {
-    db.withSession { implicit session =>
-      (BlogTable.filter (_.userId === userId) list) take(limit)
-    }
-  }
+  //  override def getBlogsForUser(userName: String, limit: Int = GENERIC_LIST_LIMIT): Seq[Blog] = {
+  //    db.withSession { implicit session =>
+  //      (BlogTable.filter (_.userName === userId) list) take(limit)
+  //    }
+  //  }
 }
 
 // Singleton for now, TODO think about DI later.

@@ -25,7 +25,11 @@ var router = {
 
   '/entries/:entryId': populateEntry,
 
-  '/entries/:entryId/edit': populateEntry
+  '/entries/:entryId/edit': populateEntry,
+
+  '/users/:userId': function(state) {
+    return [this.flux.getActions('user').getUser(state.params.userId)];
+  }
 };
 
 function populateEntry(state) {

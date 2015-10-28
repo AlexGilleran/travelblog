@@ -1,6 +1,6 @@
 var React = require('react');
-var {Link} =  require('react-router');
 var FluxComponent = require('flummox/component');
+import BlogPreviewView from './blog-preview-view';
 
 export default class BlogListView extends React.Component {
   render() {
@@ -18,9 +18,7 @@ class Inner extends React.Component {
       <div>
         <If condition={this.props.blogList && this.props.blogList.map}>
           <For each="blog" of={this.props.blogList}>
-            <div key={blog.blogId}>
-              <Link to="blog" params={blog}>{blog.name}</Link>
-            </div>
+            <BlogPreviewView blog={blog} key={blog.blogId} />
           </For>
         </If>
       </div>

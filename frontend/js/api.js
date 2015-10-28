@@ -39,7 +39,11 @@ exports.getCurrentUser = function () {
 
 exports.register = function (userDetails) {
   return post('register', arguments, userDetails);
-}
+};
+
+exports.getUser = function(userId) {
+  return get('users/' + userId, arguments);
+};
 
 function get(url, args) {
   return request.get(API_BASE + url).end().catch(onError.bind(null, url, args));
