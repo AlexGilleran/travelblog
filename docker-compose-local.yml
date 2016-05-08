@@ -23,7 +23,8 @@ api:
     SCALA_ENV: localdocker
   dockerfile: local.dockerfile
   volumes:
-    - backend/:/usr/src/app
+    - ./backend/:/usr/src/app/
+    - ~/.ivy2/:/root/.ivy2/
   links:
     - db
   ports:
@@ -37,9 +38,5 @@ db:
     POSTGRES_PASSWORD: p4ssw0rd
   ports:
     - "5432:5432"
-  volumes_from:
-    - dbstorage
-dbstorage:
-  image: debian:jessie
   volumes:
-    - /var/lib/postgresql/data
+    - /var/lib/postgresql/data/:/var/lib/postgresql/data/
