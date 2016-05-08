@@ -52,23 +52,7 @@ module.exports = function (options) {
     libraryTarget: options.prerender ? "commonjs2" : undefined,
     pathinfo: options.debug,
   };
-  var excludeFromStats = [
-    /node_modules[\\\/]react(-router)?[\\\/]/,
-    /node_modules[\\\/]items-store[\\\/]/
-  ];
   var plugins = [
-    function () {
-      if (!options.prerender) {
-        this.plugin("done", function (stats) {
-          var jsonStats = stats.toJson({
-            chunkModules: true,
-            exclude: excludeFromStats
-          });
-          jsonStats.publicPath = publicPath;
-          require("fs").writeFileSync(path.join(__dirname, "../../build", "stats.json"), JSON.stringify(jsonStats));
-        });
-      }
-    },
     new webpack.PrefetchPlugin("react"),
     new webpack.PrefetchPlugin("react/lib/ReactComponentBrowserEnvironment"),
     new webpack.IgnorePlugin(/config$/)
@@ -137,7 +121,6 @@ module.exports = function (options) {
     plugins: plugins,
     devServer: {
       stats: {
-        exclude: excludeFromStats,
         assets: false,
         colors: true,
         version: false,

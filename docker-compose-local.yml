@@ -4,14 +4,13 @@ node:
     service: node
   environment:
     NODE_ENV: localdocker
-    STATIC_ASSET_BASE:
-    AJAX_BASE:
-    IP:
   dockerfile: local.dockerfile
   volumes:
-    - frontend/:/usr/src/app
+    - ./frontend/:/usr/src/app
   links:
     - api
+  expose:
+    - "2992"
   ports:
     - "2992:2992"
     - "3000:3000"
@@ -27,6 +26,8 @@ api:
     - ~/.ivy2/:/root/.ivy2/
   links:
     - db
+  expose:
+    - "8080"
   ports:
     - "8080:8080"
 db:

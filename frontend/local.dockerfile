@@ -1,9 +1,7 @@
-FROM node:0.12.4
+FROM node:6.1
 
-RUN mkdir -p /usr/src/app
+VOLUME /usr/src/app
+
 WORKDIR /usr/src/app
 
-RUN npm install -g nodemon
-RUN npm install -g webpack
-
-CMD npm run hot-dev-server & npm run dev
+CMD npm install && ./run-local.sh
