@@ -1,6 +1,6 @@
 {
   "port": 3000,
-  "staticAssetBase": "http://localhost:2992/assets/",
+  "staticAssetBase": "http://localhost:2992/_assets/",
   "jsBundleName": "main.js",
   "cssBundleName": "main.css",
   "apiBase": "http://api:8080/",

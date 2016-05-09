@@ -4,4 +4,4 @@ VOLUME /usr/src/app
 
 WORKDIR /usr/src/app
 
-CMD npm install && ./run-local.sh
+CMD npm install && npm run hot-dev-server & npm run dev

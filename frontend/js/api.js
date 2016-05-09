@@ -58,7 +58,8 @@ function post(url, args, data) {
 
 function onError(url, args, error) {
   error = error || new Error("Unknown cause");
-  console.error('Failed for ' + url + ': ' + error);
+  console.error('Failed for ' + API_BASE + url + ': ' + error);
   error.args = args;
   throw error;
 }
+//

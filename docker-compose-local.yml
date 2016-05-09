@@ -23,7 +23,7 @@ api:
   dockerfile: local.dockerfile
   volumes:
     - ./backend/:/usr/src/app/
-    - ~/.ivy2/:/root/.ivy2/
+    - /root/.ivy2/:/root/.ivy2/
   links:
     - db
   expose:

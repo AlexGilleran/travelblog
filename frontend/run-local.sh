@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-export NODE_ENV=localdev
-
 trap killgroup SIGINT
 
 killgroup(){
