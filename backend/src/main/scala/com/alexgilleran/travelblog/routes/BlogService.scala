@@ -1,40 +1,34 @@
 package com.alexgilleran.travelblog.routes
 
-import com.alexgilleran.travelblog.data.{PostGresSlickDAO, GeneralDAO}
-import com.alexgilleran.travelblog.data.schema.Tables.{User, Blog, Entry}
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.model.StatusCodes
+import com.alexgilleran.travelblog.data.schema.Tables.{ Blog, Entry }
+import com.alexgilleran.travelblog.data.{ GeneralDAO, PostGresSlickDAO }
 import com.alexgilleran.travelblog.routes.directives.SessionDirectives._
 import com.alexgilleran.travelblog.session.Session
-import spray.http.StatusCodes.{ClientError, CustomStatusCode}
-import spray.http.{StatusCodes, StatusCode, HttpCookie}
-import spray.http.MediaTypes._
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import spray.json.DefaultJsonProtocol._
 import spray.json._
-import spray.routing.HttpService
-
-import scala.None
-import scala.util.Properties
-
+import akka.http.scaladsl.server.Route
 
 case class ApiBlog(details: Blog, entries: Seq[Entry])
 
 case class ApiEntry(entry: Entry, blog: Blog)
 
-object BlogJsonImplicits extends DefaultJsonProtocol {
-  implicit val blogFormat = jsonFormat4(Blog)
-  implicit val entry = jsonFormat4(Entry)
-  implicit val apiBlog = jsonFormat2(ApiBlog)
-  implicit val apiEntry = jsonFormat2(ApiEntry)
+trait BlogJsonImplicits {
+  implicit val blogJson = jsonFormat4(Blog)
+  implicit val entryJson = jsonFormat4(Entry)
+  implicit val apiBlogJson = jsonFormat2(ApiBlog)
+  implicit val apiEntryJson = jsonFormat2(ApiEntry)
 }
 
 // this trait defines our service behavior independently from the service actor
-trait BlogService extends HttpService {
-
-  import spray.httpx.SprayJsonSupport.sprayJsonMarshaller
-  import spray.httpx.SprayJsonSupport.sprayJsonUnmarshaller
-  import BlogJsonImplicits._
+trait BlogService extends BlogJsonImplicits {
 
   private val dao: GeneralDAO = PostGresSlickDAO
 
-  val blogRoutes =
+  val blogRoutes : Route =
     pathPrefix("blogs") {
       get {
         path(LongNumber) { id: Long =>
@@ -43,60 +37,74 @@ trait BlogService extends HttpService {
             val entries: Seq[Entry] = dao.getEntriesForBlog(id, 5)
             new ApiBlog(blog, entries)
           }
-        } ~ complete {
+        } ~
+        complete {
           dao.getBlogs(20)
-        }
+        } 
       } ~ put {
-        withSession() { session: Session =>
-          entity(as[Map[String, String]]) { map: Map[String, String] =>
-            val blog: Blog = new Blog(
-              name = map.get("name").get,
-              description = map.get("description"),
-              userId = session.user.userId.get
-            )
+        withSession() { session: Option[Session] =>
+          session match {
+            case Some(session) => {
+              entity(as[Map[String, String]]) { map =>
+                val blog: Blog = new Blog(
+                  name = map.get("name").get,
+                  description = map.get("description"),
+                  userId = session.user.userId.get)
 
-            val id: Long = dao.insertBlog(blog)
+                val id: Long = dao.insertBlog(blog)
 
-            complete(StatusCodes.Created, blog.copy(blogId = Some(id)))
+                complete((StatusCodes.Created, blog.copy(blogId = Some(id))))
+              }
+            }
+            case None =>
+              complete(StatusCodes.Forbidden)
           }
         }
       } ~ post {
-        withSession() { session: Session =>
-          path(LongNumber) { id: Long =>
-            val existing: Blog = dao.getBlog(id)
+        withSession() { session: Option[Session] =>
+          session match {
+            case Some(session) =>
+              path(LongNumber) { id: Long =>
+                val existing: Blog = dao.getBlog(id)
 
-            if (existing.userId == session.user.userId.get) {
-              entity(as[Map[String, String]]) { map: Map[String, String] =>
-                dao.updateBlog(id, existing.copy(
-                  name = map.get("name").get,
-                  description = map.get("description")
-                ))
-                complete(StatusCodes.NoContent)
+                if (existing.userId == session.user.userId.get) {
+                  entity(as[Map[String, String]]) { map: Map[String, String] =>
+                    dao.updateBlog(id, existing.copy(
+                      name = map.get("name").get,
+                      description = map.get("description")))
+                    complete(StatusCodes.NoContent)
+                  }
+                } else {
+                  complete(StatusCodes.Forbidden)
+                }
               }
-            } else {
+            case None =>
               complete(StatusCodes.Forbidden)
-            }
           }
         }
       }
     } ~ pathPrefix("entries") {
       path(LongNumber) { id: Long =>
         get {
-          respondWithMediaType(`application/json`) {
-            complete {
-              val entryTuple = dao.getEntry(id)
-              new ApiEntry(entryTuple._1, entryTuple._2)
-            }
+          complete {
+            val entryTuple = dao.getEntry(id)
+            new ApiEntry(entryTuple._1, entryTuple._2)
           }
         } ~ post {
-          withSession() { session: Session =>
-            if (dao.getEntry(id)._2.userId == session.user.userId.get) {
-              entity(as[Entry]) { entry: Entry =>
-                dao.updateEntry(id, entry)
-                complete(StatusCodes.NoContent)
+          withSession() { session: Option[Session] =>
+            session match {
+              case Some(session) => {
+                if (dao.getEntry(id)._2.userId == session.user.userId.get) {
+                  entity(as[Entry]) { entry: Entry =>
+                    dao.updateEntry(id, entry)
+                    complete(StatusCodes.NoContent)
+                  }
+                } else {
+                  complete(StatusCodes.Forbidden)
+                }
               }
-            } else {
-              complete(StatusCodes.Forbidden)
+              case None =>
+                complete(StatusCodes.Forbidden)
             }
           }
         }

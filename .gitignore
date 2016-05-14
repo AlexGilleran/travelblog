@@ -38,3 +38,11 @@ node_modules
 frontend/build/
 build
 dist
+
+bin
+.metadata
+npm-debug.log*
+.cache-main
+.classpath
+.project
+.settings

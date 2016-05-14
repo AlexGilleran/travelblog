@@ -8,13 +8,13 @@ lazy val sharedSettings = Seq(
   scalaVersion := "2.11.6",
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
   libraryDependencies ++= {
-    val akkaV = "2.3.9"
+    val akkaV = "2.4.4"
     val sprayV = "1.3.3"
     Seq(
-      "io.spray" %% "spray-can" % sprayV,
-      "io.spray" %% "spray-routing" % sprayV,
-      "io.spray" %% "spray-testkit" % sprayV % "test",
-      "io.spray" %%  "spray-json" % "1.3.1",
+      "com.typesafe.akka" %% "akka-http-core" % akkaV,
+      "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
+      "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaV,
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaV % "test",
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
       "org.specs2" %% "specs2-core" % "2.3.11" % "test",
@@ -57,5 +57,10 @@ lazy val slickCodeGenTask = (sourceDirectory, dependencyClasspath in Compile, ru
 }
 
 //test in assembly := {}
+
+EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE18)
+EclipseKeys.withSource := true
+EclipseKeys.withJavadoc := true
+
 
 Revolver.settings

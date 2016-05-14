@@ -1,30 +1,53 @@
 package com.alexgilleran.travelblog.routes
 
-import com.alexgilleran.travelblog.data.schema.Tables.{User, Entry, Blog}
-import com.alexgilleran.travelblog.data.{GeneralDAO, PostGresSlickDAO}
-import com.alexgilleran.travelblog.routes.BlogJsonImplicits._
+import com.alexgilleran.travelblog.data.GeneralDAO
+import com.alexgilleran.travelblog.data.PostGresSlickDAO
+import com.alexgilleran.travelblog.data.schema.Tables.Blog
+import com.alexgilleran.travelblog.data.schema.Tables.Entry
+import com.alexgilleran.travelblog.data.schema.Tables.User
 import com.alexgilleran.travelblog.routes.directives.SessionDirectives._
-import com.alexgilleran.travelblog.session.{SessionManagerStub, SessionManager, Session}
-import spray.httpx.SprayJsonSupport
-import spray.json._
-import spray.routing.HttpService
+import com.alexgilleran.travelblog.session.Session
+import com.alexgilleran.travelblog.session.SessionManager
+import com.alexgilleran.travelblog.session.SessionManagerStub
+
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.marshalling.ToResponseMarshallable.apply
+import akka.http.scaladsl.server.Directive.addByNameNullaryApply
+import akka.http.scaladsl.server.Directive.addDirectiveApply
+import akka.http.scaladsl.server.Directives.Segment
+import akka.http.scaladsl.server.Directives.as
+import akka.http.scaladsl.server.Directives.complete
+import akka.http.scaladsl.server.Directives.enhanceRouteWithConcatenation
+import akka.http.scaladsl.server.Directives.entity
+import akka.http.scaladsl.server.Directives.get
+import akka.http.scaladsl.server.Directives.path
+import akka.http.scaladsl.server.Directives.pathEnd
+import akka.http.scaladsl.server.Directives.pathPrefix
+import akka.http.scaladsl.server.Directives.post
+import akka.http.scaladsl.server.Directives.reject
+import akka.http.scaladsl.server.Directives.segmentStringToPathMatcher
+import spray.json.DefaultJsonProtocol
+import spray.json.JsNumber
+import spray.json.JsObject
+import spray.json.JsString
+import spray.json.JsValue
+import spray.json.RootJsonFormat
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Route
 
 case class LoginDetails(emailAddress: String, password: String)
 
 case class ApiUser(details: User, activity: Seq[Entry], blogs: Seq[Blog])
 
-object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
-
-  import BlogJsonImplicits.{entry, blogFormat}
-
+trait LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport with BlogJsonImplicits {
+  
   class PublicUserFormat extends RootJsonFormat[User] {
     def write(user: User) = JsObject(
       "userName" -> JsString(user.userName),
       "displayName" -> JsString(user.displayName.orNull),
       "bio" -> JsString(user.bio.orNull),
       "avatarUrl" -> JsString(user.bio.orNull),
-      "userId" -> JsNumber(user.userId.get)
-    )
+      "userId" -> JsNumber(user.userId.get))
 
     def read(value: JsValue) = jsonFormat7(User).read(value)
   }
@@ -43,14 +66,11 @@ object LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val BigUserFormat = jsonFormat3(ApiUser)
 }
 
-trait UserService extends HttpService {
-
-  import LoginJsonImplicits._
-
+trait UserService extends LoginJsonImplicits {
   private val dao: GeneralDAO = PostGresSlickDAO
   private val sessionManager: SessionManager = SessionManagerStub
 
-  val userRoutes =
+  val userRoutes : Route =
     path("login") {
       post {
         entity(as[LoginDetails]) { loginDetails =>
@@ -80,19 +100,22 @@ trait UserService extends HttpService {
           path(Segment) { sessionId: String =>
             sessionManager.getSession(sessionId) match {
               case Some(session: Session) => complete(Some(PrivateUserFormat.write(session.user)))
-              case None => reject
+              case None                   => reject
             }
           } ~ pathEnd {
-            withSession() { session: Session =>
-              complete {
-                PrivateUserFormat.write(session.user)
+            withSession() { session: Option[Session] =>
+              session match {
+                case Some(session) =>
+                  complete(PrivateUserFormat.write(session.user))
+                case None => 
+                  complete(StatusCodes.Forbidden)
               }
             }
           }
         } ~ path(Segment) { userName: String =>
           dao.getFullUser(userName) match {
             case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
-            case None => reject
+            case None           => reject
           }
         }
       }
