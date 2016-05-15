@@ -2,8 +2,6 @@ node:
   extends:
     file: docker-compose-base.yml
     service: node
-  environment:
-    NODE_ENV: localdocker
   dockerfile: local.dockerfile
   volumes:
     - ./frontend/:/usr/src/app
@@ -14,16 +12,20 @@ node:
   ports:
     - "2992:2992"
     - "3000:3000"
+  environment:
+    - STATIC_ASSET_BASE
+    - AJAX_BASE
+    - NODE_ENV=localdocker
 api:
   extends:
     file: docker-compose-base.yml
     service: api
   environment:
-    SCALA_ENV: localdocker
+    - SCALA_ENV=localdocker
   dockerfile: local.dockerfile
   volumes:
     - ./backend/:/usr/src/app/
-    - /root/.ivy2/:/root/.ivy2/
+    - ~/.ivy2/:/root/.ivy2/
   links:
     - db
   expose:
