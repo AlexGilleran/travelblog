@@ -45,13 +45,18 @@ slick <<= slickCodeGenTask // register manual sbt command
 
 // code generation task
 lazy val slick = TaskKey[Seq[File]]("gen-tables")
-lazy val slickCodeGenTask = (sourceDirectory, dependencyClasspath in Compile, runner in Compile, streams) map { (dir, cp, r, s) =>
+lazy val slickCodeGenTask = Def.task {
+  val dir = sourceDirectory.value
+  val cp = (dependencyClasspath in Compile).value
+  val r = (runner in Compile).value
+  val s = streams.value
+
   val outputDir = (dir / "main" / "scala").getPath // place generated files in sbt's managed sources folder
-  val url = "jdbc:postgresql:TravelBlog?user=postgres&password=p4ssw0rd" // connection info for a pre-populated throw-away, in-memory db for this demo, which is freshly initialized on every run
+  val url = "jdbc:postgresql://localhost/TravelBlog?user=postgres&password=p4ssw0rd"
   val jdbcDriver = "org.postgresql.Driver"
-  val slickDriver = "scala.slick.driver.PostgresDriver"
+  val slickDriver = "slick.driver.PostgresDriver"
   val pkg = "com.alexgilleran.travelblog.data.schema"
-  toError(r.run("com.alexgilleran.travelblog.CustomSourceGenerator", cp.files, Array(slickDriver, jdbcDriver, url, outputDir, pkg), s.log))
+  toError(r.run("com.alexgilleran.travelblog.CustomSourceGenerator", cp.files, Array(slickDriver, url, outputDir, pkg), s.log))
   val fname = outputDir + "/com/alexgilleran/travelblog/data/schema/Tables.scala"
   Seq(file(fname))
 }
