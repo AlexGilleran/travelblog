@@ -2,6 +2,9 @@ package com.alexgilleran.travelblog.data
 
 import com.alexgilleran.travelblog.data.schema.Tables
 import com.alexgilleran.travelblog.data.schema.Tables.{User, Blog, Entry}
+import scala.concurrent.Future
+import scala.None
+import scala.None
 
 /**
  * Created by Alex on 2015-05-09.
@@ -9,17 +12,17 @@ import com.alexgilleran.travelblog.data.schema.Tables.{User, Blog, Entry}
 trait GeneralDAO {
   val GENERIC_LIST_LIMIT = 100
 
-  def getBlog(id : Long) : Blog
-  def insertBlog(blog : Blog) : Long
-  def updateBlog(blogId: Long, blog: Blog)
+  def getBlog(id : Long) : Future[Option[Blog]]
+  def insertBlog(blog : Blog) : Future[Long]
+  def updateBlog(blogId: Long, blog: Blog) : Future[Int]
 
-  def getEntriesForBlog(blogId : Long, limit: Int = GENERIC_LIST_LIMIT) : Seq[Entry]
-  def getEntry(id : Long) : (Entry, Blog)
-  def updateEntry(entryId: Long, entry: Entry)
-  def getBlogs(limit: Int = GENERIC_LIST_LIMIT) : List[Blog]
-  def getUser(id : Long) : User
-  def getUserByUserName(userName : String) : User
-  def getUserByEmail(email : String) : User
-  def getFullUser(userName: String, limit: Int = GENERIC_LIST_LIMIT): Option[(User, Seq[Entry], Seq[Blog])]
-  def insertUser(user : User) : Long
+  def getEntriesForBlog(blogId : Long, limit: Int = GENERIC_LIST_LIMIT) : Future[Seq[Entry]]
+  def getEntry(id : Long) : Future[Option[(Entry, Blog)]] 
+  def updateEntry(entryId: Long, entry: Entry) : Future[Int]
+  def getBlogs(limit: Int = GENERIC_LIST_LIMIT) : Future[Seq[Blog]]
+  def getUser(id : Long) : Future[Option[User]]
+  def getUserByUserName(userName : String) : Future[Option[User]]
+  def getUserByEmail(email : String) : Future[Option[User]]
+  def getFullUser(userName: String, limit: Int = GENERIC_LIST_LIMIT): Future[Option[(User, Seq[Entry], Seq[Blog])]]
+  def insertUser(user : User) : Future[Long]
 }

@@ -3,105 +3,95 @@ package com.alexgilleran.travelblog.data
 import com.alexgilleran.travelblog.config.Config
 import com.alexgilleran.travelblog.data.schema.Tables
 import com.alexgilleran.travelblog.data.schema.Tables._
-import com.alexgilleran.travelblog.data.schema.Tables.profile.simple._
 
 import scala.util.Properties
+import slick.driver.PostgresDriver
+import slick.lifted.TableQuery
+import slick.driver.PostgresDriver.api._
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Created by Alex on 2015-05-09.
  */
 trait PostGresSlickDAO extends GeneralDAO {
-  val db = Database.forURL(Config.app.getString("databaseUrl"), driver = "org.postgresql.Driver")
 
-  override def getBlog(id: Long): Blog = {
-    db.withSession { implicit session =>
-      BlogTable.filter(_.blogId === id).first
-    }
+  val db = PostgresDriver.api.Database.forURL(url = Config.app.getString("databaseUrl"), driver = "org.postgresql.Driver")
+
+  val blogQuery: TableQuery[BlogTable] = TableQuery[BlogTable]
+
+  override def getBlog(id: Long): Future[Option[Blog]] = {
+    db.run(
+      BlogTable.filter(_.blogId === id).result.headOption)
   }
 
-  override def insertBlog(blog : Blog) : Long = {
-    db.withSession(implicit session =>
-      BlogTable returning (BlogTable.map(_.blogId)) += blog
-    )
+  override def insertBlog(blog: Blog): Future[Long] = {
+    db.run(
+      BlogTable returning (BlogTable.map(_.blogId)) += blog)
   }
 
-  override def updateBlog(blogId: Long, blog: Blog) = {
-    db.withSession { implicit session =>
-      BlogTable.filter(_.blogId === blogId).update(blog.copy(blogId = Some(blogId)))
-    }
+  override def updateBlog(blogId: Long, blog: Blog): Future[Int] = {
+    db.run(
+      BlogTable.filter(_.blogId === blogId).update(blog))
   }
 
-  override def getEntriesForBlog(blogId: Long, limit: Int = GENERIC_LIST_LIMIT): Seq[Entry] = {
-    db.withSession { implicit session =>
-      EntryTable.filter(_.blogId === blogId).take(limit).list
-    }
+  override def getEntriesForBlog(blogId: Long, limit: Int = GENERIC_LIST_LIMIT): Future[Seq[Entry]] = {
+    db.run(
+      EntryTable.filter(_.blogId === blogId).take(limit).result)
   }
 
-  override def getEntry(entryId: Long): (Entry, Blog) = {
-    db.withSession { implicit session =>
-      EntryTable.filter(_.entryId === entryId) innerJoin BlogTable on (_.blogId === _.blogId) first
-    }
+  override def getEntry(entryId: Long): Future[Option[(Entry, Blog)]] = {
+    db.run(
+      EntryTable.filter(_.entryId === entryId).join(BlogTable).on(_.blogId === _.blogId).result.headOption)
   }
 
-  override def updateEntry(entryId: Long, entry: Entry) = {
-    db.withSession { implicit session =>
-      EntryTable.filter(_.entryId === entryId).update(entry)
-    }
+  override def updateEntry(entryId: Long, entry: Entry): Future[Int] = {
+    db.run(
+      EntryTable.filter(_.entryId === entryId).update(entry))
   }
 
-  override def getBlogs(limit: Int = GENERIC_LIST_LIMIT): List[Blog] = {
-    db.withSession { implicit session =>
-      BlogTable.take(limit).list
-    }
+  override def getBlogs(limit: Int = GENERIC_LIST_LIMIT): Future[Seq[Blog]] = {
+    db.run(
+      BlogTable.take(limit).result)
   }
 
-  override def getUser(id: Long): Tables.User = {
-    db.withSession { implicit session =>
-      UserTable.filter(_.userId === id).first
-    }
+  override def getUser(id: Long): Future[Option[User]] = {
+    db.run(
+      UserTable.filter(_.userId === id).result.headOption)
   }
 
-  override def getUserByEmail(email: String): Tables.User = {
-    db.withSession { implicit session =>
-      UserTable.filter(_.email === email).first
-    }
+  override def getUserByEmail(email: String): Future[Option[User]] = {
+    db.run(
+      UserTable.filter(_.email === email).result.headOption)
   }
 
-  override def getUserByUserName(userName: String): Tables.User = {
-    db.withSession { implicit session =>
-      UserTable.filter(_.userName === userName).first
-    }
+  override def getUserByUserName(userName: String): Future[Option[User]] = {
+    db.run(
+      UserTable.filter(_.userName === userName).result.headOption)
   }
 
-  override def insertUser(user: Tables.User): Long = {
-    db.withSession(implicit session =>
-      UserTable returning (UserTable.map(_.userId)) += user
-    )
+  val insertUserQuery = UserTable returning UserTable.map(_.userId) into ((user, userId) => user.copy(userId = Some(userId)))
+  override def insertUser(user: User): Future[Long] = {
+    db.run(
+      UserTable returning (UserTable.map(_.userId)) += user)
   }
 
-  override def getFullUser(userName: String, limit: Int = GENERIC_LIST_LIMIT): Option[(User, Seq[Tables.Entry], Seq[Tables.Blog])] = {
-    db.withSession { implicit session =>
-      val userOption: Option[User] = UserTable.filter(_.userName === userName) firstOption
-
-      userOption match {
-        case None => None
-        case Some(user: User) => {
-          val blogs: Seq[Blog] = BlogTable.filter(_.userId === user.userId) take (limit) list
-          val blogIds: Set[Long] = blogs.map(blog => blog.blogId.get).toSet
-          val entries: Seq[Entry] = EntryTable.filter(_.blogId inSet blogIds) take (limit) list
-
-          Some(user, entries, blogs)
-        }
+  override def getFullUser(userName: String, limit: Int = GENERIC_LIST_LIMIT): Future[Option[(User, Seq[Entry], Seq[Blog])]] = {
+    // TODO: Megajoin?
+    db.run {
+      UserTable.filter(_.userName === userName).result.headOption.map {
+        case None             => None
+        case Some(user: User) => BlogTable.filter(_.userId === user.userId).take(limit).result.map { blogs: Seq[Blog] => (blogs, user) }
       }
+    }
+  }.flatMap {
+    case (blogs: Seq[Blog], user: User) => {
+      val blogIds: Set[Long] = blogs.map(blog => blog.blogId.get).toSet
 
+      db.run(EntryTable.filter(_.blogId inSet blogIds).take(limit).result)
+        .map { entries: Seq[Entry] => Some(user, entries, blogs) }
     }
   }
-
-  //  override def getBlogsForUser(userName: String, limit: Int = GENERIC_LIST_LIMIT): Seq[Blog] = {
-  //    db.withSession { implicit session =>
-  //      (BlogTable.filter (_.userName === userId) list) take(limit)
-  //    }
-  //  }
 }
 
 // Singleton for now, TODO think about DI later.
