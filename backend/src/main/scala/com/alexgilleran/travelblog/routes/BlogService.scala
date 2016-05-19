@@ -1,6 +1,7 @@
 package com.alexgilleran.travelblog.routes
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import scala.concurrent.ExecutionContext.Implicits.global
 import akka.http.scaladsl.model.StatusCodes
 import com.alexgilleran.travelblog.data.schema.Tables.{ Blog, Entry }
 import com.alexgilleran.travelblog.data.{ GeneralDAO, PostGresSlickDAO }
@@ -11,6 +12,10 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import akka.http.scaladsl.server.Route
+import scala.concurrent.Future
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.server.RouteResult
+import akka.http.scaladsl.server.RequestContext
 
 case class ApiBlog(details: Blog, entries: Seq[Entry])
 
@@ -28,19 +33,27 @@ trait BlogService extends BlogJsonImplicits {
 
   private val dao: GeneralDAO = PostGresSlickDAO
 
-  val blogRoutes : Route =
+  val blogRoutes: Route =
     pathPrefix("blogs") {
       get {
         path(LongNumber) { id: Long =>
-          complete {
-            val blog: Blog = dao.getBlog(id)
-            val entries: Seq[Entry] = dao.getEntriesForBlog(id, 5)
-            new ApiBlog(blog, entries)
+          val agg: Future[(Option[Blog], Seq[Entry])] = for {
+            blog <- dao.getBlog(id)
+            entries <- dao.getEntriesForBlog(id, 5)
+          } yield (blog: Option[Blog], entries: Seq[Entry])
+
+          onSuccess(agg) { (blog: Option[Blog], entries: Seq[Entry]) =>
+            complete {
+              blog match {
+                case Some(blog: Blog) => new ApiBlog(blog, entries)
+                case None             => StatusCodes.NotFound
+              }
+            }
           }
         } ~
-        complete {
-          dao.getBlogs(20)
-        } 
+          complete {
+            dao.getBlogs(20)
+          }
       } ~ put {
         withSession() { session: Option[Session] =>
           session match {
@@ -51,9 +64,9 @@ trait BlogService extends BlogJsonImplicits {
                   description = map.get("description"),
                   userId = session.user.userId.get)
 
-                val id: Long = dao.insertBlog(blog)
-
-                complete((StatusCodes.Created, blog.copy(blogId = Some(id))))
+                onSuccess(dao.insertBlog(blog)) { id =>
+                  complete(StatusCodes.Created, blog.copy(blogId = Some(id)))
+                }
               }
             }
             case None =>
@@ -65,17 +78,24 @@ trait BlogService extends BlogJsonImplicits {
           session match {
             case Some(session) =>
               path(LongNumber) { id: Long =>
-                val existing: Blog = dao.getBlog(id)
+                onSuccess(dao.getBlog(id)) { blogOption: Option[Blog] =>
+                  blogOption match {
+                    case Some(existing) => {
+                      if (existing.userId == session.user.userId.get) {
+                        entity(as[Map[String, String]]) { map: Map[String, String] =>
+                          onSuccess(dao.updateBlog(id, existing.copy(
+                            name = map.get("name").get,
+                            description = map.get("description")))) { rowCount =>
+                            complete(StatusCodes.NoContent)
+                          }
+                        }
 
-                if (existing.userId == session.user.userId.get) {
-                  entity(as[Map[String, String]]) { map: Map[String, String] =>
-                    dao.updateBlog(id, existing.copy(
-                      name = map.get("name").get,
-                      description = map.get("description")))
-                    complete(StatusCodes.NoContent)
+                      } else {
+                        complete(StatusCodes.Forbidden)
+                      }
+                    }
+                    case None => complete(StatusCodes.NotFound)
                   }
-                } else {
-                  complete(StatusCodes.Forbidden)
                 }
               }
             case None =>
@@ -86,25 +106,35 @@ trait BlogService extends BlogJsonImplicits {
     } ~ pathPrefix("entries") {
       path(LongNumber) { id: Long =>
         get {
-          complete {
-            val entryTuple = dao.getEntry(id)
-            new ApiEntry(entryTuple._1, entryTuple._2)
+          onSuccess(dao.getEntry(id)) { result: Option[(Entry, Blog)] =>
+            result match {
+              case Some((entry: Entry, blog: Blog)) => complete(new ApiEntry(entry, blog))
+              case None                             => complete(StatusCodes.NotFound)
+            }
+
           }
         } ~ post {
           withSession() { session: Option[Session] =>
             session match {
               case Some(session) => {
-                if (dao.getEntry(id)._2.userId == session.user.userId.get) {
-                  entity(as[Entry]) { entry: Entry =>
-                    dao.updateEntry(id, entry)
-                    complete(StatusCodes.NoContent)
+                entity(as[Entry]) { entry: Entry =>
+                  onSuccess(dao.getEntry(id)) { result: Option[(Entry, Blog)] =>
+                    result match {
+                      case Some((entry: Entry, blog: Blog)) => {
+                        if (blog.userId == session.user.userId.get) {
+                          onSuccess(dao.updateEntry(id, entry)) { rowCount =>
+                            complete(StatusCodes.NoContent)
+                          }
+                        } else {
+                          complete(StatusCodes.Forbidden)
+                        }
+                      }
+                      case None => complete(StatusCodes.NotFound)
+                    }
                   }
-                } else {
-                  complete(StatusCodes.Forbidden)
                 }
               }
-              case None =>
-                complete(StatusCodes.Forbidden)
+              case None => complete(StatusCodes.Forbidden)
             }
           }
         }
