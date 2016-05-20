@@ -34,13 +34,14 @@ import spray.json.JsValue
 import spray.json.RootJsonFormat
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.Directives._
 
 case class LoginDetails(emailAddress: String, password: String)
 
 case class ApiUser(details: User, activity: Seq[Entry], blogs: Seq[Blog])
 
 trait LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport with BlogJsonImplicits {
-  
+
   class PublicUserFormat extends RootJsonFormat[User] {
     def write(user: User) = JsObject(
       "userName" -> JsString(user.userName),
@@ -70,7 +71,7 @@ trait UserService extends LoginJsonImplicits {
   private val dao: GeneralDAO = PostGresSlickDAO
   private val sessionManager: SessionManager = SessionManagerStub
 
-  val userRoutes : Route =
+  val userRoutes: Route =
     path("login") {
       post {
         entity(as[LoginDetails]) { loginDetails =>
@@ -84,12 +85,13 @@ trait UserService extends LoginJsonImplicits {
     } ~ path("register") {
       post {
         entity(as[User]) { user: User =>
-          val id: Long = dao.insertUser(user)
-          val newUser = user.copy(userId = Option(id))
+          onSuccess(dao.insertUser(user)) { id =>
+            val newUser = user.copy(userId = Option(id))
 
-          createSessionCookie(newUser) { session: Session =>
-            complete {
-              PrivateUserFormat.write(session.user)
+            createSessionCookie(newUser) { session: Session =>
+              complete {
+                PrivateUserFormat.write(session.user)
+              }
             }
           }
         }
@@ -103,19 +105,16 @@ trait UserService extends LoginJsonImplicits {
               case None                   => reject
             }
           } ~ pathEnd {
-            withSession() { session: Option[Session] =>
-              session match {
-                case Some(session) =>
-                  complete(PrivateUserFormat.write(session.user))
-                case None => 
-                  complete(StatusCodes.Forbidden)
-              }
+            withSession() { session => 
+              complete(PrivateUserFormat.write(session.user)) 
             }
           }
         } ~ path(Segment) { userName: String =>
-          dao.getFullUser(userName) match {
-            case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
-            case None           => reject
+          onSuccess(dao.getFullUser(userName)) { fullUser: Option[(User, Seq[Entry], Seq[Blog])] =>
+            fullUser match {
+              case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
+              case None           => reject
+            }
           }
         }
       }

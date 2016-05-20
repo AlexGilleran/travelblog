@@ -43,11 +43,9 @@ trait BlogService extends BlogJsonImplicits {
           } yield (blog: Option[Blog], entries: Seq[Entry])
 
           onSuccess(agg) { (blog: Option[Blog], entries: Seq[Entry]) =>
-            complete {
-              blog match {
-                case Some(blog: Blog) => new ApiBlog(blog, entries)
-                case None             => StatusCodes.NotFound
-              }
+            blog match {
+              case Some(blog: Blog) => complete(new ApiBlog(blog, entries))
+              case None             => complete(StatusCodes.NotFound)
             }
           }
         } ~
@@ -55,51 +53,40 @@ trait BlogService extends BlogJsonImplicits {
             dao.getBlogs(20)
           }
       } ~ put {
-        withSession() { session: Option[Session] =>
-          session match {
-            case Some(session) => {
-              entity(as[Map[String, String]]) { map =>
-                val blog: Blog = new Blog(
-                  name = map.get("name").get,
-                  description = map.get("description"),
-                  userId = session.user.userId.get)
+        withSession() { session: Session =>
+          entity(as[Map[String, String]]) { map =>
+            val blog: Blog = new Blog(
+              name = map.get("name").get,
+              description = map.get("description"),
+              userId = session.user.userId.get)
 
-                onSuccess(dao.insertBlog(blog)) { id =>
-                  complete(StatusCodes.Created, blog.copy(blogId = Some(id)))
-                }
-              }
+            onSuccess(dao.insertBlog(blog)) { id =>
+              complete(StatusCodes.Created, blog.copy(blogId = Some(id)))
             }
-            case None =>
-              complete(StatusCodes.Forbidden)
           }
         }
       } ~ post {
-        withSession() { session: Option[Session] =>
-          session match {
-            case Some(session) =>
-              path(LongNumber) { id: Long =>
-                onSuccess(dao.getBlog(id)) { blogOption: Option[Blog] =>
-                  blogOption match {
-                    case Some(existing) => {
-                      if (existing.userId == session.user.userId.get) {
-                        entity(as[Map[String, String]]) { map: Map[String, String] =>
-                          onSuccess(dao.updateBlog(id, existing.copy(
-                            name = map.get("name").get,
-                            description = map.get("description")))) { rowCount =>
-                            complete(StatusCodes.NoContent)
-                          }
-                        }
-
-                      } else {
-                        complete(StatusCodes.Forbidden)
+        withSession() { session =>
+          path(LongNumber) { id: Long =>
+            onSuccess(dao.getBlog(id)) { blogOption: Option[Blog] =>
+              blogOption match {
+                case Some(existing) => {
+                  if (existing.userId == session.user.userId.get) {
+                    entity(as[Map[String, String]]) { map: Map[String, String] =>
+                      onSuccess(dao.updateBlog(id, existing.copy(
+                        name = map.get("name").get,
+                        description = map.get("description")))) { rowCount =>
+                        complete(StatusCodes.NoContent)
                       }
                     }
-                    case None => complete(StatusCodes.NotFound)
+
+                  } else {
+                    complete(StatusCodes.Forbidden)
                   }
                 }
+                case None => complete(StatusCodes.NotFound)
               }
-            case None =>
-              complete(StatusCodes.Forbidden)
+            }
           }
         }
       }
@@ -114,27 +101,22 @@ trait BlogService extends BlogJsonImplicits {
 
           }
         } ~ post {
-          withSession() { session: Option[Session] =>
-            session match {
-              case Some(session) => {
-                entity(as[Entry]) { entry: Entry =>
-                  onSuccess(dao.getEntry(id)) { result: Option[(Entry, Blog)] =>
-                    result match {
-                      case Some((entry: Entry, blog: Blog)) => {
-                        if (blog.userId == session.user.userId.get) {
-                          onSuccess(dao.updateEntry(id, entry)) { rowCount =>
-                            complete(StatusCodes.NoContent)
-                          }
-                        } else {
-                          complete(StatusCodes.Forbidden)
-                        }
+          withSession() { session =>
+            entity(as[Entry]) { entry: Entry =>
+              onSuccess(dao.getEntry(id)) { result: Option[(Entry, Blog)] =>
+                result match {
+                  case Some((entry: Entry, blog: Blog)) => {
+                    if (blog.userId == session.user.userId.get) {
+                      onSuccess(dao.updateEntry(id, entry)) { rowCount =>
+                        complete(StatusCodes.NoContent)
                       }
-                      case None => complete(StatusCodes.NotFound)
+                    } else {
+                      complete(StatusCodes.Forbidden)
                     }
                   }
+                  case None => complete(StatusCodes.NotFound)
                 }
               }
-              case None => complete(StatusCodes.Forbidden)
             }
           }
         }
