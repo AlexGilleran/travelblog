@@ -83,9 +83,8 @@ trait PostGresSlickDAO extends GeneralDAO {
         case None             => None
         case Some(user: User) => BlogTable.filter(_.userId === user.userId).take(limit).result.map { blogs: Seq[Blog] => (blogs, user) }
       }
-    }
-  }.flatMap {
-    case (blogs: Seq[Blog], user: User) => {
+    }.flatMap { tuple =>
+      val (blogs: Seq[Blog], user: User) = tuple;
       val blogIds: Set[Long] = blogs.map(blog => blog.blogId.get).toSet
 
       db.run(EntryTable.filter(_.blogId inSet blogIds).take(limit).result)
