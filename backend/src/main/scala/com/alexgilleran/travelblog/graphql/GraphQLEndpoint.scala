@@ -10,52 +10,55 @@ import akka.stream.ActorMaterializer
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 import sangria.parser.QueryParser
-import sangria.execution.{ErrorWithResolver, QueryAnalysisError, Executor}
+import sangria.execution.{ ErrorWithResolver, QueryAnalysisError, Executor }
 import sangria.marshalling.sprayJson._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import spray.json._
 
-import scala.util.{Success, Failure}
+import scala.util.{ Success, Failure }
 
 trait GraphQLEndpoint {
-   val route: Route =
-    (post & path("graphql")) {
-      entity(as[JsValue]) { requestJson ⇒
-        val JsObject(fields) = requestJson
+  val graphQLRoutes: Route =
+    path("graphql") {
+      post {
+        entity(as[JsValue]) { requestJson ⇒
+          val JsObject(fields) = requestJson
 
-        val JsString(query) = fields("query")
+          val JsString(query) = fields("query")
 
-        val operation = fields.get("operationName") collect {
-          case JsString(op) ⇒ op
-        }
+          val operation = fields.get("operationName") collect {
+            case JsString(op) ⇒ op
+          }
 
-        val vars = fields.get("variables") match {
-          case Some(obj: JsObject) ⇒ obj
-          case Some(JsString(s)) if s.trim.nonEmpty ⇒ s.parseJson
-          case _ ⇒ JsObject.empty
-        }
+          val vars = fields.get("variables") match {
+            case Some(obj: JsObject)                  ⇒ obj
+            case Some(JsString(s)) if s.trim.nonEmpty ⇒ s.parseJson
+            case _                                    ⇒ JsObject.empty
+          }
 
-        QueryParser.parse(query) match {
+          QueryParser.parse(query) match {
 
-          // query parsed successfully, time to execute it!
-          case Success(queryAst) ⇒
-            complete(Executor.execute(SchemaDefinition.EntrySchema, queryAst, new CharacterRepo,
+            // query parsed successfully, time to execute it!
+            case Success(queryAst) ⇒
+              complete(Executor.execute(SchemaDefinition.EntrySchema, queryAst, new BlogRepo,
                 variables = vars,
                 operationName = operation,
-                deferredResolver = new Resolver)
-              .map(OK → _)
-              .recover {
-                case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
-                case error: ErrorWithResolver ⇒ InternalServerError → error.resolveError
-              })
+                deferredResolver = new BlogResolver)
+                .map(OK → _)
+                .recover {
+                  case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
+                  case error: ErrorWithResolver  ⇒ InternalServerError → error.resolveError
+                })
 
-          // can't parse GraphQL query, return error
-          case Failure(error) ⇒
-            complete(BadRequest, JsObject("error" -> JsString(error.getMessage)))
+            // can't parse GraphQL query, return error
+            case Failure(error) ⇒
+              complete(BadRequest, JsObject("error" -> JsString(error.getMessage)))
+          }
         }
-      }
-    } ~
-    get {
-      getFromResource("graphiql.html")
+      } ~
+        get {
+          getFromResource("graphiql.html")
+        }
     }
 }

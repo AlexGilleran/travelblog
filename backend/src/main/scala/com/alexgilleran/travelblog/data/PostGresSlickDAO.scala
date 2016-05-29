@@ -45,6 +45,11 @@ trait PostGresSlickDAO extends GeneralDAO {
       EntryTable.filter(_.entryId === entryId).join(BlogTable).on(_.blogId === _.blogId).result.headOption)
   }
 
+  override def getEntries(entryIds: Seq[Long]): Future[Seq[Entry]] = {
+    db.run(
+      EntryTable.filter(_.entryId.inSet(entryIds)).result)
+  }
+
   override def updateEntry(entryId: Long, entry: Entry): Future[Int] = {
     db.run(
       EntryTable.filter(_.entryId === entryId).update(entry))

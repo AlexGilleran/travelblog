@@ -14,8 +14,9 @@ import akka.http.scaladsl.server.ExceptionHandler
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Route._
 import akka.http.scaladsl.server.RouteConcatenation
+import com.alexgilleran.travelblog.graphql.GraphQLEndpoint
 
-object Boot extends App with UserService with BlogService {
+object Boot extends App with UserService with BlogService with GraphQLEndpoint {
   val dao: GeneralDAO = PostGresSlickDAO
 
   // we need an ActorSystem to host our application in
@@ -23,7 +24,7 @@ object Boot extends App with UserService with BlogService {
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
-  val routes = RouteConcatenation.concat(userRoutes, blogRoutes)
+  val routes = RouteConcatenation.concat(userRoutes, blogRoutes, graphQLRoutes)
 
   // start a new HTTP server on port 8080 with our service actor as the handler
   Http().bindAndHandle(routes, "0.0.0.0", Config.app.getInt("listenPort"))
