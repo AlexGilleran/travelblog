@@ -26,7 +26,8 @@ object SchemaDefinition {
       Field("entryId", OptionType(LongType), resolve = _.value.entryId),
       Field("markdown", StringType, resolve = _.value.markdown),
       Field("title", OptionType(StringType), resolve = _.value.title),
-      Field("blogId", LongType, resolve = _.value.blogId)))
+      Field("blogId", LongType, resolve = _.value.blogId),
+      Field("blog", OptionType(BlogType), resolve = (ctx) => DeferBlog(ctx.value.blogId))))
 
   val BlogType: ObjectType[BlogRepo, Blog] = ObjectType(
     "Blog",
@@ -47,7 +48,7 @@ object SchemaDefinition {
         resolve = (ctx) => ctx.ctx.getBlog(ctx.arg(BlogID))),
       Field("entry", EntryType,
         arguments = EntryID :: Nil,
-        resolve = (ctx) => ctx.ctx.getEntries(Seq(ctx.arg(EntryID))).map(_.head))))
+        resolve = (ctx) => ctx.ctx.getEntry(ctx.arg(EntryID)).map(_.head))))
 
   val EntrySchema = Schema(Query)
 }

@@ -93,7 +93,7 @@ trait BlogService extends BlogJsonImplicits {
     } ~ pathPrefix("entries") {
       path(LongNumber) { id: Long =>
         get {
-          onSuccess(dao.getEntry(id)) { result: Option[(Entry, Blog)] =>
+          onSuccess(dao.getEntryWithBlog(id)) { result: Option[(Entry, Blog)] =>
             result match {
               case Some((entry: Entry, blog: Blog)) => complete(new ApiEntry(entry, blog))
               case None                             => complete(StatusCodes.NotFound)
@@ -103,7 +103,7 @@ trait BlogService extends BlogJsonImplicits {
         } ~ post {
           withSession() { session =>
             entity(as[Entry]) { entry: Entry =>
-              onSuccess(dao.getEntry(id)) { result: Option[(Entry, Blog)] =>
+              onSuccess(dao.getEntryWithBlog(id)) { result: Option[(Entry, Blog)] =>
                 result match {
                   case Some((entry: Entry, blog: Blog)) => {
                     if (blog.userId == session.user.userId.get) {

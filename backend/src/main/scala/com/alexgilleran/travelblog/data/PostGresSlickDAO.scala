@@ -15,7 +15,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * Created by Alex on 2015-05-09.
  */
 trait PostGresSlickDAO extends GeneralDAO {
-
   val db = PostgresDriver.api.Database.forURL(url = Config.app.getString("databaseUrl"), driver = "org.postgresql.Driver")
 
   val blogQuery: TableQuery[BlogTable] = TableQuery[BlogTable]
@@ -40,7 +39,12 @@ trait PostGresSlickDAO extends GeneralDAO {
       EntryTable.filter(_.blogId === blogId).take(limit).result)
   }
 
-  override def getEntry(entryId: Long): Future[Option[(Entry, Blog)]] = {
+  override def getEntry(entryId: Long): Future[Option[Entry]] = {
+    db.run(
+      EntryTable.filter(_.entryId === entryId).result.headOption)
+  }
+
+  override def getEntryWithBlog(entryId: Long): Future[Option[(Entry, Blog)]] = {
     db.run(
       EntryTable.filter(_.entryId === entryId).join(BlogTable).on(_.blogId === _.blogId).result.headOption)
   }

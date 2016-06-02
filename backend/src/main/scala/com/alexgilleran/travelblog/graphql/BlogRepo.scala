@@ -12,16 +12,19 @@ import com.alexgilleran.travelblog.data.PostGresSlickDAO
 class BlogRepo {
   val dao: GeneralDAO = PostGresSlickDAO
 
-  def getEntries(entryIds: Seq[Long]): Future[Seq[Entry]] = dao.getEntries(entryIds)
+  def getEntry(entryId: Long): Future[Option[Entry]] = dao.getEntry(entryId)
   def getEntriesForBlog(blogId: Long): Future[Seq[Entry]] = dao.getEntriesForBlog(blogId)
   def getBlog(blogId: Long) : Future[Option[Blog]] = dao.getBlog(blogId)
 }
 
 case class DeferEntriesForBlog(blogId: Long) extends Deferred[Seq[Entry]]
+case class DeferBlog(blogId: Long) extends Deferred[Option[Blog]]
 
 class BlogResolver extends DeferredResolver[BlogRepo] {
   override def resolve(deferred: Vector[Deferred[Any]], ctx: BlogRepo) = deferred.map {
     case DeferEntriesForBlog(blogId) =>
       ctx.getEntriesForBlog(blogId)
+    case DeferBlog(blogId) =>
+      ctx.getBlog(blogId)
   }
 }
