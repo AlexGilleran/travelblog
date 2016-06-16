@@ -1,7 +1,5 @@
 const React = require('react');
-const EntryStoreModule = require('../../../stores/entry-store');
 const {Link} =  require('react-router');
-const FluxComponent = require('flummox/component');
 const EntryElementWrapper = require('../entry-element-wrapper');
 const EntryImageView = require('../view/entry-image-view');
 const EntryParagraphEditView = require('./entry-paragraph-edit-view');

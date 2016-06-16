@@ -1,6 +1,5 @@
 var React = require('react');
 var {Link} =  require('react-router');
-var FluxComponent = require('flummox/component');
 var EditUserView = require('./edit-user-view');
 var {Navigation} = require('react-router');
 

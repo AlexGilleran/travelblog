@@ -6,7 +6,7 @@ var joinEntry = require("./joinEntry");
 
 module.exports = function (options) {
   var defaultEntry = {
-    main: './js/client/client'
+    main: ['babel-polyfill', './js/client/client']
     // second: reactEntry("Second")
   };
   var loaders = {

@@ -1,7 +1,5 @@
 var React = require('react');
-var EntryStoreModule = require('../../../stores/entry-store');
 var {Link} =  require('react-router');
-import FluxComponent from '../../../../node_modules/flummox/component';
 
 export default class EntryReadView extends React.Component {
   render() {

@@ -1,23 +1,8 @@
 var React = require('react');
 var BlogListView = require('./blog-list-view');
 var EntryPreviewView = require('./../entry/entry-preview-view');
-import FluxComponent from '../../../node_modules/flummox/component';
 
 export default class BlogView extends React.Component {
-  render() {
-    return (
-      <FluxComponent flux={this.props.flux} connectToStores={{
-        blog: store => ({
-          blog: store.getBlog(this.props.routerState.params.blogId)
-        })
-      }}>
-        <Inner />
-      </FluxComponent>
-    );
-  }
-}
-
-class Inner extends React.Component {
   render() {
     return (
       <div>

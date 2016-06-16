@@ -1,7 +1,4 @@
 const React = require('react');
-const EntryStoreModule = require('../../../stores/entry-store');
-const {Link} =  require('react-router');
-const FluxComponent = require('flummox/component');
 const EntryContentEditView = require('./entry-content-edit-view');
 
 module.exports = React.createClass({

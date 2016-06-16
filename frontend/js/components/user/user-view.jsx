@@ -1,5 +1,4 @@
 import React from 'react';
-import FluxComponent from 'flummox/component';
 import EntryPreviewView from '../entry/entry-preview-view.jsx';
 import BlogPreviewView from '../blog/blog-preview-view';
 

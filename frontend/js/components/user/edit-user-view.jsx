@@ -1,6 +1,5 @@
 var React = require('react');
 var {Link} =  require('react-router');
-var FluxComponent = require('flummox/component');
 var _ = require('lodash');
 
 export default class EditUserView extends React.Component {

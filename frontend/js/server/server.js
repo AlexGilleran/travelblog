@@ -2,13 +2,11 @@
 Error.stackTraceLimit = Infinity;
 
 require('./server-url-loader').install();
-require("babel/register");
 
 var logger = require('koa-logger');
 var koa = require('koa');
 var koaStatic = require('koa-static');
 var debug = require('debug')('server');
-var preloadRouter = require('./preload-router');
 var routes = require('../routes.jsx');
 var views = require('koa-render');
 var co = require('co');
@@ -17,14 +15,15 @@ var props = require('../util/props');
 var ReactRouter = require('react-router');
 var React = require('react');
 var proxy = require('koa-proxy');
-var Flux = require('../flux');
+import IsomorphicRouter from 'isomorphic-relay-router';
+import Relay from 'react-relay';
 
 var app = koa();
 
 app.use(logger());
 
 // Proxy API calls
-app.use(function * (next) {
+app.use(function *(next) {
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
@@ -39,60 +38,42 @@ app.use(function * (next) {
 
 app.use(koaStatic('.'));
 
-// Add an injection context to the request.
-app.use(function * (next) {
-  this.flux = new Flux();
-  yield next;
-});
 
 app.use(views('templates'));
 
-// React router running isomorphically
-app.use(function * (next) {
-  var self = this;
+const GRAPHQL_URL = `http://localhost:8080/graphql`;
 
-  var content = yield new Promise(function (resolve, reject) {
-    ReactRouter.run(routes, self.req.url, function (Handler, nextState) {
-      var preloadActions = [];
+const networkLayer = new Relay.DefaultNetworkLayer(GRAPHQL_URL);
 
-      for (var i = 0; i < nextState.routes.length; i++) {
-        var path = nextState.routes[i].path;
+app.use(function *(next) {
+  const req = this.req;
+  const res = this.res;
 
-        if (preloadRouter[path]) {
-          preloadActions = preloadActions.concat(preloadRouter[path].call(self, nextState));
-        }
-      }
-
-      Promise.all(preloadActions)
-        .then(afterPromises)
-        .catch(function (err) {
-          console.log(err);
-
-          afterPromises();
-        });
-
-      function afterPromises() {
-        try {
-          var handler = React.createElement(Handler, {flux: self.flux, routerState: nextState});
-          resolve(React.renderToString(handler));
-        } catch (e) {
-          reject(e);
-        }
-      }
+  const {error, redirectLocation, renderProps} = yield new Promise((resolve, reject) => {
+    match({routes, location: req.originalUrl}, (error, redirectLocation, renderProps) => {
+      resolve({error, redirectLocation, renderProps});
     });
   });
 
-  var dehydratedStores = this.flux.serialize();
+  if (error) {
+    next(error);
+  } else if (redirectLocation) {
+    res.redirect(302, redirectLocation.pathname + redirectLocation.search);
+  } else if (renderProps) {
+    yield IsomorphicRouter.prepareData(renderProps, networkLayer);
+    const reactOutput = ReactDOMServer.renderToString(IsomorphicRouter.render(props));
 
-  var templateInput = {
-    content: content,
-    initialState: dehydratedStores,
-    cssBundle: props.get('cssBundleName') ? props.get('staticAssetBase') + props.get('cssBundleName') : null,
-    jsBundle: props.get('staticAssetBase') + props.get('jsBundleName'),
-    props: JSON.stringify(props.getForClient())
-  };
+    var templateInput = {
+      content: reactOutput,
+      cssBundle: props.get('cssBundleName') ? props.get('staticAssetBase') + props.get('cssBundleName') : null,
+      jsBundle: props.get('staticAssetBase') + props.get('jsBundleName'),
+      props: JSON.stringify(props.getForClient())
+    };
 
-  self.body = yield self.render('index.whiskers', templateInput);
+    this.body = yield this.render('index.whiskers', templateInput);
+  } else {
+    res.status(404).send('Not Found');
+  }
 });
 
 app.listen(props.get('port'));
