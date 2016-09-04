@@ -7,7 +7,6 @@ var logger = require('koa-logger');
 var koa = require('koa');
 var koaStatic = require('koa-static');
 var debug = require('debug')('server');
-var routes = require('../routes.jsx');
 var views = require('koa-render');
 var co = require('co');
 var props = require('../util/props');
@@ -15,8 +14,11 @@ var props = require('../util/props');
 var ReactRouter = require('react-router');
 var React = require('react');
 var proxy = require('koa-proxy');
+import { renderToString } from 'react-dom/server'
+import { match, RouterContext } from 'react-router'
 import IsomorphicRouter from 'isomorphic-relay-router';
 import Relay from 'react-relay';
+import routes from '../routes.jsx';
 
 var app = koa();
 
@@ -27,7 +29,6 @@ app.use(function *(next) {
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
-    //delete this.req.headers.host; // confuses heroku if not removed.
     yield proxy({
       url: props.get('apiBase') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
@@ -50,18 +51,21 @@ app.use(function *(next) {
   const res = this.res;
 
   const {error, redirectLocation, renderProps} = yield new Promise((resolve, reject) => {
-    match({routes, location: req.originalUrl}, (error, redirectLocation, renderProps) => {
+    match({routes, location: '/'}, (error, redirectLocation, renderProps) => {
       resolve({error, redirectLocation, renderProps});
     });
   });
 
   if (error) {
-    next(error);
+    res.status = 500;
+    console.error(error);
+    res.body = error;
   } else if (redirectLocation) {
     res.redirect(302, redirectLocation.pathname + redirectLocation.search);
   } else if (renderProps) {
-    yield IsomorphicRouter.prepareData(renderProps, networkLayer);
-    const reactOutput = ReactDOMServer.renderToString(IsomorphicRouter.render(props));
+    const {data, reactProps} = yield IsomorphicRouter.prepareData(renderProps, networkLayer);
+    console.log(reactProps);
+    const reactOutput = renderToString(IsomorphicRouter.render(reactProps));
 
     var templateInput = {
       content: reactOutput,
@@ -72,7 +76,8 @@ app.use(function *(next) {
 
     this.body = yield this.render('index.whiskers', templateInput);
   } else {
-    res.status(404).send('Not Found');
+    res.status = 404;
+    this.body = 'Not found';
   }
 });
 

@@ -9,7 +9,7 @@ export default class HomeView extends React.Component {
             Home
           </div>
           <div className="col-1-3">
-            <BlogListView flux={this.props.flux} />
+            {/*<BlogListView flux={this.props.flux} />*/}
           </div>
         </div>
       );
