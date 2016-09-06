@@ -1,13 +1,13 @@
-var React = require('react');
-var {RouteHandler} = require('react-router');
-var HeaderView = require('./header-view');
+import React from 'react';
+import HeaderView from './header-view';
 
 export default class RootView extends React.Component {
   render() {
+    console.log(this.props.children);
     return (
       <div>
-        {/*<HeaderView flux={this.props.flux}/>
-        {this.props.children}*/}
+        <HeaderView/>
+        {this.props.children}
       </div>
     );
   }
