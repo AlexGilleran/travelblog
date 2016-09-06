@@ -7,15 +7,10 @@ var joinEntry = require("./joinEntry");
 module.exports = function (options) {
   var defaultEntry = {
     main: ['babel-polyfill', './js/client/client']
-    // second: reactEntry("Second")
   };
   var loaders = {
-    "coffee": "coffee-redux-loader",
-    "jsx": options.hotComponents ?
-      ["react-hot-loader", "babel-loader"] :
-      ["babel-loader"],
     "json": "json-loader",
-    "js": {loader: "babel-loader", exclude: /node_modules/},
+    "js|jsx": {loader: "react-hot-loader!babel-loader?sourceMap=false", exclude: /node_modules/},
     "json5": "json5-loader",
     "txt": "raw-loader",
     "png|jpg|jpeg|gif|svg": "url-loader?limit=10000",

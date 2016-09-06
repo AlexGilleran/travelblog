@@ -5,7 +5,7 @@ import IsomorphicRouter from 'isomorphic-relay-router';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { browserHistory, match, Router } from 'react-router';
-var routes = require('../routes.jsx');
+import routes from '../routes.jsx';
 import Relay from 'react-relay';
 
 const environment = new Relay.Environment();

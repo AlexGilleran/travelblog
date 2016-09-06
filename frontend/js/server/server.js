@@ -63,12 +63,14 @@ app.use(function *(next) {
   } else if (redirectLocation) {
     res.redirect(302, redirectLocation.pathname + redirectLocation.search);
   } else if (renderProps) {
-    const {data, reactProps} = yield IsomorphicRouter.prepareData(renderProps, networkLayer);
-    console.log(reactProps);
+    const {data, props: reactProps} = yield IsomorphicRouter.prepareData(renderProps, networkLayer);
     const reactOutput = renderToString(IsomorphicRouter.render(reactProps));
+
+    console.log(data);
 
     var templateInput = {
       content: reactOutput,
+      preloadedData: JSON.stringify(data),
       cssBundle: props.get('cssBundleName') ? props.get('staticAssetBase') + props.get('cssBundleName') : null,
       jsBundle: props.get('staticAssetBase') + props.get('jsBundleName'),
       props: JSON.stringify(props.getForClient())

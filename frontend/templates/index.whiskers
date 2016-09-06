@@ -12,8 +12,8 @@
     <div id="root" class="grid grid-pad">
       {>content}
     </div>
-    <script id="initial-state" type="application/json">
-      {>initialState}
+    <script id="preloadedData" type="application/json">
+      {>preloadedData}
     </script>
     <script id="props" type="application/json">
       {>props}
