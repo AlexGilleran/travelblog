@@ -7,7 +7,7 @@ import com.typesafe.config._
  * Wraps around ficus and provides config data.
  */
 object Config {
-  private val env : String = if (System.getenv("SCALA_ENV") == null) "local" else System.getenv("SCALA_ENV")
+  private val env : String = if (System.getenv("SCALA_ENV") == null) "localdev" else System.getenv("SCALA_ENV")
 
   private val defaultConf = ConfigFactory.load()
   private val envConf = ConfigFactory.load("env-specific-config/" + env, ConfigParseOptions.defaults().setAllowMissing(false), ConfigResolveOptions.defaults())

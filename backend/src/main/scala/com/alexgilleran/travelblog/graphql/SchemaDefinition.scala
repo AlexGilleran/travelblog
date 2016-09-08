@@ -20,18 +20,18 @@ import sangria.schema.fields
 
 object SchemaDefinition {
 
-  val EntryType: ObjectType[Unit, Entry] = ObjectType(
+  lazy val EntryType: ObjectType[Unit, Entry] = ObjectType(
     "Entry",
-    fields[Unit, Entry](
+    () => fields[Unit, Entry](
       Field("entryId", OptionType(LongType), resolve = _.value.entryId),
       Field("markdown", StringType, resolve = _.value.markdown),
       Field("title", OptionType(StringType), resolve = _.value.title),
       Field("blogId", LongType, resolve = _.value.blogId),
       Field("blog", OptionType(BlogType), resolve = (ctx) => DeferBlog(ctx.value.blogId))))
 
-  val BlogType: ObjectType[BlogRepo, Blog] = ObjectType(
+  lazy val BlogType: ObjectType[BlogRepo, Blog] = ObjectType(
     "Blog",
-    fields[BlogRepo, Blog](
+    () => fields[BlogRepo, Blog](
       Field("blogId", OptionType(LongType), resolve = _.value.blogId),
       Field("name", StringType, resolve = _.value.name),
       Field("description", OptionType(StringType), resolve = _.value.description),
@@ -50,5 +50,5 @@ object SchemaDefinition {
         arguments = EntryID :: Nil,
         resolve = (ctx) => ctx.ctx.getEntry(ctx.arg(EntryID)).map(_.head))))
 
-  val EntrySchema = Schema(Query)
+  val schema = Schema(Query)
 }

@@ -71,6 +71,10 @@ lazy val slickCodeGenTask = Def.task {
 }
 
 //test in assembly := {}
+lazy val generateSchema = taskKey[Unit]("Generate schema.json file")
+fullRunTask(generateSchema, Compile, "com.alexgilleran.travelblog.graphql.GenerateSchema")
+compile in Runtime <<= compile in Runtime dependsOn generateSchema
+
 
 EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE18)
 EclipseKeys.withSource := true

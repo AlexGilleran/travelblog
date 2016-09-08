@@ -41,7 +41,7 @@ trait GraphQLEndpoint {
 
             // query parsed successfully, time to execute it!
             case Success(queryAst) ⇒
-              complete(Executor.execute(SchemaDefinition.EntrySchema, queryAst, new BlogRepo,
+              complete(Executor.execute(SchemaDefinition.schema, queryAst, new BlogRepo,
                 variables = vars,
                 operationName = operation,
                 deferredResolver = new BlogResolver)
