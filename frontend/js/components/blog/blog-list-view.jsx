@@ -18,7 +18,7 @@ class BlogListView extends React.Component {
 
 export default Relay.createContainer(BlogListView, {
   fragments: {
-    blogs: () => Relay.QL`
+    blogList: () => Relay.QL`
       fragment on Blog @relay(plural: true) {
         blogId,
         name

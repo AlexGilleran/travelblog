@@ -80,5 +80,6 @@ EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE18)
 EclipseKeys.withSource := true
 EclipseKeys.withJavadoc := true
 
+mainClass in (Compile, run) := Some("com.alexgilleran.travelblog.Boot")
 
 Revolver.settings

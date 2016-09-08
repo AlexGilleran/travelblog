@@ -1,18 +1,20 @@
 package com.alexgilleran.travelblog.graphql
 
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileWriter
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Failure
+import scala.util.Success
+
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.StatusCodes._
 import sangria.execution.Executor
 import sangria.introspection._
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.util.{ Failure, Success }
-import java.io.PrintWriter
-import spray.json._
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import java.io.BufferedWriter
-import java.io.FileWriter
 import sangria.marshalling.sprayJson._
-import akka.http.scaladsl.model.StatusCodes._
+import spray.json._
+import scala.reflect.io.Directory
 
 object GenerateSchema {
   def main(args: Array[String]) {
@@ -20,7 +22,9 @@ object GenerateSchema {
 
     futureOfSchemaJson onComplete {
       case Success(t: JsValue) => {
-        implicit val w = new BufferedWriter(new FileWriter("schema.json"))
+        val file = new File("target/graphql/schema.json")
+        file.getParentFile.mkdirs()
+        val w = new BufferedWriter(new FileWriter(file))
         w.write(t.prettyPrint)
         w.close
       }

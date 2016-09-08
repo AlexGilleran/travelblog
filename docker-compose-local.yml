@@ -5,6 +5,7 @@ node:
   dockerfile: local.dockerfile
   volumes:
     - ./frontend/:/usr/src/app
+    - ./backend/target/graphql/:/usr/src/backend/target/graphql
   links:
     - api
   expose:
