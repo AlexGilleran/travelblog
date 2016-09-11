@@ -5,20 +5,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.alexgilleran.travelblog.data.schema.Tables.Blog
 import com.alexgilleran.travelblog.data.schema.Tables.Entry
 
-import sangria.schema.Action.defaultAction
-import sangria.schema.Action.deferredAction
-import sangria.schema.Action.futureAction
-import sangria.schema.Argument
-import sangria.schema.Field
-import sangria.schema.ListType
-import sangria.schema.LongType
-import sangria.schema.ObjectType
-import sangria.schema.OptionType
-import sangria.schema.Schema
-import sangria.schema.StringType
-import sangria.schema.fields
+import sangria.schema.Action._
+import sangria.schema._
 
 object SchemaDefinition {
+  case class App()
+
+  val AppType: ObjectType[Unit, App] = ObjectType(
+    "Home",
+    () => fields[Unit, App](
+      Field("blogs", ListType(BlogType), resolve = (ctx) => DeferBlogs(ctx.arg(First))),
+      Field("blog", OptionType(BlogType),
+          arguments = BlogID :: Nil,
+          resolve = (ctx) => DeferBlog(ctx.arg(BlogID)))))
 
   lazy val EntryType: ObjectType[Unit, Entry] = ObjectType(
     "Entry",
@@ -40,9 +39,16 @@ object SchemaDefinition {
 
   val EntryID = Argument("entryId", LongType, description = "id of the entry")
   val BlogID = Argument("blogId", LongType, description = "id of the blog")
+  val First = Argument("first", IntType, description = "first n to get")
 
   val Query = ObjectType[BlogRepo, Unit](
     "Query", fields[BlogRepo, Unit](
+      Field("home", AppType,
+        arguments = List(),
+        resolve = (ctx) => new App()),
+      Field("blogs", ListType(BlogType),
+        arguments = First :: Nil,
+        resolve = (ctx) => ctx.ctx.getBlogs(ctx.arg(First))),
       Field("blog", OptionType(BlogType),
         arguments = BlogID :: Nil,
         resolve = (ctx) => ctx.ctx.getBlog(ctx.arg(BlogID))),

@@ -1,4 +1,5 @@
 import React from 'react';
+import Relay from 'react-relay';
 import BlogListView from './blog/blog-list-view';
 
 export default class HomeView extends React.Component {

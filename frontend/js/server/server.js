@@ -42,7 +42,7 @@ app.use(koaStatic('.'));
 
 app.use(views('templates'));
 
-const GRAPHQL_URL = `http://api:8080/graphql`;
+const GRAPHQL_URL = `http://api:8081/graphql`;
 
 const networkLayer = new Relay.DefaultNetworkLayer(GRAPHQL_URL);
 

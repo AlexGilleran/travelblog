@@ -30,9 +30,9 @@ api:
   links:
     - db
   expose:
-    - "8080"
+    - "8081"
   ports:
-    - "8080:8080"
+    - "8081:8081"
 db:
   extends:
     file: docker-compose-base.yml

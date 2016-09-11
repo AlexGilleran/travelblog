@@ -1,8 +1,9 @@
 var React = require('react');
+import Relay from 'react-relay';
 var BlogListView = require('./blog-list-view');
 var EntryPreviewView = require('./../entry/entry-preview-view');
 
-export default class BlogView extends React.Component {
+class BlogView extends React.Component {
   render() {
     return (
       <div>
@@ -25,3 +26,15 @@ export default class BlogView extends React.Component {
     );
   }
 }
+
+export default Relay.createContainer(BlogView, {
+  fragments: {
+    home: () => Relay.QL`
+      fragment on Home {
+        blog(blogId: 1) {
+          name
+        }
+      }
+    `
+  },
+});

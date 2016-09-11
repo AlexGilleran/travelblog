@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "babel-node js/server/server.js",
-    "dev": "nodemon --exec npm run babel-node -- js/server/server.js",
+    "dev": "nodemon --watch ./ --watch ../backend/target/graphql --exec npm run babel-node -- js/server/server.js",
     "babel-node": "babel-node",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev-server": "webpack-dev-server --config js/webpack/dev-server.config.js --progress --colors --port 2992 --inline",

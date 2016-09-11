@@ -17,16 +17,16 @@ export default [
     // queries: ViewerQueries,
     indexRoute: {
       component: HomeView,
-      queries: ViewerQueries,
-      prepareParams: () => ({status: 'any'}),
+      // queries: ViewerQueries,
+      // prepareParams: () => ({status: 'any'}),
     },
-    // childRoutes: [
-    //   {
-    //     path: ':status',
-    //     component: TodoList,
-    //     queries: ViewerQueries,
-    //   },
-    // ],
+    childRoutes: [
+      {
+        path: 'blogs/:blogId',
+        component: BlogView,
+        queries: ViewerQueries
+      },
+    ],
   }
 
   // <Route path="/" component={RootView}>
