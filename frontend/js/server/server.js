@@ -18,6 +18,7 @@ import { renderToString } from 'react-dom/server'
 import { match, RouterContext } from 'react-router'
 import IsomorphicRouter from 'isomorphic-relay-router';
 import Relay from 'react-relay';
+import url from 'url';
 import routes from '../routes.jsx';
 
 var app = koa();
@@ -42,7 +43,7 @@ app.use(koaStatic('.'));
 
 app.use(views('templates'));
 
-const GRAPHQL_URL = `${props.get('apiBase')}/graphql`;
+const GRAPHQL_URL = `http://api:8081/graphql`;
 
 const networkLayer = new Relay.DefaultNetworkLayer(GRAPHQL_URL);
 
@@ -51,7 +52,8 @@ app.use(function *(next) {
   const res = this.res;
 
   const {error, redirectLocation, renderProps} = yield new Promise((resolve, reject) => {
-    match({routes, location: '/'}, (error, redirectLocation, renderProps) => {
+    const urlParts = url.parse(req.url);
+    match({routes, location: urlParts.pathname}, (error, redirectLocation, renderProps) => {
       resolve({error, redirectLocation, renderProps});
     });
   });
