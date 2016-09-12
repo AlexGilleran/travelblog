@@ -26,11 +26,11 @@ app.use(logger());
 
 // Proxy API calls
 app.use(function *(next) {
-  var index = this.req.url.indexOf('/api/');
+  var index = this.req.url.indexOf('/graphql');
 
   if (index >= 0) {
     yield proxy({
-      url: props.get('apiBase') + this.req.url.substr(index + '/api/'.length)
+      url: 'http://api:8081/graphql'
     }).call(this, next);
   } else {
     yield next;
@@ -42,7 +42,7 @@ app.use(koaStatic('.'));
 
 app.use(views('templates'));
 
-const GRAPHQL_URL = `http://api:8081/graphql`;
+const GRAPHQL_URL = `${props.get('apiBase')}/graphql`;
 
 const networkLayer = new Relay.DefaultNetworkLayer(GRAPHQL_URL);
 

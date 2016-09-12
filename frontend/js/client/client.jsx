@@ -10,7 +10,7 @@ import Relay from 'react-relay';
 
 const environment = new Relay.Environment();
 
-environment.injectNetworkLayer(new Relay.DefaultNetworkLayer('http://localhost:8081/graphql'));
+environment.injectNetworkLayer(new Relay.DefaultNetworkLayer('http://localhost:3000/graphql'));
 
 const data = JSON.parse(document.getElementById('preloadedData').textContent);
 
