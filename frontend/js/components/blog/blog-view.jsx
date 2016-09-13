@@ -5,7 +5,7 @@ var EntryPreviewView = require('./../entry/entry-preview-view');
 
 class BlogView extends React.Component {
   render() {
-    const blog = this.props.home.blog;
+    const blog = this.props.blog;
 
     return (
       <div>
@@ -31,11 +31,9 @@ class BlogView extends React.Component {
 
 export default Relay.createContainer(BlogView, {
   fragments: {
-    home: () => Relay.QL`
-      fragment on Home {
-        blog(blogId: 1) {
-          name
-        }
+    blog: () => Relay.QL`
+      fragment on Blog {
+        name
       }
     `
   },

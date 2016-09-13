@@ -8,11 +8,8 @@ var koa = require('koa');
 var koaStatic = require('koa-static');
 var debug = require('debug')('server');
 var views = require('koa-render');
-var co = require('co');
 var props = require('../util/props');
 
-var ReactRouter = require('react-router');
-var React = require('react');
 var proxy = require('koa-proxy');
 import { renderToString } from 'react-dom/server'
 import { match, RouterContext } from 'react-router'
@@ -67,8 +64,6 @@ app.use(function *(next) {
   } else if (renderProps) {
     const {data, props: reactProps} = yield IsomorphicRouter.prepareData(renderProps, networkLayer);
     const reactOutput = renderToString(IsomorphicRouter.render(reactProps));
-
-    console.log(data);
 
     var templateInput = {
       content: reactOutput,

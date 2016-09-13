@@ -23,6 +23,7 @@ export default [
     childRoutes: [
       {
         path: 'blogs/:blogId',
+        prepareParams: prepareWidgetListParams,
         component: BlogView,
         queries: ViewerQueries
       },
@@ -42,3 +43,10 @@ export default [
   //   <IndexRoute component={HomeView}/>
   // </Route>
 ];
+
+function prepareWidgetListParams(params) {
+  return Object.assign(
+    params,
+    {blogId: parseInt(params.blogId)}
+  );
+};
