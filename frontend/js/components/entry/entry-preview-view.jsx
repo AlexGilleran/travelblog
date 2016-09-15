@@ -1,7 +1,8 @@
-var React = require('react');
+import React from 'react';
+import Relay from 'react-relay';
 import {Link} from 'react-router';
 
-export default class EntryPreviewView extends React.Component {
+class EntryPreviewView extends React.Component {
   render() {
     return (
       <div>
@@ -15,3 +16,15 @@ export default class EntryPreviewView extends React.Component {
     );
   }
 }
+
+export default Relay.createContainer(EntryPreviewView, {
+  fragments: {
+    entry: () => Relay.QL`
+      fragment on Entry {
+        entryId
+        title
+        markdown
+      }
+    `
+  },
+});

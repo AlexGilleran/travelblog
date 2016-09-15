@@ -1,6 +1,7 @@
 import React from 'react';
 import Relay from 'react-relay';
 import BlogListView from './blog-list-view';
+import EntryPreviewView from '../entry/entry-preview-view';
 
 class BlogView extends React.Component {
   render() {
@@ -14,9 +15,9 @@ class BlogView extends React.Component {
               <div>
                 <h2>{blog.name}</h2>
               </div>
-              {/*<For each="entry" of={blog.entries}>
+              <For each="entry" of={blog.entries}>
                 <EntryPreviewView key={entry.entryId} entry={entry}/>
-              </For>*/}
+              </For>
             </div>
           </If>
         </div>
@@ -33,6 +34,10 @@ export default Relay.createContainer(BlogView, {
     blog: () => Relay.QL`
       fragment on Blog {
         name
+        entries {
+          entryId
+          ${EntryPreviewView.getFragment('entry')}          
+        }
       }
     `,
     viewer: () => Relay.QL`
