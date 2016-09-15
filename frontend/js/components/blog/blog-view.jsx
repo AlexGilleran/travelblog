@@ -1,7 +1,6 @@
-var React = require('react');
+import React from 'react';
 import Relay from 'react-relay';
-var BlogListView = require('./blog-list-view');
-var EntryPreviewView = require('./../entry/entry-preview-view');
+import BlogListView from './blog-list-view';
 
 class BlogView extends React.Component {
   render() {
@@ -22,7 +21,7 @@ class BlogView extends React.Component {
           </If>
         </div>
         <div className="col-1-3">
-          {/*<BlogListView/>*/}
+          <BlogListView blogList={this.props.viewer.blogs} />
         </div>
       </div>
     );
@@ -34,6 +33,13 @@ export default Relay.createContainer(BlogView, {
     blog: () => Relay.QL`
       fragment on Blog {
         name
+      }
+    `,
+    viewer: () => Relay.QL`
+      fragment on Viewer {
+        blogs(first: 3) {
+          ${BlogListView.getFragment('blogList')}
+        }
       }
     `
   },

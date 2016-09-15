@@ -18,7 +18,9 @@ export default (
     <Route path="blogs/:blogId"
            component={BlogView}
            prepareParams={prepareWidgetListParams}
-           queries={{ blog: () => Relay.QL`query { blog(blogId: $blogId) }`}}/>
+           queries={{ blog: () => Relay.QL`query { blog(blogId: $blogId) }`,
+  viewer: () => Relay.QL`query { viewer }`
+  }}/>
     <Route path="entries" component={EntryWrapperView}>
       <Route path=":entryId" component={EntryReadView}/>
       <Route path=":entryId/edit" component={EntryEditView}/>
