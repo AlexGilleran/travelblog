@@ -8,7 +8,7 @@ class BlogPreviewView extends React.Component {
 
     return (
       <div>
-        <Link to="blog" params={blog}>{blog.name}</Link>
+        <Link to={`blogs/${blog.blogId}`} params={blog}>{blog.name}</Link>
         <div>{blog.description}</div>
       </div>
     );
@@ -19,6 +19,7 @@ export default Relay.createContainer(BlogPreviewView, {
   fragments: {
     blog: () => Relay.QL`
       fragment on Blog {
+        blogId,
         name,
         description
       }

@@ -7,7 +7,7 @@ export default class HeaderView extends React.Component {
     return (
       <div className="col-1-1">
         <div className="content pull-left">
-          <Link to="app">
+          <Link to="/">
             <h1>Blog</h1>
           </Link>
         </div>
