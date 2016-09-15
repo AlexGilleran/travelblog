@@ -17,8 +17,10 @@ export default [
     // queries: ViewerQueries,
     indexRoute: {
       component: HomeView,
-      // queries: ViewerQueries,
-      // prepareParams: () => ({status: 'any'}),
+      queries: {
+        viewer: () => Relay.QL`query { viewer }`
+      },
+      prepareParams: () => ({status: 'any'}),
     },
     childRoutes: [
       {

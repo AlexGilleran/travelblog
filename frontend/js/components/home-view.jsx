@@ -2,7 +2,7 @@ import React from 'react';
 import Relay from 'react-relay';
 import BlogListView from './blog/blog-list-view';
 
-export default class HomeView extends React.Component {
+class HomeView extends React.Component {
   render() {
     return (
       <div>
@@ -10,9 +10,20 @@ export default class HomeView extends React.Component {
           Home
         </div>
         <div className="col-1-3">
-          <BlogListView />
+          <BlogListView blogList={this.props.viewer.blogs} />
         </div>
       </div>
     );
   }
 };
+export default Relay.createContainer(HomeView, {
+  fragments: {
+    viewer: () => Relay.QL`
+      fragment on Viewer {
+        blogs(first: 10) {
+          ${BlogListView.getFragment('blogList')}
+        }
+      }
+    `
+  }
+});

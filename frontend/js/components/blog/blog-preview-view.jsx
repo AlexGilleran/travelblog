@@ -1,7 +1,8 @@
 import React from 'react';
+import Relay from 'react-relay';
 import {Link} from 'react-router';
 
-export default React.createClass({
+class BlogPreviewView extends React.Component {
   render() {
     const blog = this.props.blog;
 
@@ -12,4 +13,15 @@ export default React.createClass({
       </div>
     );
   }
+}
+
+export default Relay.createContainer(BlogPreviewView, {
+  fragments: {
+    blog: () => Relay.QL`
+      fragment on Blog {
+        name,
+        description
+      }
+    `
+  },
 });

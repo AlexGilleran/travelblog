@@ -2,7 +2,7 @@ import React from 'react';
 import BlogPreviewView from './blog-preview-view';
 import Relay from 'react-relay';
 
-export default class BlogListView extends React.Component {
+class BlogListView extends React.Component {
   render() {
     return (
       <div>
@@ -15,3 +15,13 @@ export default class BlogListView extends React.Component {
     );
   }
 }
+export default Relay.createContainer(BlogListView, {
+  fragments: {
+    blogList: () => Relay.QL`
+      fragment on Blog  @relay(plural: true) {
+          blogId
+          ${BlogPreviewView.getFragment('blog')}
+      }
+    `
+  },
+});

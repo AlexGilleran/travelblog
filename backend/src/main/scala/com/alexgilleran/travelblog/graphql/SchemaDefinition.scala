@@ -10,6 +10,15 @@ import sangria.schema._
 
 object SchemaDefinition {
   case class App()
+  val ViewerType: ObjectType[Unit, App] = ObjectType(
+    "Viewer",
+    () => fields[Unit, App](
+      Field("blogs", ListType(BlogType),
+        arguments = First :: Nil,
+        resolve = (ctx) => DeferBlogs(ctx.arg(First))),
+      Field("blog", OptionType(BlogType),
+        arguments = BlogID :: Nil,
+        resolve = (ctx) => DeferBlog(ctx.arg(BlogID)))))
 
   lazy val EntryType: ObjectType[Unit, Entry] = ObjectType(
     "Entry",
@@ -35,6 +44,9 @@ object SchemaDefinition {
 
   val Query = ObjectType[BlogRepo, Unit](
     "Query", fields[BlogRepo, Unit](
+      Field("viewer", ViewerType,
+        arguments = Nil,
+        resolve = (ctx) => new App()),
       Field("blogs", ListType(BlogType),
         arguments = First :: Nil,
         resolve = (ctx) => ctx.ctx.getBlogs(ctx.arg(First))),
