@@ -1,26 +1,47 @@
-var React = require('react');
-var {Link, RouteHandler} =  require('react-router');
+import React from 'react';
+import Relay from 'react-relay';
+import { Link } from 'react-router';
+import EntryEditView from './editor/entry-edit-view';
+import EntryReadView from './view/entry-read-view';
 
-export default class EntryView extends React.Component {
+class EntryView extends React.Component {
   render() {
     return (
       <div>
-        <If condition={this.props.entry}>
+        <If condition={this.props.viewer.entry}>
           <div>
-            <RouteHandler {...this.props} />
+            {React.Children.map(this.props.children, child => React.cloneElement(child, {entry: this.props.viewer.entry}))}
 
             <div className="col-1-1">
-              <Link to="blog" params={this.props.blog}>Back to Blog</Link>
+              <Link to={`/blogs/${this.props.viewer.entry.blogId}`}>Back to Blog</Link>
             </div>
           </div>
           <Else />
 
           <div>No entry data</div>
         </If>
-        <If condition={this.props.status.type === 'updating'}>
-          <span>Updating</span>
-        </If>
       </div>
     );
   }
 }
+
+const COMPONENTS = [EntryReadView];
+
+export default Relay.createContainer(EntryView, {
+  initialVariables: {
+    entryId: null
+  },
+
+  fragments: {
+    viewer: (variables) => Relay.QL`
+      fragment on Viewer {
+        entry(entryId: $entryId) { 
+          blogId,
+          ${COMPONENTS.map((Component) => {
+            return Component.getFragment('entry');
+          })}
+        }
+      }
+    `
+  }
+});

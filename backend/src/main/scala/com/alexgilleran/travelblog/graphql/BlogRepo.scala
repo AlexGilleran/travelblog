@@ -20,6 +20,7 @@ class BlogRepo {
 case class DeferBlogs(first: Int) extends Deferred[List[Blog]]
 case class DeferEntriesForBlog(blogId: Long) extends Deferred[Seq[Entry]]
 case class DeferBlog(blogId: Long) extends Deferred[Option[Blog]]
+case class DeferEntry(entryId: Long) extends Deferred[Option[Entry]]
 
 class BlogResolver extends DeferredResolver[BlogRepo] {
   override def resolve(deferred: Vector[Deferred[Any]], ctx: BlogRepo) = deferred.map {
@@ -29,5 +30,7 @@ class BlogResolver extends DeferredResolver[BlogRepo] {
       ctx.getEntriesForBlog(blogId)
     case DeferBlog(blogId) =>
       ctx.getBlog(blogId)
+    case DeferEntry(entryId) =>
+      ctx.getEntry(entryId)
   }
 }

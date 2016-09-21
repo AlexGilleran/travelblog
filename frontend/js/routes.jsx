@@ -8,28 +8,26 @@ import EntryEditView from './components/entry/editor/entry-edit-view';
 import EntryReadView from './components/entry/view/entry-read-view';
 import RegisterView from './components/user/register-view';
 import UserView from './components/user/user-view';
-
-const viewerQueries = {
-  viewer: () => Relay.QL`query { viewer }`
-};
+import { blog, viewer, entry } from './queries';
 
 export default (
   <Route path="/" component={RootView}>
     <Route path="blogs/:blogId"
            component={BlogView}
            prepareParams={prepareWidgetListParams}
-           queries={{ blog: () => Relay.QL`query { blog(blogId: $blogId) }`,
-  viewer: () => Relay.QL`query { viewer }`
-  }}/>
-    <Route path="entries" component={EntryWrapperView}>
-      <Route path=":entryId" component={EntryReadView}/>
+           queries={{blog, viewer}}/>
+    <Route path="entries/:entryId"
+           component={EntryWrapperView}
+           queries={{viewer}}
+           prepareParams={prepareViewerId}>
+      <IndexRoute component={EntryReadView}/>
       <Route path=":entryId/edit" component={EntryEditView}/>
     </Route>
     <Route path="users">
       <Route path="register" component={RegisterView}/>
       <Route path=":userId" component={UserView}/>
     </Route>
-    <IndexRoute component={HomeView} queries={viewerQueries}/>
+    <IndexRoute component={HomeView} queries={{viewer}}/>
   </Route>
 );
 
@@ -38,4 +36,10 @@ function prepareWidgetListParams(params) {
     params,
     {blogId: parseInt(params.blogId)}
   );
-};
+}
+
+function prepareViewerId(params) {
+  return Object.assign(params, {
+    entryId: parseInt(params.entryId)
+  })
+}

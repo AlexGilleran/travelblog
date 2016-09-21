@@ -18,7 +18,11 @@ object SchemaDefinition {
         resolve = (ctx) => DeferBlogs(ctx.arg(First))),
       Field("blog", OptionType(BlogType),
         arguments = BlogID :: Nil,
-        resolve = (ctx) => DeferBlog(ctx.arg(BlogID)))))
+        resolve = (ctx) => DeferBlog(ctx.arg(BlogID))),
+      Field("entry", OptionType(EntryType),
+        arguments = EntryID :: Nil,
+        resolve = (ctx) => DeferEntry(ctx.arg(EntryID))))
+  )
 
   lazy val EntryType: ObjectType[Unit, Entry] = ObjectType(
     "Entry",
