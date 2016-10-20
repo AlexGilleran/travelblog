@@ -7,25 +7,12 @@ import com.alexgilleran.travelblog.data.schema.Tables.Entry
 import com.alexgilleran.travelblog.data.schema.Tables.User
 import com.alexgilleran.travelblog.routes.directives.SessionDirectives._
 import com.alexgilleran.travelblog.session.Session
-import com.alexgilleran.travelblog.session.SessionManager
+import com.alexgilleran.travelblog.session
 import com.alexgilleran.travelblog.session.SessionManagerStub
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshalling.ToResponseMarshallable.apply
-import akka.http.scaladsl.server.Directive.addByNameNullaryApply
-import akka.http.scaladsl.server.Directive.addDirectiveApply
-import akka.http.scaladsl.server.Directives.Segment
-import akka.http.scaladsl.server.Directives.as
-import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server.Directives.enhanceRouteWithConcatenation
-import akka.http.scaladsl.server.Directives.entity
-import akka.http.scaladsl.server.Directives.get
-import akka.http.scaladsl.server.Directives.path
-import akka.http.scaladsl.server.Directives.pathEnd
-import akka.http.scaladsl.server.Directives.pathPrefix
-import akka.http.scaladsl.server.Directives.post
-import akka.http.scaladsl.server.Directives.reject
-import akka.http.scaladsl.server.Directives.segmentStringToPathMatcher
+import akka.http.scaladsl.server.Directives._
 import spray.json.DefaultJsonProtocol
 import spray.json.JsNumber
 import spray.json.JsObject
@@ -34,7 +21,6 @@ import spray.json.JsValue
 import spray.json.RootJsonFormat
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives._
 
 case class LoginDetails(emailAddress: String, password: String)
 
@@ -69,7 +55,7 @@ trait LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport with 
 
 trait UserService extends LoginJsonImplicits {
   private val dao: GeneralDAO = PostGresSlickDAO
-  private val sessionManager: SessionManager = SessionManagerStub
+  private val sessionManager: session.SessionManager = SessionManagerStub
 
   val userRoutes: Route =
     path("login") {
@@ -96,27 +82,27 @@ trait UserService extends LoginJsonImplicits {
           }
         }
       }
-    } ~ pathPrefix("users") {
-      get {
-        pathPrefix("withSession") {
-          path(Segment) { sessionId: String =>
-            sessionManager.getSession(sessionId) match {
-              case Some(session: Session) => complete(Some(PrivateUserFormat.write(session.user)))
-              case None                   => reject
-            }
-          } ~ pathEnd {
-            withSession() { session => 
-              complete(PrivateUserFormat.write(session.user)) 
-            }
-          }
-        } ~ path(Segment) { userName: String =>
-          onSuccess(dao.getFullUser(userName)) { fullUser: Option[(User, Seq[Entry], Seq[Blog])] =>
-            fullUser match {
-              case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
-              case None           => reject
-            }
-          }
-        }
-      }
-    }
+    }// ~ pathPrefix("users") {
+//      get {
+//        pathPrefix("withSession") {
+//          path(Segment) { sessionId: String =>
+//            sessionManager.getSession(sessionId) match {
+//              case Some(session: Session) => complete(Some(PrivateUserFormat.write(session.user)))
+//              case None                   => reject
+//            }
+//          } ~ pathEnd {
+//            withSession() { session =>
+//              complete(PrivateUserFormat.write(session.user))
+//            }
+//          }
+//        } ~ path(Segment) { userName: String =>
+//          onSuccess(dao.getFullUser(userName)) { fullUser: Option[(User, Seq[Entry], Seq[Blog])] =>
+//            fullUser match {
+//              case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
+//              case None           => reject
+//            }
+//          }
+//        }
+//      }
+//    }
 }

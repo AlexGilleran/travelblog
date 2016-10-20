@@ -18,7 +18,7 @@ import scala.reflect.io.Directory
 
 object GenerateSchema {
   def main(args: Array[String]) {
-    val futureOfSchemaJson = Executor.execute(SchemaDefinition.schema, introspectionQuery, new BlogRepo, deferredResolver = new BlogResolver)
+    val futureOfSchemaJson = Executor.execute(SchemaDefinition.schema, introspectionQuery, new SecureContext(new BlogRepo), deferredResolver = new BlogResolver)
 
     futureOfSchemaJson onComplete {
       case Success(t: JsValue) => {

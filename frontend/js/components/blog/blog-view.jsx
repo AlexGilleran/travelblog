@@ -5,7 +5,7 @@ import EntryPreviewView from '../entry/entry-preview-view';
 
 class BlogView extends React.Component {
   render() {
-    const blog = this.props.blog;
+    const blog = this.props.viewer.blog;
 
     return (
       <div>
@@ -30,20 +30,22 @@ class BlogView extends React.Component {
 }
 
 export default Relay.createContainer(BlogView, {
+  initialVariables: {
+    blogId: null
+  },
+
   fragments: {
-    blog: () => Relay.QL`
-      fragment on Blog {
-        name
-        entries {
-          entryId
-          ${EntryPreviewView.getFragment('entry')}          
-        }
-      }
-    `,
-    viewer: () => Relay.QL`
+    viewer: (variables) => Relay.QL`
       fragment on Viewer {
         blogs(first: 3) {
           ${BlogListView.getFragment('blogList')}
+        },
+        blog(blogId: $blogId) {
+          name
+          entries {
+            entryId
+            ${EntryPreviewView.getFragment('entry')}          
+          }
         }
       }
     `

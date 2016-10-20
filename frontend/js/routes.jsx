@@ -11,11 +11,13 @@ import UserView from './components/user/user-view';
 import { blog, viewer, entry } from './queries';
 
 export default (
-  <Route path="/" component={RootView}>
+  <Route path="/"
+         component={RootView}
+         queries={{viewer}}>
     <Route path="blogs/:blogId"
            component={BlogView}
            prepareParams={prepareWidgetListParams}
-           queries={{blog, viewer}}/>
+           queries={{viewer}}/>
     <Route path="entries/:entryId"
            component={EntryWrapperView}
            queries={{viewer}}

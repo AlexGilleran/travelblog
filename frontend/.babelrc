@@ -9,10 +9,12 @@
       }
     ],
     "react",
-    "es2015"
+    "es2015",
+    "es2016"
   ],
   "plugins": [
     "jsx-control-statements",
-    "transform-runtime"
+    "transform-runtime",
+    "transform-class-properties"
   ]
 }

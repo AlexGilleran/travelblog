@@ -1,8 +1,9 @@
-var React = require('react');
+import React from 'react';
+import Relay from 'react-relay';
 import LoginView from './login-view';
-import {Link} from 'react-router';
+import { Link } from 'react-router';
 
-export default class HeaderView extends React.Component {
+class HeaderView extends React.Component {
   render() {
     return (
       <div className="col-1-1">
@@ -12,9 +13,19 @@ export default class HeaderView extends React.Component {
           </Link>
         </div>
         <div className="pull-right">
-          <LoginView flux={this.props.flux} />
+          <LoginView viewer={this.props.viewer}/>
         </div>
       </div>
     );
   }
-};
+}
+
+export default Relay.createContainer(HeaderView, {
+  fragments: {
+    viewer: (variables) => Relay.QL`
+      fragment on Viewer {
+        ${LoginView.getFragment('viewer')}
+      }
+    `
+  },
+});

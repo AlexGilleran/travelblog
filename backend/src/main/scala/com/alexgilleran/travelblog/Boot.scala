@@ -44,7 +44,9 @@ object Boot extends App with UserService with BlogService with GraphQLEndpoint {
   }
   val routes = handleExceptions(myExceptionHandler) {
     logRequestResult("travelblog") {
-      RouteConcatenation.concat(userRoutes, blogRoutes, graphQLRoutes)
+      pathPrefix("api") {
+        RouteConcatenation.concat(userRoutes, blogRoutes, graphQLRoutes)
+      }
     }
   }
 

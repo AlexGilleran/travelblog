@@ -6,7 +6,7 @@ var joinEntry = require("./joinEntry");
 
 module.exports = function (options) {
   var defaultEntry = {
-    main: ['babel-polyfill', './js/client/client']
+    main: ['babel-polyfill', 'whatwg-fetch', './js/client/client']
   };
   var loaders = {
     "json": "json-loader",

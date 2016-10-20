@@ -17,6 +17,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import spray.json._
 
 import scala.util.{ Success, Failure }
+import scala.concurrent.Future
+import akka.http.scaladsl.model.headers.HttpCookie
 
 trait GraphQLEndpoint {
   val graphQLRoutes: Route =
@@ -37,20 +39,24 @@ trait GraphQLEndpoint {
             case _                                    ⇒ JsObject.empty
           }
 
+          val blogRepo = new BlogRepo
+
           QueryParser.parse(query) match {
 
             // query parsed successfully, time to execute it!
             case Success(queryAst) ⇒
-              complete(Executor.execute(SchemaDefinition.schema, queryAst, new BlogRepo,
-                variables = vars,
-                operationName = operation,
-                deferredResolver = new BlogResolver)
-                .map(OK → _)
-                .recover {
-                  case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
-                  case error: ErrorWithResolver  ⇒ InternalServerError → error.resolveError
-                })
-
+              onComplete(
+                Executor.execute(SchemaDefinition.schema, queryAst, SecureContext(blogRepo),
+                  variables = vars,
+                  operationName = operation,
+                  deferredResolver = new BlogResolver)) {
+                  case Success(value) =>
+                    complete(value)
+                  case Failure(ex) => ex match {
+                    case error: QueryAnalysisError ⇒ complete(BadRequest → error.resolveError)
+                    case error: ErrorWithResolver  ⇒ complete(InternalServerError → error.resolveError)
+                  }
+                }
             // can't parse GraphQL query, return error
             case Failure(error) ⇒
               complete(BadRequest, JsObject("error" -> JsString(error.getMessage)))

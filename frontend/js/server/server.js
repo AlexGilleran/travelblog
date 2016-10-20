@@ -23,12 +23,13 @@ var app = koa();
 app.use(logger());
 
 // Proxy API calls
-app.use(function *(next) {
-  var index = this.req.url.indexOf('/graphql');
+app.use(function * (next) {
+  var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
+    //delete this.req.headers.host; // confuses heroku if not removed.
     yield proxy({
-      url: 'http://api:8081/graphql'
+      url: props.get('apiBase') + this.req.url.substr(index + '/api/'.length)
     }).call(this, next);
   } else {
     yield next;
@@ -40,7 +41,7 @@ app.use(koaStatic('.'));
 
 app.use(views('templates'));
 
-const GRAPHQL_URL = `http://api:8081/graphql`;
+const GRAPHQL_URL = `http://api:8081/api/graphql`;
 
 const networkLayer = new Relay.DefaultNetworkLayer(GRAPHQL_URL);
 

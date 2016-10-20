@@ -30,6 +30,7 @@ lazy val sharedSettings = Seq(
       
       "ch.qos.logback" % "logback-classic" % "1.0.9",
       "net.ceedubs" %% "ficus" % "1.1.2",
+      "com.softwaremill.akka-http-session" %% "core" % "0.2.7",
       
       "org.specs2" %% "specs2-core" % "2.3.11" % "test"
     )
