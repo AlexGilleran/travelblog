@@ -7,17 +7,22 @@ class LoginView extends React.Component {
   onSubmit(event) {
     event.preventDefault();
 
-    const email = React.findDOMNode(this.refs.email).value;
-    const password = React.findDOMNode(this.refs.password).value;
+    const email = this.emailTextbox.value;
+    const password = this.passwordTextbox.value;
 
     fetch('http://localhost:3000/api/users/login', {
       method: 'POST',
-      body: {
-        email, password
-      }
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        emailAddress: email,
+        password
+      })
     }).then(() => {
       this.props.relay.commitUpdate(
-        new LoginMutation({email})
+        new LoginMutation({viewer: this.props.viewer})
       );
     }).catch(e => {
       console.error(e)
@@ -28,20 +33,20 @@ class LoginView extends React.Component {
     return (
       <div>
         {/*<If condition={this.props.loginInProgress}>
-            <span>Logging in...</span>
-          </If>
-          <If condition={this.props.loginFailed}>
-            <span>Login failed: {this.props.loginFailureReason}</span>
-          </If>*/}
-          <If condition={this.props.loggedIn}>
-            <span>Logged in.</span>
+         <span>Logging in...</span>
+         </If>
+         <If condition={this.props.loginFailed}>
+         <span>Login failed: {this.props.loginFailureReason}</span>
+         </If>*/}
+        <If condition={this.props.loggedIn}>
+          <span>Logged in.</span>
           <Else />
-            <form onSubmit={this.onSubmit.bind(this)}>
-              <input type="text" placeholder="Email Address" ref="email" />
-              <input type="password" placeholder="Password" ref="password" />
-              <input type="submit" value="Login" />
-              <Link to="register">Sign Up</Link>
-            </form>
+          <form onSubmit={this.onSubmit.bind(this)}>
+            <input type="text" placeholder="Email Address" ref={node => this.emailTextbox = node}/>
+            <input type="password" placeholder="Password" ref={node => this.passwordTextbox = node}/>
+            <input type="submit" value="Login"/>
+            <Link to="register">Sign Up</Link>
+          </form>
         </If>
       </div>
     );

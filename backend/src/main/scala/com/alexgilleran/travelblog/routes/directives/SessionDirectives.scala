@@ -36,25 +36,15 @@ trait SessionDirectives {
   }
 
   def createSession(loginDetails: LoginDetails): Directive1[Session] = {
-    optionalSession() flatMap {
-      case Some(session: Session) =>
-        provide(session)
-      case None => {
-        createSessionCookie(loginDetails)
-      }
-    }
-  }
-
-  private def createSessionCookie(loginDetails: LoginDetails): Directive1[Session] = {
     onSuccess(dao.getUserByEmail(loginDetails.emailAddress)) flatMap { user =>
       user match {
-        case Some(user) => createSessionCookie(user)
+        case Some(user) => createSession(user)
         case None       => reject
       }
     }
   }
 
-  def createSessionCookie(user: User): Directive1[Session] = {
+  def createSession(user: User): Directive1[Session] = {
     val (id: String, session: Session) = sessionManager.newSession(user)
 
     setSession(oneOff, usingCookies, id) tflatMap { ctx =>

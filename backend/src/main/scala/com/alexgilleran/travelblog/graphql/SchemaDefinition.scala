@@ -6,6 +6,7 @@ import com.alexgilleran.travelblog.data.schema.Tables._
 
 import sangria.schema.Action._
 import sangria.schema._
+import sangria.relay._
 import scala.concurrent.Future
 
 object SchemaDefinition {
@@ -13,7 +14,6 @@ object SchemaDefinition {
   val EntryID = Argument("entryId", LongType, description = "id of the entry")
   val BlogID = Argument("blogId", LongType, description = "id of the blog")
   val First = Argument("first", IntType, description = "first n to get")
-  val UserNameArg = Argument("input", StringType)
 
   lazy val EntryType: ObjectType[Unit, Entry] = ObjectType(
     "Entry",
@@ -39,17 +39,24 @@ object SchemaDefinition {
       Field("userId", OptionType(LongType), resolve = _.value.userId),
       Field("userName", StringType, resolve = _.value.userName)))
 
-  lazy val LoginPayloadType: ObjectType[SecureContext, LoginPayload] = ObjectType(
-    "LoginPayload",
-    () => fields[SecureContext, LoginPayload](
-      Field("viewer", ViewerType, resolve = ctx => new Viewer())))
+  case class LoginPayload(clientMutationId: String, currentUser: Option[User]) extends Mutation
 
-  lazy val MutationType = ObjectType(
-    "Mutation",
-    () => fields[SecureContext, Unit](
-      Field("login", LoginPayloadType,
-        arguments = List(UserNameArg),
-        resolve = ctx ⇒ new LoginPayload(Viewer()))))
+  //  lazy val LoginPayloadType: ObjectType[SecureContext, LoginPayload] = ObjectType(
+  //    "LoginPayload",
+  //    () => fields[SecureContext, LoginPayload](
+  //      Field("viewer", ViewerType, resolve = ctx => new Viewer())))
+
+  val loginMutation = Mutation.fieldWithClientMutationId[SecureContext, Unit, LoginPayload, InputObjectType.DefaultInput]("login", "Login",
+    outputFields = fields(Field("currentUser", OptionType(UserType), resolve = ctx => ctx.value.currentUser)),
+    mutateAndGetPayload = (input, ctx) ⇒ {
+      val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String]
+
+      ctx.ctx.currentUser().map { x =>
+        LoginPayload(mutationId, x)
+      }
+    })
+
+  val MutationType = ObjectType("Mutation", fields[SecureContext, Unit](loginMutation))
 
   val ViewerType: ObjectType[Unit, Viewer] = ObjectType(
     "Viewer",

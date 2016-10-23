@@ -8,28 +8,20 @@ export default class LoginMutation extends Relay.Mutation {
 
   getVariables() {
     return {
-      username: this.props.username,
-      password: this.props.password
+
     };
   }
 
   getFatQuery() {
     return Relay.QL`
       fragment on LoginPayload {
-        viewer {
-          currentUser
-        }
+        currentUser
       }
     `;
   }
 
   getConfigs() {
-    return [{
-      type: 'FIELDS_CHANGE',
-      fieldIDs: {
-        loggedIn: this.props.loggedIn,
-      }
-    }];
+    return [];
   }
 
   static fragments = {
@@ -42,19 +34,19 @@ export default class LoginMutation extends Relay.Mutation {
     `,
   };
 
-  getOptimisticResponse() {
-    var viewerPayload = {id: this.props.viewer.id};
-    if (this.props.viewer.completedCount != null) {
-      viewerPayload.completedCount = this.props.complete ?
-      this.props.viewer.completedCount + 1 :
-      this.props.viewer.completedCount - 1;
-    }
-    return {
-      todo: {
-        complete: this.props.complete,
-        id: this.props.todo.id,
-      },
-      viewer: viewerPayload,
-    };
-  }
+  // getOptimisticResponse() {
+  //   var viewerPayload = {id: this.props.viewer.id};
+  //   if (this.props.viewer.completedCount != null) {
+  //     viewerPayload.completedCount = this.props.complete ?
+  //     this.props.viewer.completedCount + 1 :
+  //     this.props.viewer.completedCount - 1;
+  //   }
+  //   return {
+  //     todo: {
+  //       complete: this.props.complete,
+  //       id: this.props.todo.id,
+  //     },
+  //     viewer: viewerPayload,
+  //   };
+  // }
 }

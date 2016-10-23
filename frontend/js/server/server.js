@@ -11,8 +11,8 @@ var views = require('koa-render');
 var props = require('../util/props');
 
 var proxy = require('koa-proxy');
-import { renderToString } from 'react-dom/server'
-import { match, RouterContext } from 'react-router'
+import {renderToString} from 'react-dom/server'
+import {match, RouterContext} from 'react-router'
 import IsomorphicRouter from 'isomorphic-relay-router';
 import Relay from 'react-relay';
 import url from 'url';
@@ -23,13 +23,13 @@ var app = koa();
 app.use(logger());
 
 // Proxy API calls
-app.use(function * (next) {
+app.use(function *(next) {
   var index = this.req.url.indexOf('/api/');
 
   if (index >= 0) {
-    //delete this.req.headers.host; // confuses heroku if not removed.
+    this.req.headers.host = undefined;
     yield proxy({
-      url: props.get('apiBase') + this.req.url.substr(index + '/api/'.length)
+      url: props.get('apiBase') + this.req.url.substr(index + 1)
     }).call(this, next);
   } else {
     yield next;

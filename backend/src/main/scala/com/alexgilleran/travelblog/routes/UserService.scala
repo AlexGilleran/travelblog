@@ -58,51 +58,53 @@ trait UserService extends LoginJsonImplicits {
   private val sessionManager: session.SessionManager = SessionManagerStub
 
   val userRoutes: Route =
-    path("login") {
-      post {
-        entity(as[LoginDetails]) { loginDetails =>
-          createSession(loginDetails) { session: Session =>
-            complete {
-              PrivateUserFormat.write(session.user)
-            }
-          }
-        }
-      }
-    } ~ path("register") {
-      post {
-        entity(as[User]) { user: User =>
-          onSuccess(dao.insertUser(user)) { id =>
-            val newUser = user.copy(userId = Option(id))
-
-            createSessionCookie(newUser) { session: Session =>
+    pathPrefix("users") {
+      path("login") {
+        post {
+          entity(as[LoginDetails]) { loginDetails =>
+            createSession(loginDetails) { session: Session =>
               complete {
                 PrivateUserFormat.write(session.user)
               }
             }
           }
         }
+      } ~ path("register") {
+        post {
+          entity(as[User]) { user: User =>
+            onSuccess(dao.insertUser(user)) { id =>
+              val newUser = user.copy(userId = Option(id))
+
+              createSession(newUser) { session: Session =>
+                complete {
+                  PrivateUserFormat.write(session.user)
+                }
+              }
+            }
+          }
+        }
       }
-    }// ~ pathPrefix("users") {
-//      get {
-//        pathPrefix("withSession") {
-//          path(Segment) { sessionId: String =>
-//            sessionManager.getSession(sessionId) match {
-//              case Some(session: Session) => complete(Some(PrivateUserFormat.write(session.user)))
-//              case None                   => reject
-//            }
-//          } ~ pathEnd {
-//            withSession() { session =>
-//              complete(PrivateUserFormat.write(session.user))
-//            }
-//          }
-//        } ~ path(Segment) { userName: String =>
-//          onSuccess(dao.getFullUser(userName)) { fullUser: Option[(User, Seq[Entry], Seq[Blog])] =>
-//            fullUser match {
-//              case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
-//              case None           => reject
-//            }
-//          }
-//        }
-//      }
-//    }
+    } // ~ pathPrefix("users") {
+  //      get {
+  //        pathPrefix("withSession") {
+  //          path(Segment) { sessionId: String =>
+  //            sessionManager.getSession(sessionId) match {
+  //              case Some(session: Session) => complete(Some(PrivateUserFormat.write(session.user)))
+  //              case None                   => reject
+  //            }
+  //          } ~ pathEnd {
+  //            withSession() { session =>
+  //              complete(PrivateUserFormat.write(session.user))
+  //            }
+  //          }
+  //        } ~ path(Segment) { userName: String =>
+  //          onSuccess(dao.getFullUser(userName)) { fullUser: Option[(User, Seq[Entry], Seq[Blog])] =>
+  //            fullUser match {
+  //              case Some(userData) => complete(new ApiUser(userData._1, userData._2, userData._3))
+  //              case None           => reject
+  //            }
+  //          }
+  //        }
+  //      }
+  //    }
 }

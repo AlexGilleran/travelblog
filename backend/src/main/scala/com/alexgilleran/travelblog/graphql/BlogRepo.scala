@@ -10,6 +10,7 @@ import com.alexgilleran.travelblog.data.GeneralDAO
 import com.alexgilleran.travelblog.data.PostGresSlickDAO
 import com.alexgilleran.travelblog.session.SessionManager
 import com.alexgilleran.travelblog.session.SessionManagerStub
+import sangria.relay.Mutation
 
 case class BlogRepo() {
   val dao: GeneralDAO = PostGresSlickDAO
@@ -33,8 +34,6 @@ case object DeferCurrentUser extends Deferred[Option[User]]
 case class AuthenticationException(message: String) extends Exception(message)
 case class AuthorisationException(message: String) extends Exception(message)
 case class Viewer()
-case class LoginPayload(viewer: Viewer)
-
 case class SecureContext(blogRepo: BlogRepo, token: Option[String] = None) {
   def authorised[T](permissions: String*)(fn: User => T) = true
 
