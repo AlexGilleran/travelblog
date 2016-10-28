@@ -63,8 +63,10 @@ trait UserService extends LoginJsonImplicits {
         post {
           entity(as[LoginDetails]) { loginDetails =>
             createSession(loginDetails) { session: Session =>
-              complete {
-                PrivateUserFormat.write(session.user)
+              onSuccess(dao.getUser(session.userId.get)) { user =>
+                complete {
+                  PrivateUserFormat.write(user.get)
+                }
               }
             }
           }
@@ -77,7 +79,7 @@ trait UserService extends LoginJsonImplicits {
 
               createSession(newUser) { session: Session =>
                 complete {
-                  PrivateUserFormat.write(session.user)
+                  PrivateUserFormat.write(newUser)
                 }
               }
             }

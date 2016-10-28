@@ -9,27 +9,27 @@ import scala.collection.mutable
 trait SessionManager {
   def getSession(id: String): Option[Session]
 
-  def newSession(user : User): (String, Session)
+  def newSession(user: User): Session
 }
 
 class SessionManagerStub extends SessionManager {
-  val sessionMap : mutable.Map[String, Session] = mutable.Map()
+  val sessionMap: mutable.Map[String, Session] = mutable.Map()
 
   override def getSession(id: String): Option[Session] = {
     sessionMap.get(id)
   }
 
-  override def newSession(user : User): (String, Session) = {
-    var uuid : String = null
+  override def newSession(user: User): Session = {
+    var uuid: String = null
     do {
       uuid = java.util.UUID.randomUUID().toString
     } while (sessionMap.contains(uuid))
 
-    val session : Session = new Session(user)
+    val session: Session = Session(uuid, user.userId)
 
     sessionMap += uuid -> session
 
-    (uuid, session)
+    session
   }
 }
 

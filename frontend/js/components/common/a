@@ -1,0 +1,21 @@
+{"query":"query Queries {
+  viewer {
+    ...F3
+  }
+}
+fragment F0 on User {
+  userId
+}
+fragment F1 on Viewer {
+  currentUser {
+    userId,
+    id
+  },
+  ...F0
+}
+fragment F2 on Viewer {
+  ...F1
+}
+fragment F3 on Viewer {
+  ...F2
+}"

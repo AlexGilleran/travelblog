@@ -84,3 +84,4 @@ EclipseKeys.withJavadoc := true
 mainClass in (Compile, run) := Some("com.alexgilleran.travelblog.Boot")
 
 Revolver.settings
+Revolver.enableDebugging(port = 8000, suspend = false)

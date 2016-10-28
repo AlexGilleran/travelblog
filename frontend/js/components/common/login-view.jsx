@@ -10,8 +10,9 @@ class LoginView extends React.Component {
     const email = this.emailTextbox.value;
     const password = this.passwordTextbox.value;
 
-    fetch('http://localhost:3000/api/users/login', {
+    fetch('/api/users/login', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -38,7 +39,7 @@ class LoginView extends React.Component {
          <If condition={this.props.loginFailed}>
          <span>Login failed: {this.props.loginFailureReason}</span>
          </If>*/}
-        <If condition={this.props.loggedIn}>
+        <If condition={this.props.viewer.currentUser}>
           <span>Logged in.</span>
           <Else />
           <form onSubmit={this.onSubmit.bind(this)}>
@@ -58,6 +59,9 @@ export default Relay.createContainer(LoginView, {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
         ${LoginMutation.getFragment('viewer')}
+        currentUser {
+          userId
+        }
       }
     `
   },

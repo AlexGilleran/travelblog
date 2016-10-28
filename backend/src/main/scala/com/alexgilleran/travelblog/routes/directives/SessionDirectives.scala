@@ -45,14 +45,14 @@ trait SessionDirectives {
   }
 
   def createSession(user: User): Directive1[Session] = {
-    val (id: String, session: Session) = sessionManager.newSession(user)
+    val session: Session = sessionManager.newSession(user)
 
-    setSession(oneOff, usingCookies, id) tflatMap { ctx =>
+    setSession(oneOff, usingCookies, session.token) tflatMap { ctx =>
       provide(session)
     }
   }
 
-  private def optionalSession(): Directive1[Option[Session]] = {
+  def optionalSession(): Directive1[Option[Session]] = {
     akkaOptionalSession(oneOff, usingCookies).flatMap { id => provide(id.flatMap(sessionManager.getSession(_))) }
   }
 }

@@ -43,8 +43,6 @@ app.use(views('templates'));
 
 const GRAPHQL_URL = `http://api:8081/api/graphql`;
 
-const networkLayer = new Relay.DefaultNetworkLayer(GRAPHQL_URL);
-
 app.use(function *(next) {
   const req = this.req;
   const res = this.res;
@@ -63,6 +61,9 @@ app.use(function *(next) {
   } else if (redirectLocation) {
     res.redirect(302, redirectLocation.pathname + redirectLocation.search);
   } else if (renderProps) {
+    const networkLayer = new Relay.DefaultNetworkLayer(GRAPHQL_URL, {
+      headers: req.headers
+    });
     const {data, props: reactProps} = yield IsomorphicRouter.prepareData(renderProps, networkLayer);
     const reactOutput = renderToString(IsomorphicRouter.render(reactProps));
 

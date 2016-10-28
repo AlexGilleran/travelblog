@@ -7,21 +7,31 @@ export default class LoginMutation extends Relay.Mutation {
   }
 
   getVariables() {
-    return {
-
-    };
+    return {};
   }
 
   getFatQuery() {
     return Relay.QL`
       fragment on LoginPayload {
-        currentUser
+        viewer {
+          currentUser
+        }
       }
     `;
   }
 
   getConfigs() {
-    return [];
+    return [
+      {
+        type: 'REQUIRED_CHILDREN',
+        children: [this.getFatQuery()]
+      },
+      {
+        type: 'FIELDS_CHANGE',
+        fieldIDs: {
+          viewer: 0
+        }
+      }];
   }
 
   static fragments = {

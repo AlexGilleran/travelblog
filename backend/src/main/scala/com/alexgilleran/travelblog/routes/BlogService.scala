@@ -58,7 +58,7 @@ trait BlogService extends BlogJsonImplicits {
             val blog: Blog = new Blog(
               name = map.get("name").get,
               description = map.get("description"),
-              userId = session.user.userId.get)
+              userId = session.userId.get)
 
             onSuccess(dao.insertBlog(blog)) { id =>
               complete(StatusCodes.Created, blog.copy(blogId = Some(id)))
@@ -71,7 +71,7 @@ trait BlogService extends BlogJsonImplicits {
             onSuccess(dao.getBlog(id)) { blogOption: Option[Blog] =>
               blogOption match {
                 case Some(existing) => {
-                  if (existing.userId == session.user.userId.get) {
+                  if (existing.userId == session.userId.get) {
                     entity(as[Map[String, String]]) { map: Map[String, String] =>
                       onSuccess(dao.updateBlog(id, existing.copy(
                         name = map.get("name").get,
@@ -106,7 +106,7 @@ trait BlogService extends BlogJsonImplicits {
               onSuccess(dao.getEntryWithBlog(id)) { result: Option[(Entry, Blog)] =>
                 result match {
                   case Some((entry: Entry, blog: Blog)) => {
-                    if (blog.userId == session.user.userId.get) {
+                    if (blog.userId == session.userId.get) {
                       onSuccess(dao.updateEntry(id, entry)) { rowCount =>
                         complete(StatusCodes.NoContent)
                       }

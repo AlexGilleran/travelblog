@@ -19,52 +19,55 @@ import spray.json._
 import scala.util.{ Success, Failure }
 import scala.concurrent.Future
 import akka.http.scaladsl.model.headers.HttpCookie
+import com.alexgilleran.travelblog.routes.directives.SessionDirectives
 
-trait GraphQLEndpoint {
+trait GraphQLEndpoint extends SessionDirectives {
+  val blogRepo = new BlogRepo
+  
   val graphQLRoutes: Route =
     path("graphql") {
-      post {
-        entity(as[JsValue]) { requestJson ⇒
-          val JsObject(fields) = requestJson
+      optionalSession() { sessionId =>
+        post {
+          entity(as[JsValue]) { requestJson ⇒
+            val JsObject(fields) = requestJson
 
-          val JsString(query) = fields("query")
+            val JsString(query) = fields("query")
 
-          val operation = fields.get("operationName") collect {
-            case JsString(op) ⇒ op
-          }
+            val operation = fields.get("operationName") collect {
+              case JsString(op) ⇒ op
+            }
 
-          val vars = fields.get("variables") match {
-            case Some(obj: JsObject)                  ⇒ obj
-            case Some(JsString(s)) if s.trim.nonEmpty ⇒ s.parseJson
-            case _                                    ⇒ JsObject.empty
-          }
+            val vars = fields.get("variables") match {
+              case Some(obj: JsObject)                  ⇒ obj
+              case Some(JsString(s)) if s.trim.nonEmpty ⇒ s.parseJson
+              case _                                    ⇒ JsObject.empty
+            }
 
-          val blogRepo = new BlogRepo
+            QueryParser.parse(query) match {
 
-          QueryParser.parse(query) match {
-
-            // query parsed successfully, time to execute it!
-            case Success(queryAst) ⇒
-              onComplete(
-                Executor.execute(SchemaDefinition.schema, queryAst, SecureContext(blogRepo),
-                  variables = vars,
-                  operationName = operation,
-                  deferredResolver = new BlogResolver)) {
-                  case Success(value) =>
-                    complete(value)
-                  case Failure(ex) => ex match {
-                    case error: QueryAnalysisError ⇒ complete(BadRequest → error.resolveError)
-                    case error: ErrorWithResolver  ⇒ complete(InternalServerError → error.resolveError)
+              // query parsed successfully, time to execute it!
+              case Success(queryAst) ⇒
+                onComplete(
+                  Executor.execute(SchemaDefinition.schema, queryAst, SecureContext(blogRepo, sessionId),
+                    variables = vars,
+                    operationName = operation,
+                    deferredResolver = new BlogResolver)) {
+                    case Success(value) =>
+                      complete(value)
+                    case Failure(ex) => ex match {
+                      case error: QueryAnalysisError ⇒ complete(BadRequest → error.resolveError)
+                      case error: ErrorWithResolver  ⇒ complete(InternalServerError → error.resolveError)
+                    }
                   }
-                }
-            // can't parse GraphQL query, return error
-            case Failure(error) ⇒
-              complete(BadRequest, JsObject("error" -> JsString(error.getMessage)))
+              // can't parse GraphQL query, return error
+              case Failure(error) ⇒
+                complete(BadRequest, JsObject("error" -> JsString(error.getMessage)))
+            }
           }
-        }
-      } ~
-        get {
-          getFromResource("graphiql.html")
-        }
+        } ~
+          get {
+            getFromResource("graphiql.html")
+          }
+      }
     }
 }

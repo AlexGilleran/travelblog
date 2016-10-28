@@ -26,6 +26,9 @@ api:
   dockerfile: local.dockerfile
   volumes:
     - ./backend/:/usr/src/app/
+    - /usr/src/app/target/
+    - /usr/src/app/project/target/
+    - /usr/src/app/project/project/target/
     - ~/.ivy2/:/root/.ivy2/
   links:
     - db
@@ -33,6 +36,7 @@ api:
     - "8081"
   ports:
     - "8081:8081"
+    - "8000:8000"
 db:
   extends:
     file: docker-compose-base.yml
