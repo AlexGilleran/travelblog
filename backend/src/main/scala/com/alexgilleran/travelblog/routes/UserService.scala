@@ -59,7 +59,15 @@ trait UserService extends LoginJsonImplicits {
 
   val userRoutes: Route =
     pathPrefix("users") {
-      path("login") {
+      path("logout") {
+        post {
+          endSession() {
+            complete {
+              "Logged out"
+            }
+          }
+        }
+      } ~ path("login") {
         post {
           entity(as[LoginDetails]) { loginDetails =>
             createSession(loginDetails) { session: Session =>

@@ -1,9 +1,9 @@
 import Relay from 'react-relay';
 
-export default class LoginMutation extends Relay.Mutation {
+export default class RefreshCurrentUserMutation extends Relay.Mutation {
 
   getMutation() {
-    return Relay.QL`mutation{login}`;
+    return Relay.QL`mutation{refreshCurrentUser}`;
   }
 
   getVariables() {
@@ -12,7 +12,7 @@ export default class LoginMutation extends Relay.Mutation {
 
   getFatQuery() {
     return Relay.QL`
-      fragment on LoginPayload {
+      fragment on RefreshCurrentUserPayload {
         viewer {
           currentUser
         }
@@ -29,7 +29,7 @@ export default class LoginMutation extends Relay.Mutation {
       {
         type: 'FIELDS_CHANGE',
         fieldIDs: {
-          viewer: 0
+          viewer: this.props.viewer.id
         }
       }];
   }
@@ -37,11 +37,9 @@ export default class LoginMutation extends Relay.Mutation {
   static fragments = {
     viewer: () => Relay.QL`
       fragment on Viewer {
-        currentUser {
-          userId
-        }
+        id
       }
-    `,
+    `
   };
 
   // getOptimisticResponse() {

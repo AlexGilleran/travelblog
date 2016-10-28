@@ -1,7 +1,7 @@
 import React from 'react';
 import Relay from 'react-relay';
 import {Link} from 'react-router';
-import LoginMutation from '../../mutations/login-mutation';
+import UpdateCurrentUserMutation from '../../mutations/refresh-current-user-mutation';
 
 class LoginView extends React.Component {
   onSubmit(event) {
@@ -23,7 +23,20 @@ class LoginView extends React.Component {
       })
     }).then(() => {
       this.props.relay.commitUpdate(
-        new LoginMutation({viewer: this.props.viewer})
+        new UpdateCurrentUserMutation({viewer: this.props.viewer})
+      );
+    }).catch(e => {
+      console.error(e)
+    });
+  }
+  
+  logout() {
+    fetch('/api/users/logout', {
+      method: 'POST',
+      credentials: 'same-origin'
+    }).then(() => {
+      this.props.relay.commitUpdate(
+        new UpdateCurrentUserMutation({viewer: this.props.viewer})
       );
     }).catch(e => {
       console.error(e)
@@ -41,7 +54,8 @@ class LoginView extends React.Component {
          </If>*/}
         <If condition={this.props.viewer.currentUser}>
           <span>Logged in.</span>
-          <Else />
+          <button onClick={this.logout.bind(this)}>Logout</button>
+        <Else />
           <form onSubmit={this.onSubmit.bind(this)}>
             <input type="text" placeholder="Email Address" ref={node => this.emailTextbox = node}/>
             <input type="password" placeholder="Password" ref={node => this.passwordTextbox = node}/>
@@ -58,10 +72,10 @@ export default Relay.createContainer(LoginView, {
   fragments: {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
-        ${LoginMutation.getFragment('viewer')}
         currentUser {
           userId
         }
+        ${UpdateCurrentUserMutation.getFragment('viewer')}
       }
     `
   },

@@ -55,6 +55,13 @@ trait SessionDirectives {
   def optionalSession(): Directive1[Option[Session]] = {
     akkaOptionalSession(oneOff, usingCookies).flatMap { id => provide(id.flatMap(sessionManager.getSession(_))) }
   }
+
+  def endSession(): Directive0 = {
+    withSession.flatMap { session =>
+      sessionManager.removeSession(session.token)
+      invalidateSession(oneOff, usingCookies)
+    }
+  }
 }
 
 object SessionDirectives extends SessionDirectives

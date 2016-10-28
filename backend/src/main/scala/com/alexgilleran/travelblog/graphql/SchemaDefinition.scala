@@ -63,7 +63,7 @@ object SchemaDefinition {
 
   val ConnectionDefinition(_, userConnection) = Connection.definition[SecureContext, Connection, Option[UserNode]]("User", OptionType(UserType))
 
-  case class LoginPayload(clientMutationId: String, currentUser: UserNode) extends Mutation
+  case class RefreshCurrentUserPayload(clientMutationId: String, currentUser: Option[UserNode]) extends Mutation
 
   //  lazy val LoginPayloadType: ObjectType[SecureContext, LoginPayload] = ObjectType(
   //    "LoginPayload",
@@ -72,7 +72,7 @@ object SchemaDefinition {
 
   val MutationType = ObjectType(
     "Mutation",
-    () => fields[SecureContext, Unit](loginMutation))
+    () => fields[SecureContext, Unit](RefreshCurrentUserMutation))
 
   val ViewerType: ObjectType[Unit, ViewerNode] = ObjectType(
     "Viewer",
@@ -90,15 +90,15 @@ object SchemaDefinition {
         arguments = Nil,
         resolve = (ctx) => DeferCurrentUser)))
 
-  val loginMutation = Mutation.fieldWithClientMutationId[SecureContext, Unit, LoginPayload, InputObjectType.DefaultInput](
-    "login",
-    "Login",
+  val RefreshCurrentUserMutation = Mutation.fieldWithClientMutationId[SecureContext, Unit, RefreshCurrentUserPayload, InputObjectType.DefaultInput](
+    "refreshCurrentUser",
+    "RefreshCurrentUser",
     outputFields = fields(Field("viewer", ViewerType, resolve = ctx => new ViewerNode)),
     mutateAndGetPayload = (input, ctx) ⇒ {
       val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String]
 
-      ctx.ctx.currentUser().map { x =>
-        LoginPayload(mutationId, x.get)
+      ctx.ctx.currentUser().map { user =>
+        RefreshCurrentUserPayload(mutationId, user)
       }
     })
   //      Field("currentUser", OptionType(userConnection),

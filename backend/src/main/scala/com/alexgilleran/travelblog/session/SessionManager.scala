@@ -10,6 +10,8 @@ trait SessionManager {
   def getSession(id: String): Option[Session]
 
   def newSession(user: User): Session
+
+  def removeSession(id: String)
 }
 
 class SessionManagerStub extends SessionManager {
@@ -31,6 +33,8 @@ class SessionManagerStub extends SessionManager {
 
     session
   }
+  
+  override def removeSession(id: String) = sessionMap.remove(id)
 }
 
 // singleton for now TODO: DI
