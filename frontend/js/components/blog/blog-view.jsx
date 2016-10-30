@@ -2,6 +2,7 @@ import React from 'react';
 import Relay from 'react-relay';
 import BlogListView from './blog-list-view';
 import EntryPreviewView from '../entry/entry-preview-view';
+import {Link} from 'react-router';
 
 class BlogView extends React.Component {
   render() {
@@ -13,7 +14,7 @@ class BlogView extends React.Component {
           <If condition={blog}>
             <div>
               <div>
-                <h2>{blog.name}</h2>
+                <h2>{blog.name} by <Link to={`/users/${blog.user.userId}`}>{blog.user.displayName}</Link></h2>
               </div>
               <For each="entry" of={blog.entries}>
                 <EntryPreviewView key={entry.entryId} entry={entry}/>
@@ -41,7 +42,11 @@ export default Relay.createContainer(BlogView, {
           ${BlogListView.getFragment('blogList')}
         },
         blog(blogId: $blogId) {
-          name
+          name,
+          user {
+            userId,
+            displayName
+          },
           entries {
             entryId
             ${EntryPreviewView.getFragment('entry')}          

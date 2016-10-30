@@ -8,7 +8,7 @@ class BlogPreviewView extends React.Component {
 
     return (
       <div>
-        <Link to={`blogs/${blog.blogId}`} params={blog}>{blog.name}</Link>
+        <Link to={`/blogs/${blog.blogId}`} params={blog}>{blog.name}</Link>
         <div>{blog.description}</div>
       </div>
     );

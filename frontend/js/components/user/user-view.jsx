@@ -1,5 +1,6 @@
 import React from 'react';
 import Relay from 'react-relay';
+import DetailsView from './details-view';
 import EntryPreviewView from '../entry/entry-preview-view.jsx';
 import BlogPreviewView from '../blog/blog-preview-view';
 
@@ -19,8 +20,7 @@ class UserView extends React.Component {
 
             <h1>Blogs</h1>
             <For each="blog" of={this.props.viewer.user.blogs.edges}>
-              {blog.node.blogId}
-              {/*<BlogPreviewView blog={blog} key={blog.blogId} />*/}
+              <BlogPreviewView blog={blog.node} key={blog.node.blogId} />
             </For>
           </div>
         </If>
@@ -29,20 +29,6 @@ class UserView extends React.Component {
   }
 }
 
-class DetailsView extends React.Component {
-  render() {
-    const details = this.props.details;
-
-    return (
-      <div>
-        <div><strong>{details.userName}</strong></div>
-        <div>Name: {details.displayName}</div>
-        <div>Avatar: <img src={details.avatarUrl}/></div>
-        <div>Bio: {details.bio}</div>
-      </div>
-    );
-  }
-}
 
 export default Relay.createContainer(UserView, {
   initialVariables: {
@@ -53,16 +39,13 @@ export default Relay.createContainer(UserView, {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
         user(userId: $userId) {
-          userId,
-          userName,
-          blogs: blogs(first: 2) {
+          ${DetailsView.getFragment('details')}
+          blogs: blogs(first: 5) {
             edges {
               node {
                 blogId
+                ${BlogPreviewView.getFragment('blog')}
               }
-            }
-            pageInfo {
-              hasNextPage
             }
           }
         }

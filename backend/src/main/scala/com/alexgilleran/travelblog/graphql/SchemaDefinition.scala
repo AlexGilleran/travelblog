@@ -52,6 +52,7 @@ object SchemaDefinition {
       Field("name", StringType, resolve = _.value.blog.name),
       Field("description", OptionType(StringType), resolve = _.value.blog.description),
       Field("userId", LongType, resolve = _.value.blog.userId),
+      Field("user", OptionType(UserType), resolve = (ctx) => DeferUser(ctx.value.blog.userId)),
       Field("entries", ListType(EntryType), resolve = (ctx) => DeferEntriesForBlog(ctx.value.blog.blogId.get))))
 
   val ConnectionDefinition(_, blogConnection) = Connection.definition[SecureContext, Connection, BlogNode]("Blog", BlogType)
@@ -64,6 +65,10 @@ object SchemaDefinition {
       Node.globalIdField[SecureContext, UserNode],
       Field("userId", OptionType(LongType), resolve = _.value.user.userId),
       Field("userName", StringType, resolve = _.value.user.userName),
+      Field("displayName", OptionType(StringType), resolve = _.value.user.displayName),
+      Field("bio", OptionType(StringType), resolve = _.value.user.bio),
+      Field("avatarUrl", OptionType(StringType), resolve = _.value.user.avatarUrl),
+      Field("email", StringType, resolve = _.value.user.email),
       Field("blogs", blogConnection,
         arguments = List(Connection.Args.After, Connection.Args.First),
         resolve = (ctx) => {
