@@ -1,10 +1,10 @@
 require("../../less/style.less");
 
 import IsomorphicRelay from 'isomorphic-relay';
-import IsomorphicRouter from 'isomorphic-relay-router';
+import isoRelayRouter from 'isomorphic-relay-router';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { browserHistory, match, Router } from 'react-router';
+import { browserHistory, match, Router, applyRouterMiddleware } from 'react-router';
 import routes from '../routes.jsx';
 import Relay from 'react-relay';
 
@@ -22,7 +22,7 @@ const rootElement = document.getElementById('root');
 
 // use the same routes object as on the server
 match({routes, history: browserHistory}, (error, redirectLocation, renderProps) => {
-  IsomorphicRouter.prepareInitialRender(environment, renderProps).then(props => {
-    ReactDOM.render(<Router {...props} />, rootElement);
+  isoRelayRouter.prepareInitialRender(environment, renderProps).then(props => {
+    ReactDOM.render(<Router {...props} render={applyRouterMiddleware(isoRelayRouter.useIsoRelay)} />, rootElement);
   });
 });

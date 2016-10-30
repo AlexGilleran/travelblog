@@ -13,6 +13,7 @@ import {blog, viewer, entry} from './queries';
 export default (
   <Route path="/"
          component={RootView}
+         render={wrapper}
          queries={{viewer}}>
     <Route path="blogs/:blogId"
            component={BlogView}
@@ -23,7 +24,7 @@ export default (
            queries={{viewer}}
            prepareParams={prepareId.bind(this, "entry")}>
       <IndexRoute component={EntryReadView}/>
-      <Route path=":entryId/edit" component={EntryEditView}/>
+      <Route path="edit" component={EntryEditView}/>
     </Route>
     <Route path="users">
       <Route
@@ -49,3 +50,16 @@ function prepareId(type, params) {
     [idString]: parseInt(params[idString])
   });
 }
+
+function wrapper({done, props, element}) {
+  if (!done) {
+    return (
+      <div>
+        <div>Loading...</div>
+        {React.cloneElement(element, props)}
+      </div>
+    );
+  }
+
+  return React.cloneElement(element, props);
+};

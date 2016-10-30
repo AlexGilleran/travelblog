@@ -1,19 +1,26 @@
 import React from 'react';
 import Relay from 'react-relay';
-import { Link } from 'react-router';
+import {Link} from 'react-router';
 import EntryEditView from './editor/entry-edit-view';
 import EntryReadView from './view/entry-read-view';
 
 class EntryView extends React.Component {
   render() {
+    const entry = this.props.viewer.entry;
+    const blog = this.props.viewer.entry.blog;
+    const currentUser = this.props.viewer.currentUser;
+
     return (
       <div>
         <If condition={this.props.viewer.entry}>
+          <If condition={currentUser && currentUser.userId === blog.userId}>
+            <Link to={`/entries/${this.props.params.entryId}/edit`}>Edit this entry</Link>
+          </If>
           <div>
             {React.Children.map(this.props.children, child => React.cloneElement(child, {entry: this.props.viewer.entry}))}
 
             <div className="col-1-1">
-              <Link to={`/blogs/${this.props.viewer.entry.blogId}`}>Back to Blog</Link>
+              <Link to={`/blogs/${blog.blogId}`}>Back to {blog.name}</Link>
             </div>
           </div>
           <Else />
@@ -35,8 +42,15 @@ export default Relay.createContainer(EntryView, {
   fragments: {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
+        currentUser {
+          userId
+        },
         entry(entryId: $entryId) { 
-          blogId,
+          blog {
+            blogId,
+            name,
+            userId
+          }
           ${COMPONENTS.map((Component) => {
             return Component.getFragment('entry');
           })}

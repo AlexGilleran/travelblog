@@ -1,31 +1,29 @@
-const React = require('react');
-const EntryContentEditView = require('./entry-content-edit-view');
+import React from 'react';
+import Relay from 'react-relay';
 
-module.exports = React.createClass({
-  onSubmit: function(event) {
+class EntryEditView extends React.Component {
+  onSubmit(event) {
     event.preventDefault();
+  }
 
-    this.props.flux.getActions('entry').updateEntry(this.getEntryDetails());
-  },
-
-  getEntryDetails: function() {
+  getEntryDetails() {
     return {
       entryId: parseInt(this.props.params.entryId),
       blogId: this.props.entry.blogId,
       title: this.refs.title.getDOMNode().value,
       markdown: this.refs.markdown.getDOMNode().value
     };
-  },
+  }
 
   render() {
     return (
       <form onSubmit={this.onSubmit}>
         <div className="col-1-1">
-          <input type="text" ref="title" defaultValue={this.props.entry.title}/>
+          <input type="text" ref="title" defaultValue={this.props.viewer.entry.title}/>
         </div>
 
         <div className="col-1-1">
-          <EntryContentEditView content={this.props.entry.content} />
+
         </div>
 
         <div className="col-1-1">
@@ -33,5 +31,24 @@ module.exports = React.createClass({
         </div>
       </form>
     );
+  }
+}
+
+export default Relay.createContainer(EntryEditView, {
+  initialVariables: {
+    entryId: null
+  },
+
+  fragments: {
+    viewer: (variables) => Relay.QL`
+      fragment on Viewer {
+        currentUser {
+          userId
+        },
+        entry(entryId: $entryId) { 
+          title
+        }
+      }
+    `
   }
 });
