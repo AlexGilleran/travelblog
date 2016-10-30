@@ -60,7 +60,7 @@ class LoginView extends React.Component {
             <input type="text" placeholder="Email Address" ref={node => this.emailTextbox = node}/>
             <input type="password" placeholder="Password" ref={node => this.passwordTextbox = node}/>
             <input type="submit" value="Login"/>
-            <Link to="register">Sign Up</Link>
+            <Link to="users/register">Sign Up</Link>
           </form>
         </If>
       </div>

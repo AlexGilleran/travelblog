@@ -29,6 +29,7 @@ object SchemaDefinition {
 
   val EntryID = Argument("entryId", LongType, description = "id of the entry")
   val BlogID = Argument("blogId", LongType, description = "id of the blog")
+  val UserID = Argument("userId", LongType, description = "id of the user")
   val First = Argument("first", IntType, description = "first n to get")
 
   lazy val EntryType: ObjectType[Unit, EntryNode] = ObjectType(
@@ -53,22 +54,27 @@ object SchemaDefinition {
       Field("userId", LongType, resolve = _.value.blog.userId),
       Field("entries", ListType(EntryType), resolve = (ctx) => DeferEntriesForBlog(ctx.value.blog.blogId.get))))
 
-  lazy val UserType: ObjectType[Unit, UserNode] = ObjectType(
+  val ConnectionDefinition(_, blogConnection) = Connection.definition[SecureContext, Connection, BlogNode]("Blog", BlogType)
+
+  lazy val UserType: ObjectType[SecureContext, UserNode] = ObjectType(
     "User",
     "aregaerg",
-    interfaces[Unit, UserNode](nodeInterface),
-    () => idFields[UserNode] ++ fields[Unit, UserNode](
+    interfaces[SecureContext, UserNode](nodeInterface),
+    () => fields[SecureContext, UserNode](
+      Node.globalIdField[SecureContext, UserNode],
       Field("userId", OptionType(LongType), resolve = _.value.user.userId),
-      Field("userName", StringType, resolve = _.value.user.userName)))
+      Field("userName", StringType, resolve = _.value.user.userName),
+      Field("blogs", blogConnection,
+        arguments = List(Connection.Args.After, Connection.Args.First),
+        resolve = (ctx) => {
+          val userId = ctx.value.user.userId.get
+          val after = ctx.args.arg(Connection.Args.After).map(_.toLong)
+          val size = ctx.args.arg(Connection.Args.First).map(_.toInt).getOrElse(5)
 
-  val ConnectionDefinition(_, userConnection) = Connection.definition[SecureContext, Connection, Option[UserNode]]("User", OptionType(UserType))
+          Connection.connectionFromFutureSeq(ctx.ctx.blogRepo.getBlogsForUser(userId, size + 1, after), ConnectionArgs(ctx))
+        })))
 
   case class RefreshCurrentUserPayload(clientMutationId: String, currentUser: Option[UserNode]) extends Mutation
-
-  //  lazy val LoginPayloadType: ObjectType[SecureContext, LoginPayload] = ObjectType(
-  //    "LoginPayload",
-  //    () => fields[SecureContext, LoginPayload](
-  //      Field("viewer", ViewerType, resolve = ctx => new Viewer())))
 
   val MutationType = ObjectType(
     "Mutation",
@@ -86,6 +92,9 @@ object SchemaDefinition {
       Field("entry", OptionType(EntryType),
         arguments = EntryID :: Nil,
         resolve = (ctx) => DeferEntry(ctx.arg(EntryID))),
+      Field("user", OptionType(UserType),
+        arguments = UserID :: Nil,
+        resolve = (ctx) => DeferUser(ctx.arg(UserID))),
       Field("currentUser", OptionType(UserType),
         arguments = Nil,
         resolve = (ctx) => DeferCurrentUser)))
@@ -101,9 +110,6 @@ object SchemaDefinition {
         RefreshCurrentUserPayload(mutationId, user)
       }
     })
-  //      Field("currentUser", OptionType(userConnection),
-  //        arguments = Connection.Args.All,
-  //        resolve = (ctx) => Connection.connectionFromFutureSeq(ctx.ctx.currentUser().map(Seq(_)), ConnectionArgs(ctx)))))
 
   def optionToSeq[T](option: Option[T]): Seq[T] = option match {
     case Some(inner) => Seq(inner)

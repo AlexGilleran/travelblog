@@ -13,6 +13,7 @@ trait GeneralDAO {
   val GENERIC_LIST_LIMIT = 100
 
   def getBlog(id : Long) : Future[Option[Blog]]
+  def getBlogsForUser(userId: Long, number: Int, startBlogId: Option[Long] = None): Future[Seq[Blog]] 
   def insertBlog(blog : Blog) : Future[Long]
   def updateBlog(blogId: Long, blog: Blog) : Future[Int]
 

@@ -24,6 +24,17 @@ trait PostGresSlickDAO extends GeneralDAO {
       BlogTable.filter(_.blogId === id).result.headOption)
   }
 
+  def getBlogsForUser(userId: Long, number: Int, startBlogId: Option[Long] = None): Future[Seq[Blog]] = {
+    val baseQuery = BlogTable.filter(_.userId === userId).take(number)
+
+    val query = startBlogId match {
+      case Some(blogId) => baseQuery.filter(_.blogId > blogId)
+      case _            => baseQuery
+    }
+
+    db.run(query.result)
+  }
+
   override def insertBlog(blog: Blog): Future[Long] = {
     db.run(
       BlogTable returning (BlogTable.map(_.blogId)) += blog)
