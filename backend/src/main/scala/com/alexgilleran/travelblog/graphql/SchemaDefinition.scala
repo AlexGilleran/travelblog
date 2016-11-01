@@ -8,6 +8,8 @@ import sangria.schema.Action._
 import sangria.schema._
 import sangria.relay._
 import scala.concurrent.Future
+import com.alexgilleran.travelblog.graphql.BlogRepo._
+import sangria.macros.derive
 
 object SchemaDefinition {
 
@@ -42,6 +44,14 @@ object SchemaDefinition {
       Field("title", OptionType(StringType), resolve = _.value.entry.title),
       Field("blogId", LongType, resolve = _.value.entry.blogId),
       Field("blog", OptionType(BlogType), resolve = (ctx) => DeferBlog(ctx.value.entry.blogId))))
+
+  lazy val EntryInputType = InputObjectType[EntryNode](
+    "Entry",
+    "An entry",
+    () => List(
+      InputField("markdown", StringType),
+      InputField("title", StringType),
+      InputField("blogId", LongType)))
 
   lazy val BlogType: ObjectType[Unit, BlogNode] = ObjectType(
     "Blog",
@@ -79,11 +89,11 @@ object SchemaDefinition {
           Connection.connectionFromFutureSeq(ctx.ctx.blogRepo.getBlogsForUser(userId, size + 1, after), ConnectionArgs(ctx))
         })))
 
-  case class RefreshCurrentUserPayload(clientMutationId: String, currentUser: Option[UserNode]) extends Mutation
-
   val MutationType = ObjectType(
     "Mutation",
-    () => fields[SecureContext, Unit](RefreshCurrentUserMutation))
+    () => fields[SecureContext, Unit](
+      RefreshCurrentUserMutation,
+      UpdateEntryMutation))
 
   val ViewerType: ObjectType[Unit, ViewerNode] = ObjectType(
     "Viewer",
@@ -104,6 +114,7 @@ object SchemaDefinition {
         arguments = Nil,
         resolve = (ctx) => DeferCurrentUser)))
 
+  case class RefreshCurrentUserPayload(clientMutationId: String, currentUser: Option[UserNode]) extends Mutation
   val RefreshCurrentUserMutation = Mutation.fieldWithClientMutationId[SecureContext, Unit, RefreshCurrentUserPayload, InputObjectType.DefaultInput](
     "refreshCurrentUser",
     "RefreshCurrentUser",
@@ -113,6 +124,30 @@ object SchemaDefinition {
 
       ctx.ctx.currentUser().map { user =>
         RefreshCurrentUserPayload(mutationId, user)
+      }
+    })
+
+  case class UpdateEntryPayload(clientMutationId: String, entry: EntryNode) extends Mutation
+  val UpdateEntryMutation = Mutation.fieldWithClientMutationId[SecureContext, Unit, UpdateEntryPayload, InputObjectType.DefaultInput](
+    "updateEntry",
+    "UpdateEntry",
+    inputFields = List(
+      InputField("entryId", LongType),
+      InputField("markdown", StringType),
+      InputField("title", StringType)),
+    outputFields = fields(Field("entry", EntryType, resolve = ctx => ctx.value.entry)),
+    mutateAndGetPayload = (input, ctx) ⇒ {
+      val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String]
+      val entryId = input("entryId").asInstanceOf[Long]
+      val markdown = input("markdown").asInstanceOf[String]
+      val title = input("title").asInstanceOf[String]
+
+      ctx.ctx.blogRepo.getEntry(entryId).flatMap { oldEntry =>
+        val newEntry = oldEntry.get.entry.copy(markdown = markdown, title = Some(title))
+        ctx.ctx.blogRepo.updateEntry(entryId, newEntry)
+          .map(_ => oldEntry.get.copy(entry = newEntry))
+      } map { newEntryNode =>
+        UpdateEntryPayload(mutationId, newEntryNode)
       }
     })
 

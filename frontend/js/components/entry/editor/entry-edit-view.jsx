@@ -1,29 +1,34 @@
 import React from 'react';
 import Relay from 'react-relay';
+import UpdateEntryMutation from '../../../mutations/update-entry-mutation';
 
 class EntryEditView extends React.Component {
   onSubmit(event) {
     event.preventDefault();
+
+    this.props.relay.commitUpdate(
+      new UpdateEntryMutation({entry: this.props.entry, ...this.getEntryDetails()})
+    );
   }
 
   getEntryDetails() {
     return {
-      entryId: parseInt(this.props.params.entryId),
-      blogId: this.props.entry.blogId,
-      title: this.refs.title.getDOMNode().value,
-      markdown: this.refs.markdown.getDOMNode().value
+      title: this.titleElement.value,
+      markdown: this.markdownElement.value
     };
   }
 
   render() {
     return (
-      <form onSubmit={this.onSubmit}>
+      <form onSubmit={this.onSubmit.bind(this)}>
         <div className="col-1-1">
-          <input type="text" ref="title" defaultValue={this.props.viewer.entry.title}/>
+          <input type="text" ref={node => this.titleElement = node} defaultValue={this.props.entry.title}/>
         </div>
 
         <div className="col-1-1">
-
+          <textarea ref={node => this.markdownElement = node}>
+            {this.props.entry.markdown}
+          </textarea>
         </div>
 
         <div className="col-1-1">
@@ -35,19 +40,13 @@ class EntryEditView extends React.Component {
 }
 
 export default Relay.createContainer(EntryEditView, {
-  initialVariables: {
-    entryId: null
-  },
-
   fragments: {
-    viewer: (variables) => Relay.QL`
-      fragment on Viewer {
-        currentUser {
-          userId
-        },
-        entry(entryId: $entryId) { 
-          title
-        }
+    entry: (variables) => Relay.QL`
+      fragment on Entry { 
+        entryId,
+        title,
+        markdown
+        ${UpdateEntryMutation.getFragment('entry')}
       }
     `
   }

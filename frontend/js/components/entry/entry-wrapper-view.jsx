@@ -17,7 +17,7 @@ class EntryView extends React.Component {
             <Link to={`/entries/${this.props.params.entryId}/edit`}>Edit this entry</Link>
           </If>
           <div>
-            {React.Children.map(this.props.children, child => React.cloneElement(child, {entry: this.props.viewer.entry}))}
+            {React.Children.map(this.props.children, (child, i) => React.cloneElement(child, {key: i, entry: this.props.viewer.entry}))}
 
             <div className="col-1-1">
               <Link to={`/blogs/${blog.blogId}`}>Back to {blog.name}</Link>
@@ -32,7 +32,7 @@ class EntryView extends React.Component {
   }
 }
 
-const COMPONENTS = [EntryReadView];
+const COMPONENTS = [EntryReadView, EntryEditView];
 
 export default Relay.createContainer(EntryView, {
   initialVariables: {

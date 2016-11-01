@@ -13,12 +13,12 @@ import com.alexgilleran.travelblog.session.SessionManagerStub
 import sangria.relay.Mutation
 import com.alexgilleran.travelblog.session.Session
 import com.alexgilleran.travelblog.graphql.SchemaDefinition._
-import sangria.relay.Node
+import sangria.relay._
 import BlogRepo._
 
 case class BlogRepo() {
-  val dao: GeneralDAO = PostGresSlickDAO
-  val sessionManager: SessionManager = SessionManagerStub
+  private val dao: GeneralDAO = PostGresSlickDAO
+  private val sessionManager: SessionManager = SessionManagerStub
 
   def getEntry(entryId: Long): Future[Option[EntryNode]] = dao.getEntry(entryId).map(_.map(entryToNode(_)))
   def getEntriesForBlog(blogId: Long): Future[Seq[EntryNode]] = dao.getEntriesForBlog(blogId).map(_.map(entryToNode(_)))
@@ -26,12 +26,14 @@ case class BlogRepo() {
   def getBlogs(first: Int): Future[Seq[BlogNode]] = dao.getBlogs(first).map(_.map(blogToNode(_)))
   def getBlogsForUser(userId: Long, number: Int = 10, after: Option[Long]): Future[Seq[BlogNode]] = dao.getBlogsForUser(userId, number, after).map(_.map(blogToNode))
   def getUser(userId: Long): Future[Option[UserNode]] = dao.getUser(userId).map(_.map(userToNode(_)))
+
   def authorise(token: String): Option[List[String]] = ???
 
+  def updateEntry(entryId: Long, entry: Entry): Future[Entry] = dao.updateEntry(entryId, entry.entry).flatMap(id => dao.getEntry(id).map(_.get))
 }
 
 object BlogRepo {
-  implicit def entryToNode(entry: Entry): EntryNode = EntryNode(entry)
+  implicit def entryToNode(entry: Entry): EntryNode = new EntryNode(entry)
   implicit def blogToNode(blog: Blog): BlogNode = BlogNode(blog)
   implicit def userToNode(user: User): UserNode = UserNode(user)
 }
