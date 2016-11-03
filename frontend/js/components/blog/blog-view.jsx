@@ -5,6 +5,16 @@ import EntryPreviewView from '../entry/entry-preview-view';
 import {Link} from 'react-router';
 
 class BlogView extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.onAddBlogClick = this.onAddBlogClick.bind(this);
+  }
+
+  onAddBlogClick(event) {
+
+  }
+
   render() {
     const blog = this.props.viewer.blog;
 
@@ -16,9 +26,10 @@ class BlogView extends React.Component {
               <div>
                 <h2>{blog.name} by <Link to={`/users/${blog.user.userId}`}>{blog.user.displayName}</Link></h2>
               </div>
-              <For each="entry" of={blog.entries}>
-                <EntryPreviewView key={entry.entryId} entry={entry}/>
+              <For each="entry" of={blog.entries.edges}>
+                <EntryPreviewView key={entry.node.entryId} entry={entry.node}/>
               </For>
+              <button onClick={this.addAddBlogClick}>Add Blog</button>
             </div>
           </If>
         </div>
@@ -47,9 +58,13 @@ export default Relay.createContainer(BlogView, {
             userId,
             displayName
           },
-          entries {
-            entryId
-            ${EntryPreviewView.getFragment('entry')}          
+          entries(first: 5) {
+            edges {
+              node {
+                entryId
+                ${EntryPreviewView.getFragment('entry')}   
+              }
+            }
           }
         }
       }

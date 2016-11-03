@@ -53,18 +53,30 @@ object SchemaDefinition {
       InputField("title", StringType),
       InputField("blogId", LongType)))
 
-  lazy val BlogType: ObjectType[Unit, BlogNode] = ObjectType(
+  val ConnectionDefinition(_, blogEntryConnection) = Connection.definition[SecureContext, Connection, EntryNode]("Entry", EntryType)
+
+  lazy val BlogType: ObjectType[SecureContext, BlogNode] = ObjectType(
     "Blog",
     "aerg",
-    interfaces[Unit, BlogNode](nodeInterface),
-    () => idFields[BlogNode] ++ fields[Unit, BlogNode](
+    interfaces[SecureContext, BlogNode](nodeInterface),
+    () => fields[SecureContext, BlogNode](
+      Node.globalIdField[SecureContext, BlogNode],
       Field("blogId", OptionType(LongType), resolve = _.value.blog.blogId),
       Field("name", StringType, resolve = _.value.blog.name),
       Field("description", OptionType(StringType), resolve = _.value.blog.description),
       Field("userId", LongType, resolve = _.value.blog.userId),
       Field("user", OptionType(UserType), resolve = (ctx) => DeferUser(ctx.value.blog.userId)),
-      Field("entries", ListType(EntryType), resolve = (ctx) => DeferEntriesForBlog(ctx.value.blog.blogId.get))))
+      Field("entries", blogEntryConnection,
+        arguments = List(Connection.Args.After, Connection.Args.First),
+        resolve = (ctx) => {
+          val blogId = ctx.value.blog.blogId.get
+          val after = ctx.args.arg(Connection.Args.After).map(_.toLong)
+          val size = ctx.args.arg(Connection.Args.First).map(_.toInt).getOrElse(5)
 
+          Connection.connectionFromFutureSeq(ctx.ctx.blogRepo.getEntriesForBlog(blogId, size + 1, after), ConnectionArgs(ctx))
+        })))
+  //      Field("entries", ListType(EntryType), resolve = (ctx) => DeferEntriesForBlog(ctx.value.blog.blogId.get))))
+//
   val ConnectionDefinition(_, blogConnection) = Connection.definition[SecureContext, Connection, BlogNode]("Blog", BlogType)
 
   lazy val UserType: ObjectType[SecureContext, UserNode] = ObjectType(

@@ -17,7 +17,7 @@ trait GeneralDAO {
   def insertBlog(blog : Blog) : Future[Long]
   def updateBlog(blogId: Long, blog: Blog) : Future[Int]
 
-  def getEntriesForBlog(blogId : Long, limit: Int = GENERIC_LIST_LIMIT) : Future[Seq[Entry]]
+  def getEntriesForBlog(blogId : Long, limit: Int = GENERIC_LIST_LIMIT, after: Option[Long] = None) : Future[Seq[Entry]]
   def getEntry(id : Long) : Future[Option[Entry]]
   def getEntryWithBlog(id : Long) : Future[Option[(Entry, Blog)]] 
   def getEntries(ids : Seq[Long]) : Future[Seq[Entry]] 

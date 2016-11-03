@@ -21,7 +21,7 @@ case class BlogRepo() {
   private val sessionManager: SessionManager = SessionManagerStub
 
   def getEntry(entryId: Long): Future[Option[EntryNode]] = dao.getEntry(entryId).map(_.map(entryToNode(_)))
-  def getEntriesForBlog(blogId: Long): Future[Seq[EntryNode]] = dao.getEntriesForBlog(blogId).map(_.map(entryToNode(_)))
+  def getEntriesForBlog(blogId: Long, number: Int = 10, after: Option[Long] = None): Future[Seq[EntryNode]] = dao.getEntriesForBlog(blogId, number, after).map(_.map(entryToNode(_)))
   def getBlog(blogId: Long): Future[Option[BlogNode]] = dao.getBlog(blogId).map(_.map(blogToNode(_)))
   def getBlogs(first: Int): Future[Seq[BlogNode]] = dao.getBlogs(first).map(_.map(blogToNode(_)))
   def getBlogsForUser(userId: Long, number: Int = 10, after: Option[Long]): Future[Seq[BlogNode]] = dao.getBlogsForUser(userId, number, after).map(_.map(blogToNode))
