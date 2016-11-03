@@ -53,15 +53,15 @@ trait Tables {
   lazy val BlogTable = new TableQuery(tag => new BlogTable(tag))
 
   /** Entity class storing rows of table EntryTable
-   *  @param markdown Database column markdown SqlType(text)
+   *  @param markdown Database column markdown SqlType(text), Default(None)
    *  @param title Database column title SqlType(name), Default(None)
    *  @param blogId Database column blog_id SqlType(int8)
    *  @param entryId Database column entry_id SqlType(bigserial), AutoInc, PrimaryKey */
-  case class Entry(markdown: String, title: Option[String] = None, blogId: Long, entryId: Option[Long] = None)
+  case class Entry(markdown: Option[String] = None, title: Option[String] = None, blogId: Long, entryId: Option[Long] = None)
   /** GetResult implicit for fetching Entry objects using plain SQL queries */
-  implicit def GetResultEntry(implicit e0: GR[String], e1: GR[Option[String]], e2: GR[Long], e3: GR[Option[Long]]): GR[Entry] = GR{
+  implicit def GetResultEntry(implicit e0: GR[Option[String]], e1: GR[Long], e2: GR[Option[Long]]): GR[Entry] = GR{
     prs => import prs._
-    val r = (<<[String], <<?[Long], <<?[String], <<[Long])
+    val r = (<<?[String], <<?[Long], <<?[String], <<[Long])
     import r._
     Entry.tupled((_1, _3, _4, _2)) // putting AutoInc last
   }
@@ -69,10 +69,10 @@ trait Tables {
   class EntryTable(_tableTag: Tag) extends Table[Entry](_tableTag, "entry") {
     def * = (markdown, title, blogId, Rep.Some(entryId)) <> (Entry.tupled, Entry.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(markdown), title, Rep.Some(blogId), Rep.Some(entryId)).shaped.<>({r=>import r._; _1.map(_=> Entry.tupled((_1.get, _2, _3.get, _4)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (markdown, title, Rep.Some(blogId), Rep.Some(entryId)).shaped.<>({r=>import r._; _3.map(_=> Entry.tupled((_1, _2, _3.get, _4)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
-    /** Database column markdown SqlType(text) */
-    val markdown: Rep[String] = column[String]("markdown")
+    /** Database column markdown SqlType(text), Default(None) */
+    val markdown: Rep[Option[String]] = column[Option[String]]("markdown", O.Default(None))
     /** Database column title SqlType(name), Default(None) */
     val title: Rep[Option[String]] = column[Option[String]]("title", O.Default(None))
     /** Database column blog_id SqlType(int8) */

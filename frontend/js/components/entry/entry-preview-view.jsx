@@ -1,6 +1,7 @@
 import React from 'react';
 import Relay from 'react-relay';
 import {Link} from 'react-router';
+import Viewer from './view/viewer';
 
 class EntryPreviewView extends React.Component {
   render() {
@@ -11,7 +12,9 @@ class EntryPreviewView extends React.Component {
             <Link to={`entries/${this.props.entry.entryId}`}>{this.props.entry.title}</Link>
           </h3>
         </div>
-        <div>{this.props.entry.markdown}</div>
+        <If condition={this.props.entry.markdown}>
+          <Viewer rawContentState={this.props.entry.markdown}/>
+        </If>
       </div>
     );
   }

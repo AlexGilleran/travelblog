@@ -40,7 +40,7 @@ object SchemaDefinition {
     interfaces[Unit, EntryNode](nodeInterface),
     () => idFields[EntryNode] ++ fields[Unit, EntryNode](
       Field("entryId", OptionType(LongType), resolve = _.value.entry.entryId),
-      Field("markdown", StringType, resolve = _.value.entry.markdown),
+      Field("markdown", OptionType(StringType), resolve = _.value.entry.markdown),
       Field("title", OptionType(StringType), resolve = _.value.entry.title),
       Field("blogId", LongType, resolve = _.value.entry.blogId),
       Field("blog", OptionType(BlogType), resolve = (ctx) => DeferBlog(ctx.value.entry.blogId))))
@@ -143,7 +143,7 @@ object SchemaDefinition {
       val title = input("title").asInstanceOf[String]
 
       ctx.ctx.blogRepo.getEntry(entryId).flatMap { oldEntry =>
-        val newEntry = oldEntry.get.entry.copy(markdown = markdown, title = Some(title))
+        val newEntry = oldEntry.get.entry.copy(markdown = Some(markdown), title = Some(title))
         ctx.ctx.blogRepo.updateEntry(entryId, newEntry)
           .map(_ => oldEntry.get.copy(entry = newEntry))
       } map { newEntryNode =>

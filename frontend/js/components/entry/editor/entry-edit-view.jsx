@@ -1,6 +1,7 @@
 import React from 'react';
 import Relay from 'react-relay';
 import UpdateEntryMutation from '../../../mutations/update-entry-mutation';
+import Editor from './editor';
 
 class EntryEditView extends React.Component {
   onSubmit(event) {
@@ -14,7 +15,7 @@ class EntryEditView extends React.Component {
   getEntryDetails() {
     return {
       title: this.titleElement.value,
-      markdown: this.markdownElement.value
+      markdown: JSON.stringify(this.editor.getContentState())
     };
   }
 
@@ -26,9 +27,9 @@ class EntryEditView extends React.Component {
         </div>
 
         <div className="col-1-1">
-          <textarea ref={node => this.markdownElement = node}>
-            {this.props.entry.markdown}
-          </textarea>
+          <Editor
+            contentState={this.props.entry.markdown && JSON.parse(this.props.entry.markdown)}
+            ref={editor => this.editor = editor}/>
         </div>
 
         <div className="col-1-1">

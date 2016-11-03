@@ -120,7 +120,7 @@ ALTER SEQUENCE blog_blog_id_seq OWNED BY blog.blog_id;
 --
 
 CREATE TABLE entry (
-    markdown text NOT NULL,
+    markdown text,
     entry_id bigint NOT NULL,
     title name,
     blog_id bigint NOT NULL

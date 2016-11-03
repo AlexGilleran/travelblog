@@ -19,6 +19,7 @@
     "co": "^4.0.1",
     "config": "^1.14.0",
     "debug": "^2.0.0",
+    "draft-js": "^0.9.1",
     "es6-promise": "^2.0.1",
     "isomorphic-relay": "^0.7.3",
     "isomorphic-relay-router": "^0.8.4",

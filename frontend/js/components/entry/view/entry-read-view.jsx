@@ -1,6 +1,6 @@
 import React from 'react';
 import Relay from 'react-relay';
-import {Link} from 'react-router';
+import Viewer from './viewer';
 
 class EntryReadView extends React.Component {
   render() {
@@ -15,7 +15,9 @@ class EntryReadView extends React.Component {
           </div>
         </If>*/}
         <div className="col-1-1">
-          {this.props.entry.markdown}
+          <Viewer 
+            rawContentState={this.props.entry.markdown}>
+          </Viewer>
         </div>
       </div>
     );
