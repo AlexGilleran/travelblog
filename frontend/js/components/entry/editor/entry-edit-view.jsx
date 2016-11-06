@@ -1,14 +1,32 @@
 import React from 'react';
 import Relay from 'react-relay';
 import UpdateEntryMutation from '../../../mutations/update-entry-mutation';
+import AddEntryMutation from '../../../mutations/add-entry-mutation';
 import Editor from './editor';
+import {withRouter} from 'react-router';
 
 class EntryEditView extends React.Component {
   onSubmit(event) {
     event.preventDefault();
 
+    const entry = this.props.viewer.entry;
+    const blog = this.props.viewer.blog;
+
     this.props.relay.commitUpdate(
-      new UpdateEntryMutation({entry: this.props.entry, ...this.getEntryDetails()})
+      entry ?
+        new UpdateEntryMutation({entry, ...this.getEntryDetails()}) :
+        new AddEntryMutation({entry: this.getEntryDetails(), blogId: blog.blogId}),
+      {
+        onFailure: () => {
+          this.setState({fail: true})
+        },
+        onSuccess: response => {
+          const entryId = entry ? entry.entryId :
+            response.addEntryToBlog.entryEdge.node.entryId;
+
+          this.props.router.push(`/blogs/${blog.blogId}/entries/${entryId}`)
+        }
+      }
     );
   }
 
@@ -20,15 +38,17 @@ class EntryEditView extends React.Component {
   }
 
   render() {
+    const entry = this.props.viewer.entry || {};
+
     return (
       <form onSubmit={this.onSubmit.bind(this)}>
         <div className="col-1-1">
-          <input type="text" ref={node => this.titleElement = node} defaultValue={this.props.entry.title}/>
+          <input type="text" ref={node => this.titleElement = node} defaultValue={entry.title}/>
         </div>
 
         <div className="col-1-1">
           <Editor
-            contentState={this.props.entry.markdown && JSON.parse(this.props.entry.markdown)}
+            contentState={entry.markdown && JSON.parse(entry.markdown)}
             ref={editor => this.editor = editor}/>
         </div>
 
@@ -40,14 +60,29 @@ class EntryEditView extends React.Component {
   }
 }
 
-export default Relay.createContainer(EntryEditView, {
+export default Relay.createContainer(withRouter(EntryEditView), {
+  initialVariables: {
+    entryId: null,
+    blogId: null
+  },
+
   fragments: {
-    entry: (variables) => Relay.QL`
-      fragment on Entry { 
-        entryId,
-        title,
-        markdown
-        ${UpdateEntryMutation.getFragment('entry')}
+    viewer: (variables) => Relay.QL`
+      fragment on Viewer {
+        currentUser {
+          userId
+        }
+        blog(blogId: $blogId) {
+          blogId
+          name
+          userId
+        }
+        entry(entryId: $entryId) {
+          entryId
+          title
+          markdown
+          ${UpdateEntryMutation.getFragment('entry')}
+        }
       }
     `
   }

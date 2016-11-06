@@ -9,7 +9,7 @@ class EntryPreviewView extends React.Component {
       <div>
         <div>
           <h3>
-            <Link to={`entries/${this.props.entry.entryId}`}>{this.props.entry.title}</Link>
+            <Link to={`/blogs/${this.props.entry.blogId}/entries/${this.props.entry.entryId}`}>{this.props.entry.title}</Link>
           </h3>
         </div>
         <If condition={this.props.entry.markdown}>
@@ -24,6 +24,7 @@ export default Relay.createContainer(EntryPreviewView, {
   fragments: {
     entry: () => Relay.QL`
       fragment on Entry {
+        blogId
         entryId
         title
         markdown

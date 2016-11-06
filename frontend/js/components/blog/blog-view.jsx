@@ -7,12 +7,6 @@ import {Link} from 'react-router';
 class BlogView extends React.Component {
   constructor(props) {
     super(props);
-
-    this.onAddBlogClick = this.onAddBlogClick.bind(this);
-  }
-
-  onAddBlogClick(event) {
-
   }
 
   render() {
@@ -29,7 +23,7 @@ class BlogView extends React.Component {
               <For each="entry" of={blog.entries.edges}>
                 <EntryPreviewView key={entry.node.entryId} entry={entry.node}/>
               </For>
-              <button onClick={this.addAddBlogClick}>Add Blog</button>
+              <Link to={`/blogs/${blog.blogId}/entries/add`}>Add Blog</Link>
             </div>
           </If>
         </div>
@@ -53,6 +47,7 @@ export default Relay.createContainer(BlogView, {
           ${BlogListView.getFragment('blogList')}
         },
         blog(blogId: $blogId) {
+          blogId,
           name,
           user {
             userId,

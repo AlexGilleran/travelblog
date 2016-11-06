@@ -30,6 +30,7 @@ case class BlogRepo() {
   def authorise(token: String): Option[List[String]] = ???
 
   def updateEntry(entryId: Long, entry: Entry): Future[Entry] = dao.updateEntry(entryId, entry.entry).flatMap(id => dao.getEntry(id).map(_.get))
+  def addEntry(entry: Entry): Future[Entry] = dao.addEntry(entry)
 }
 
 object BlogRepo {

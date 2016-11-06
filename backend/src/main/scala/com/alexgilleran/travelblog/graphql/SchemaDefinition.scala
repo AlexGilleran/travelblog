@@ -29,7 +29,7 @@ object SchemaDefinition {
     Node.globalIdField,
     Field("rawId", StringType, resolve = ctx ⇒ implicitly[Identifiable[T]].id(ctx.value)))
 
-  val EntryID = Argument("entryId", LongType, description = "id of the entry")
+  val EntryID = Argument("entryId", OptionInputType(LongType), description = "id of the entry")
   val BlogID = Argument("blogId", LongType, description = "id of the blog")
   val UserID = Argument("userId", LongType, description = "id of the user")
   val First = Argument("first", IntType, description = "first n to get")
@@ -45,15 +45,7 @@ object SchemaDefinition {
       Field("blogId", LongType, resolve = _.value.entry.blogId),
       Field("blog", OptionType(BlogType), resolve = (ctx) => DeferBlog(ctx.value.entry.blogId))))
 
-  lazy val EntryInputType = InputObjectType[EntryNode](
-    "Entry",
-    "An entry",
-    () => List(
-      InputField("markdown", StringType),
-      InputField("title", StringType),
-      InputField("blogId", LongType)))
-
-  val ConnectionDefinition(_, blogEntryConnection) = Connection.definition[SecureContext, Connection, EntryNode]("Entry", EntryType)
+  val ConnectionDefinition(blogEntryEdge, blogEntryConnection) = Connection.definition[SecureContext, Connection, EntryNode]("Entry", EntryType)
 
   lazy val BlogType: ObjectType[SecureContext, BlogNode] = ObjectType(
     "Blog",
@@ -76,7 +68,7 @@ object SchemaDefinition {
           Connection.connectionFromFutureSeq(ctx.ctx.blogRepo.getEntriesForBlog(blogId, size + 1, after), ConnectionArgs(ctx))
         })))
   //      Field("entries", ListType(EntryType), resolve = (ctx) => DeferEntriesForBlog(ctx.value.blog.blogId.get))))
-//
+  //
   val ConnectionDefinition(_, blogConnection) = Connection.definition[SecureContext, Connection, BlogNode]("Blog", BlogType)
 
   lazy val UserType: ObjectType[SecureContext, UserNode] = ObjectType(
@@ -101,12 +93,6 @@ object SchemaDefinition {
           Connection.connectionFromFutureSeq(ctx.ctx.blogRepo.getBlogsForUser(userId, size + 1, after), ConnectionArgs(ctx))
         })))
 
-  val MutationType = ObjectType(
-    "Mutation",
-    () => fields[SecureContext, Unit](
-      RefreshCurrentUserMutation,
-      UpdateEntryMutation))
-
   val ViewerType: ObjectType[Unit, ViewerNode] = ObjectType(
     "Viewer",
     () => idFields[ViewerNode] ++ fields[Unit, ViewerNode](
@@ -118,50 +104,16 @@ object SchemaDefinition {
         resolve = (ctx) => DeferBlogs(ctx.arg(First))),
       Field("entry", OptionType(EntryType),
         arguments = EntryID :: Nil,
-        resolve = (ctx) => DeferEntry(ctx.arg(EntryID))),
+        resolve = (ctx) => ctx.arg(EntryID) match {
+          case Some(entryId) => DeferEntry(entryId)
+          case None => Future(None)
+        }),
       Field("user", OptionType(UserType),
         arguments = UserID :: Nil,
         resolve = (ctx) => DeferUser(ctx.arg(UserID))),
       Field("currentUser", OptionType(UserType),
         arguments = Nil,
         resolve = (ctx) => DeferCurrentUser)))
-
-  case class RefreshCurrentUserPayload(clientMutationId: String, currentUser: Option[UserNode]) extends Mutation
-  val RefreshCurrentUserMutation = Mutation.fieldWithClientMutationId[SecureContext, Unit, RefreshCurrentUserPayload, InputObjectType.DefaultInput](
-    "refreshCurrentUser",
-    "RefreshCurrentUser",
-    outputFields = fields(Field("viewer", ViewerType, resolve = ctx => new ViewerNode)),
-    mutateAndGetPayload = (input, ctx) ⇒ {
-      val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String]
-
-      ctx.ctx.currentUser().map { user =>
-        RefreshCurrentUserPayload(mutationId, user)
-      }
-    })
-
-  case class UpdateEntryPayload(clientMutationId: String, entry: EntryNode) extends Mutation
-  val UpdateEntryMutation = Mutation.fieldWithClientMutationId[SecureContext, Unit, UpdateEntryPayload, InputObjectType.DefaultInput](
-    "updateEntry",
-    "UpdateEntry",
-    inputFields = List(
-      InputField("entryId", LongType),
-      InputField("markdown", StringType),
-      InputField("title", StringType)),
-    outputFields = fields(Field("entry", EntryType, resolve = ctx => ctx.value.entry)),
-    mutateAndGetPayload = (input, ctx) ⇒ {
-      val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String]
-      val entryId = input("entryId").asInstanceOf[Long]
-      val markdown = input("markdown").asInstanceOf[String]
-      val title = input("title").asInstanceOf[String]
-
-      ctx.ctx.blogRepo.getEntry(entryId).flatMap { oldEntry =>
-        val newEntry = oldEntry.get.entry.copy(markdown = Some(markdown), title = Some(title))
-        ctx.ctx.blogRepo.updateEntry(entryId, newEntry)
-          .map(_ => oldEntry.get.copy(entry = newEntry))
-      } map { newEntryNode =>
-        UpdateEntryPayload(mutationId, newEntryNode)
-      }
-    })
 
   def optionToSeq[T](option: Option[T]): Seq[T] = option match {
     case Some(inner) => Seq(inner)
@@ -174,5 +126,5 @@ object SchemaDefinition {
         arguments = Nil,
         resolve = (ctx) => new ViewerNode())))
 
-  val schema = Schema(Query, Some(MutationType))
+  val schema = Schema(Query, Some(Mutations.MutationType))
 }
