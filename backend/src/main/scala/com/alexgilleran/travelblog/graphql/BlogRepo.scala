@@ -17,8 +17,8 @@ import sangria.relay._
 import BlogRepo._
 
 case class BlogRepo() {
-  private val dao: GeneralDAO = PostGresSlickDAO
-  private val sessionManager: SessionManager = SessionManagerStub
+  val dao: GeneralDAO = PostGresSlickDAO
+  val sessionManager: SessionManager = SessionManagerStub
 
   def getEntry(entryId: Long): Future[Option[EntryNode]] = dao.getEntry(entryId).map(_.map(entryToNode(_)))
   def getEntriesForBlog(blogId: Long, number: Int = 10, after: Option[Long] = None): Future[Seq[EntryNode]] = dao.getEntriesForBlog(blogId, number, after).map(_.map(entryToNode(_)))
@@ -26,11 +26,6 @@ case class BlogRepo() {
   def getBlogs(first: Int): Future[Seq[BlogNode]] = dao.getBlogs(first).map(_.map(blogToNode(_)))
   def getBlogsForUser(userId: Long, number: Int = 10, after: Option[Long]): Future[Seq[BlogNode]] = dao.getBlogsForUser(userId, number, after).map(_.map(blogToNode))
   def getUser(userId: Long): Future[Option[UserNode]] = dao.getUser(userId).map(_.map(userToNode(_)))
-
-  def authorise(token: String): Option[List[String]] = ???
-
-  def updateEntry(entryId: Long, entry: Entry): Future[Entry] = dao.updateEntry(entryId, entry.entry).flatMap(id => dao.getEntry(id).map(_.get))
-  def addEntry(entry: Entry): Future[Entry] = dao.addEntry(entry)
 }
 
 object BlogRepo {
@@ -60,15 +55,37 @@ case class DeferUser(userId: Long) extends Deferred[Option[UserNode]]
 case object DeferCurrentUser extends Deferred[Option[UserNode]]
 
 case class AuthenticationException(message: String) extends Exception(message)
-case class AuthorisationException(message: String) extends Exception(message)
-case class SecureContext(blogRepo: BlogRepo, session: Option[Session] = None) {
-  def authorised[T](permissions: String*)(fn: User => T) = true
+case class NotAuthorisedException(message: String) extends Exception(message)
 
+case class SecureContext(blogRepo: BlogRepo, session: Option[Session] = None) {
   def currentUser(): Future[Option[UserNode]] = session
     .flatMap(_.userId)
     .map(blogRepo.getUser(_))
     .getOrElse(Future(None))
+
+  def updateEntry(entryId: Long, title: String, markdown: String): Future[Entry] = {
+    blogRepo.dao.getEntryWithBlog(entryId).flatMap {
+      case Some((entry: Entry, blog: Blog)) =>
+        if (blog.userId != session.get.userId) {
+          throw new NotAuthorisedException(s"User ${session.get.userId} does not own blog ${blog.blogId}")
+        }
+
+        val newEntry = entry.copy(title = Some(title), markdown = Some(markdown))
+        blogRepo.dao.updateEntry(entryId, newEntry).map(_ => newEntry)
+    }
+  }
+
+  def addEntry(entry: Entry): Future[Entry] = {
+    blogRepo.dao.getBlog(entry.blogId).flatMap { blog =>
+      if (blog.get.userId != session.get.userId) {
+        throw new NotAuthorisedException(s"User ${session.get.userId} does not own blog ${blog.get.blogId}")
+      }
+
+      blogRepo.dao.addEntry(entry)
+    }
+  }
 }
+
 class BlogResolver extends DeferredResolver[SecureContext] {
   override def resolve(deferred: Vector[Deferred[Any]], ctx: SecureContext) = deferred.map {
     case DeferBlogs(first) =>

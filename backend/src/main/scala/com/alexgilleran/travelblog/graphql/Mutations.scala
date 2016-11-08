@@ -26,11 +26,7 @@ object Mutations {
       val markdown = input("markdown").asInstanceOf[String]
       val title = input("title").asInstanceOf[String]
 
-      ctx.ctx.blogRepo.getEntry(entryId).flatMap { oldEntry =>
-        val newEntry = oldEntry.get.entry.copy(markdown = Some(markdown), title = Some(title))
-        ctx.ctx.blogRepo.updateEntry(entryId, newEntry)
-          .map(_ => oldEntry.get.copy(entry = newEntry))
-      } map { newEntryNode =>
+      ctx.ctx.updateEntry(entryId, title, markdown).map { newEntryNode =>
         UpdateEntryPayload(mutationId, newEntryNode)
       }
     })
@@ -65,8 +61,11 @@ object Mutations {
       val title = input("title").asInstanceOf[Option[String]]
       val markdown = input("markdown").asInstanceOf[Option[String]]
 
-      val newEntry = Entry(blogId = blogId, title = title, markdown = markdown)
-      val entryFuture = ctx.ctx.blogRepo.addEntry(newEntry)
+      val newEntry = Entry(
+        blogId = blogId,
+        title = title,
+        markdown = markdown)
+      val entryFuture = ctx.ctx.addEntry(newEntry)
 
       entryFuture.map { entry =>
         new AddEntryPayload(mutationId, blogId, entry)

@@ -47,7 +47,7 @@ trait PostGresSlickDAO extends GeneralDAO {
 
   override def getEntriesForBlog(blogId: Long, limit: Int = GENERIC_LIST_LIMIT, after: Option[Long]): Future[Seq[Entry]] = {
     db.run(
-      EntryTable.filter(_.blogId === blogId).take(limit).result)
+      EntryTable.filter(_.blogId === blogId).sortBy(_.created).take(limit).result)
   }
 
   override def getEntry(entryId: Long): Future[Option[Entry]] = {

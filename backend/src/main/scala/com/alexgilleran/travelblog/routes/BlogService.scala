@@ -16,14 +16,23 @@ import scala.concurrent.Future
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.server.RouteResult
 import akka.http.scaladsl.server.RequestContext
+import java.time.Instant
 
 case class ApiBlog(details: Blog, entries: Seq[Entry])
 
 case class ApiEntry(entry: Entry, blog: Blog)
 
 trait BlogJsonImplicits {
+//  implicit def dateToString(date: Option[java.sql.Date]) = date.toString()
+//  implicit def stringToDate(string: String): Option[java.sql.Date] = ???
+
+  implicit object PublicUserFormat extends RootJsonFormat[java.sql.Timestamp] {
+    def write(date: java.sql.Timestamp): JsValue = JsString(date.toInstant.toString)
+    def read(value: JsValue): java.sql.Timestamp = java.sql.Timestamp.from(Instant.parse(value.asInstanceOf[JsString].value))
+  }
+  
   implicit val blogJson = jsonFormat4(Blog)
-  implicit val entryJson = jsonFormat4(Entry)
+  implicit val entryJson = jsonFormat6(Entry)
   implicit val apiBlogJson = jsonFormat2(ApiBlog)
   implicit val apiEntryJson = jsonFormat2(ApiEntry)
 }

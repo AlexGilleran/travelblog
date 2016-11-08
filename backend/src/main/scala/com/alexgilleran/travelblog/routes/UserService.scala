@@ -39,7 +39,7 @@ trait LoginJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport with 
     def read(value: JsValue) = jsonFormat7(User).read(value)
   }
 
-  implicit object PublicUserFormat extends PublicUserFormat
+  implicit object PublicUserFormatInner extends PublicUserFormat
 
   object PrivateUserFormat extends PublicUserFormat {
     override def write(user: User): JsObject = {

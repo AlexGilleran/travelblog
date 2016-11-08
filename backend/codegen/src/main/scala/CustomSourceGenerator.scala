@@ -23,6 +23,7 @@ object CustomSourceGenerator {
         PostgresDriver.defaultTables.flatMap(
           PostgresDriver.createModelBuilder(_, false).buildModel)
       }.map { model =>
+        println("Hello")
         new slick.codegen.SourceCodeGenerator(model) {
           override def Table = new Table(_) {
             override def autoIncLastAsOption = true
@@ -39,12 +40,18 @@ object CustomSourceGenerator {
             case _ => super.tableName(dbTableName) + "Table"
           }
         }
-      }.map(_.writeToFile(
-        slickDriver,
-        outputDir,
-        packageName,
-        "Tables",
-        "Tables.scala")),
+      }.map { x =>
+        x.writeToFile(
+          slickDriver,
+          outputDir,
+          packageName,
+          "Tables",
+          "Tables.scala")
+      } recover {
+        case e: Throwable =>
+          println(e.getMessage)
+          throw e
+      },
       20.seconds)
   }
 

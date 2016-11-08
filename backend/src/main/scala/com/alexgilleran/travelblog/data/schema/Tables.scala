@@ -56,20 +56,22 @@ trait Tables {
    *  @param markdown Database column markdown SqlType(text), Default(None)
    *  @param title Database column title SqlType(name), Default(None)
    *  @param blogId Database column blog_id SqlType(int8)
+   *  @param modified Database column modified SqlType(timestamp), Default(None)
+   *  @param created Database column created SqlType(timestamp), Default(None)
    *  @param entryId Database column entry_id SqlType(bigserial), AutoInc, PrimaryKey */
-  case class Entry(markdown: Option[String] = None, title: Option[String] = None, blogId: Long, entryId: Option[Long] = None)
+  case class Entry(markdown: Option[String] = None, title: Option[String] = None, blogId: Long, modified: Option[java.sql.Timestamp] = None, created: Option[java.sql.Timestamp] = None, entryId: Option[Long] = None)
   /** GetResult implicit for fetching Entry objects using plain SQL queries */
-  implicit def GetResultEntry(implicit e0: GR[Option[String]], e1: GR[Long], e2: GR[Option[Long]]): GR[Entry] = GR{
+  implicit def GetResultEntry(implicit e0: GR[Option[String]], e1: GR[Long], e2: GR[Option[java.sql.Timestamp]], e3: GR[Option[Long]]): GR[Entry] = GR{
     prs => import prs._
-    val r = (<<?[String], <<?[Long], <<?[String], <<[Long])
+    val r = (<<?[String], <<?[Long], <<?[String], <<[Long], <<?[java.sql.Timestamp], <<?[java.sql.Timestamp])
     import r._
-    Entry.tupled((_1, _3, _4, _2)) // putting AutoInc last
+    Entry.tupled((_1, _3, _4, _5, _6, _2)) // putting AutoInc last
   }
   /** Table description of table entry. Objects of this class serve as prototypes for rows in queries. */
   class EntryTable(_tableTag: Tag) extends Table[Entry](_tableTag, "entry") {
-    def * = (markdown, title, blogId, Rep.Some(entryId)) <> (Entry.tupled, Entry.unapply)
+    def * = (markdown, title, blogId, modified, created, Rep.Some(entryId)) <> (Entry.tupled, Entry.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (markdown, title, Rep.Some(blogId), Rep.Some(entryId)).shaped.<>({r=>import r._; _3.map(_=> Entry.tupled((_1, _2, _3.get, _4)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (markdown, title, Rep.Some(blogId), modified, created, Rep.Some(entryId)).shaped.<>({r=>import r._; _3.map(_=> Entry.tupled((_1, _2, _3.get, _4, _5, _6)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column markdown SqlType(text), Default(None) */
     val markdown: Rep[Option[String]] = column[Option[String]]("markdown", O.Default(None))
@@ -77,6 +79,10 @@ trait Tables {
     val title: Rep[Option[String]] = column[Option[String]]("title", O.Default(None))
     /** Database column blog_id SqlType(int8) */
     val blogId: Rep[Long] = column[Long]("blog_id")
+    /** Database column modified SqlType(timestamp), Default(None) */
+    val modified: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("modified", O.Default(None))
+    /** Database column created SqlType(timestamp), Default(None) */
+    val created: Rep[Option[java.sql.Timestamp]] = column[Option[java.sql.Timestamp]]("created", O.Default(None))
     /** Database column entry_id SqlType(bigserial), AutoInc, PrimaryKey */
     val entryId: Rep[Long] = column[Long]("entry_id", O.AutoInc, O.PrimaryKey)
 

@@ -62,7 +62,7 @@ lazy val slickCodeGenTask = Def.task {
   val s = streams.value
 
   val outputDir = (dir / "main" / "scala").getPath // place generated files in sbt's managed sources folder
-  val url = "jdbc:postgresql://localhost:5432/TravelBlog?user=postgres&password=p4ssw0rd"
+  val url = "jdbc:postgresql://db:5432/TravelBlog?user=postgres&password=p4ssw0rd"
   val jdbcDriver = "org.postgresql.Driver"
   val slickDriver = "slick.driver.PostgresDriver"
   val pkg = "com.alexgilleran.travelblog.data.schema"
