@@ -11,6 +11,7 @@ class BlogView extends React.Component {
 
   render() {
     const blog = this.props.viewer.blog;
+    const currentUser = this.props.viewer.currentUser;
 
     return (
       <div>
@@ -23,7 +24,9 @@ class BlogView extends React.Component {
               <For each="entry" of={blog.entries.edges}>
                 <EntryPreviewView key={entry.node.entryId} entry={entry.node}/>
               </For>
-              <Link to={`/blogs/${blog.blogId}/entries/add`}>Add Blog</Link>
+              <If condition={currentUser && currentUser.userId === blog.user.userId}>
+                <Link to={`/blogs/${blog.blogId}/entries/add`}>Add Blog</Link>
+              </If>
             </div>
           </If>
         </div>
@@ -43,6 +46,9 @@ export default Relay.createContainer(BlogView, {
   fragments: {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
+        currentUser {
+          userId
+        }
         blogs(first: 3) {
           ${BlogListView.getFragment('blogList')}
         },

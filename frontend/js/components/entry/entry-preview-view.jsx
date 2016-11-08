@@ -30,5 +30,5 @@ export default Relay.createContainer(EntryPreviewView, {
         markdown
       }
     `
-  },
+  }
 });

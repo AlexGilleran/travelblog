@@ -6,6 +6,28 @@ import Editor from './editor';
 import {withRouter} from 'react-router';
 
 class EntryEditView extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {};
+  }
+
+  componentDidMount() {
+    this.authorise(this.props);
+  }
+
+  componentWillReceiveProps(props) {
+    this.authorise(props);
+  }
+
+  authorise(props) {
+    const viewer = props.viewer;
+
+    if (!viewer.currentUser || (viewer.currentUser.userId !== viewer.blog.userId)) {
+      props.router.push(`/blogs/${viewer.blog.blogId}`)
+    }
+  }
+
   onSubmit(event) {
     event.preventDefault();
 
@@ -18,7 +40,7 @@ class EntryEditView extends React.Component {
         new AddEntryMutation({entry: this.getEntryDetails(), blogId: blog.blogId}),
       {
         onFailure: () => {
-          this.setState({fail: true})
+          this.setState({failure: true})
         },
         onSuccess: response => {
           const entryId = entry ? entry.entryId :
@@ -42,6 +64,10 @@ class EntryEditView extends React.Component {
 
     return (
       <form onSubmit={this.onSubmit.bind(this)}>
+        <If condition={this.state.failure}>
+          Update failed.
+        </If>
+
         <div className="col-1-1">
           <input type="text" ref={node => this.titleElement = node} defaultValue={entry.title}/>
         </div>
