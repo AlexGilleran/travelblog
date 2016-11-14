@@ -2,7 +2,7 @@ import React from 'react';
 import {Router, Route, IndexRoute} from 'react-router';
 import RootView from './components/common/root-view';
 import BlogView from './components/blog/blog-view';
-import HomeView from './components/home-view';
+import HomeView from './components/home/home-view';
 import EditEntryView from './components/entry/editor/entry-edit-view';
 import EntryReadView from './components/entry/view/entry-read-view';
 import RegisterView from './components/user/register-view';

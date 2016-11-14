@@ -1,7 +1,7 @@
 'use strict';
 Error.stackTraceLimit = Infinity;
 
-require('./server-url-loader').install();
+// require('./server-url-loader').install();
 
 var logger = require('koa-logger');
 var koa = require('koa');

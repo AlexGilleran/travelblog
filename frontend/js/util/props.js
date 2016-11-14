@@ -1,6 +1,5 @@
 "use strict";
 
-var isServer = require('./is-server');
 var reduce = require('lodash/collection/reduce');
 
 var CLIENT_ENV_VAR_WHITELIST = [
@@ -10,10 +9,12 @@ var CLIENT_ENV_VAR_WHITELIST = [
   'ajaxBase'
 ];
 
-if (isServer) {
-  var config = require('config');
+if (process.env.IS_SERVER) {
+  console.log('Server!');
+  var config = require('config/lib/config.js');
   exports.get = key => config.get(key);
 } else {
+  console.log('Client!');
   const props = JSON.parse(document.getElementById('props').innerHTML);
   exports.get = key => props[key];
 }

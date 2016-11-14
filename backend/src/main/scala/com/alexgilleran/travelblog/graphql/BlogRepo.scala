@@ -66,8 +66,8 @@ case class SecureContext(blogRepo: BlogRepo, session: Option[Session] = None) {
   def updateEntry(entryId: Long, title: String, markdown: String): Future[Entry] = {
     blogRepo.dao.getEntryWithBlog(entryId).flatMap {
       case Some((entry: Entry, blog: Blog)) =>
-        if (blog.userId != session.get.userId) {
-          throw new NotAuthorisedException(s"User ${session.get.userId} does not own blog ${blog.blogId}")
+        if (blog.userId != session.get.userId.get) {
+          throw new NotAuthorisedException(s"User ${session.get.userId.get} does not own blog ${blog.blogId.get}")
         }
 
         val newEntry = entry.copy(title = Some(title), markdown = Some(markdown))

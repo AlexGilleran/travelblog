@@ -1,8 +1,8 @@
 import React from 'react';
 import Relay from 'react-relay';
-import BlogListView from './blog/blog-list-view';
+import BlogListView from '../blog/blog-list-view';
 
-class HomeView extends React.Component {
+class LoggedOutHomeView extends React.Component {
   render() {
     return (
       <div>
@@ -16,7 +16,7 @@ class HomeView extends React.Component {
     );
   }
 };
-export default Relay.createContainer(HomeView, {
+export default Relay.createContainer(LoggedOutHomeView, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on Viewer {

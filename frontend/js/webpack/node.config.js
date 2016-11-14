@@ -1,8 +1,7 @@
 module.exports = require("./make-webpack-config")({
+  hot: false,
   devServer: true,
+  hotComponents: false,
   devtool: "source-map",
-  debug: true,
-  entry: {
-    test: './test/test-entry'
-  }
+  node: true
 });

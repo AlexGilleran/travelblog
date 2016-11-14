@@ -3,20 +3,18 @@ var webpack = require("webpack");
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var loadersByExtension = require("./loadersByExtension");
 var joinEntry = require("./joinEntry");
+var fs = require("fs");
 
 module.exports = function (options) {
   var defaultEntry = {
-    main: ['babel-polyfill', 'whatwg-fetch', './js/client/client']
+    main: options.node ? ['babel-polyfill', './js/server/server.js'] : ['babel-polyfill', 'whatwg-fetch', './js/client/client']
   };
   var loaders = {
     "json": "json-loader",
     "js|jsx": {loader: "react-hot-loader!babel-loader?sourceMap=false", exclude: /node_modules/},
-    "json5": "json5-loader",
-    "txt": "raw-loader",
     "png|jpg|jpeg|gif|svg": "url-loader?limit=10000",
     "woff": "url-loader?limit=100000",
     "ttf|eot": "file-loader",
-    "wav|mp3": "file-loader",
     "html": "html-loader",
     "md|markdown": ["html-loader", "markdown-loader"]
   };
@@ -25,14 +23,16 @@ module.exports = function (options) {
     "less": "css-loader!less-loader",
     "styl": "css-loader!stylus-loader",
     "sass": "css-loader!sass-loader",
-  }
+  };
   var additionalLoaders = [
     // { test: /some-reg-exp$/, loader: "any-loader" }
   ];
   var alias = {};
   var aliasLoader = {};
+  var definePlugin = {};
   var externals = [];
   var modulesDirectories = ["web_modules", "node_modules"];
+  var modulesDirectories = ["node_modules"];
   var extensions = ["", ".web.js", ".js", ".jsx"];
   var root = path.join(__dirname, "app");
   var publicPath = options.devServer ?
@@ -41,10 +41,10 @@ module.exports = function (options) {
   var output = {
     path: path.join(__dirname, "../../build/webpack"),
     publicPath: publicPath,
-    filename: "[name].js" + (options.longTermCaching && !options.prerender ? "?[chunkhash]" : ""),
-    chunkFilename: (options.devServer ? "[id].js" : "[name].js") + (options.longTermCaching && !options.prerender ? "?[chunkhash]" : ""),
+    filename: options.node ? "backend.js" : "[name].js" + (options.longTermCaching && !options.node ? "?[chunkhash]" : ""),
+    chunkFilename: (options.devServer ? "[id].js" : "[name].js") + (options.longTermCaching && !options.node ? "?[chunkhash]" : ""),
     sourceMapFilename: "debugging/[file].map",
-    libraryTarget: options.prerender ? "commonjs2" : undefined,
+    // libraryTarget: options.node ? "commonjs2" : undefined,
     pathinfo: options.debug,
   };
   var plugins = [
@@ -52,24 +52,32 @@ module.exports = function (options) {
     new webpack.PrefetchPlugin("react/lib/ReactComponentBrowserEnvironment"),
     new webpack.IgnorePlugin(/config$/)
   ];
-  if (options.prerender) {
-    aliasLoader["react-proxy$"] = "react-proxy/unavailable";
-    externals.push(
-      /^react(\/.*)?$/,
-      /^reflux(\/.*)?$/,
-      "superagent",
-      "async"
-    );
+  if (options.node) {
+    externals = fs.readdirSync('node_modules')
+      .filter(function (x) {
+        return ['.bin'].indexOf(x) === -1;
+      })
+      .reduce(function (nodeModules, mod) {
+        nodeModules[mod] = 'commonjs ' + mod;
+        return nodeModules;
+      }, {});
+
     plugins.push(new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}));
+    plugins.push(new webpack.IgnorePlugin(/\.(css|less)$/));
+    plugins.push(new webpack.BannerPlugin('require("source-map-support").install();', {raw: true, entryOnly: false}));
+
+    definePlugin['process.env.IS_SERVER'] = 'true';
+  } else {
+    definePlugin['process.env.IS_SERVER'] = 'false';
   }
   if (options.commonsChunk) {
-    plugins.push(new webpack.optimize.CommonsChunkPlugin("commons", "commons.js" + (options.longTermCaching && !options.prerender ? "?[chunkhash]" : "")));
+    plugins.push(new webpack.optimize.CommonsChunkPlugin("commons", "commons.js" + (options.longTermCaching && !options.node ? "?[chunkhash]" : "")));
   }
 
   Object.keys(stylesheetLoaders).forEach(function (ext) {
     var loaders = stylesheetLoaders[ext];
     if (Array.isArray(loaders)) loaders = loaders.join("!");
-    if (options.prerender) {
+    if (options.node) {
       stylesheetLoaders[ext] = "null-loader";
     } else if (options.separateStylesheet) {
       stylesheetLoaders[ext] = ExtractTextPlugin.extract("style-loader", loaders);
@@ -77,26 +85,25 @@ module.exports = function (options) {
       stylesheetLoaders[ext] = "style-loader!" + loaders;
     }
   });
-  if (options.separateStylesheet && !options.prerender) {
+  if (options.separateStylesheet && !options.node) {
     plugins.push(new ExtractTextPlugin("[name].css"));
   }
   if (options.minimize) {
+    definePlugin['process.env.NODE_ENV'] = JSON.stringify("production");
+
     plugins.push(
       new webpack.optimize.UglifyJsPlugin(),
       new webpack.optimize.DedupePlugin(),
-      new webpack.DefinePlugin({
-        "process.env": {
-          NODE_ENV: JSON.stringify("production")
-        }
-      }),
       new webpack.NoErrorsPlugin()
     );
   }
 
+  plugins.push(new webpack.DefinePlugin(definePlugin));
+
   return {
     entry: options.entry || defaultEntry,
     output: output,
-    target: options.prerender ? "node" : "web",
+    target: options.node ? "node" : "web",
     module: {
       loaders: loadersByExtension(loaders).concat(loadersByExtension(stylesheetLoaders))
     },
