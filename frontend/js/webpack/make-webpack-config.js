@@ -11,7 +11,7 @@ module.exports = function (options) {
   };
   var loaders = {
     "json": "json-loader",
-    "js|jsx": {loader: "react-hot-loader!babel-loader?sourceMap=false", exclude: /node_modules/},
+    "js|jsx": {loader: "babel-loader?sourceMap=false", exclude: /node_modules/},
     "png|jpg|jpeg|gif|svg": "url-loader?limit=10000",
     "woff": "url-loader?limit=100000",
     "ttf|eot": "file-loader",

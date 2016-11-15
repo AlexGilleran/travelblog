@@ -49,7 +49,8 @@
     "twix": "^0.6.2",
     "url-loader": "^0.5.5",
     "whatwg-fetch": "^1.0.0",
-    "whiskers": "^0.3.3"
+    "whiskers": "^0.3.3",
+    "react-hot-loader": "^v3.0.0-beta.6"
   },
   "devDependencies": {
     "babel-cli": "^6.14.0",
@@ -70,7 +71,6 @@
     "jsx-control-statements": "^3.1.2",
     "less-loader": "^2.2.0",
     "nodemon": "^1.9.2",
-    "react-hot-loader": "^1.2.7",
     "react-proxy-loader": "^0.3.2",
     "style-loader": "^0.10.1",
     "webpack": "^1.12.2",
