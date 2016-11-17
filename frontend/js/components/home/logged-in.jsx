@@ -1,20 +1,30 @@
 import React from 'react';
 import Relay from 'react-relay';
+import {Link} from 'react-router';
+import LatestBlog from './latest-blog';
 import mapPicture from './map.jpg';
+import styled from 'styled-components';
 
+const LeftCol = styled.div`
+  width: 66%;
+`;
 
 class LoggedInHomeView extends React.Component {
   render() {
     const currentUser = this.props.viewer.currentUser;
+    const latestBlog = currentUser.blogs.edges.length && currentUser.blogs.edges[0].node;
 
     return (
       <div>
-        Welcome back {currentUser.displayName}!
-        <article>
-          <h2>Your current adventure...</h2>
-          <h3>{currentUser.blogs.edges[0].node.name}</h3>
-          <img src={mapPicture} />
-        </article>
+        <LeftCol>
+          <div>
+            Welcome back {currentUser.displayName}!
+          </div>
+          <If condition={latestBlog}>
+            <LatestBlog latestBlog={latestBlog}/>
+          </If>
+          <h2>Your updates...</h2>
+        </LeftCol>
       </div>
     );
   }
@@ -29,7 +39,7 @@ export default Relay.createContainer(LoggedInHomeView, {
           blogs(first: 1) {
             edges {
               node {
-                name
+                ${LatestBlog.getFragment('latestBlog')}
               }
             }
           }
