@@ -14,7 +14,7 @@ const LoggedInStatusWrapper = styled.div`
   margin-right: 5px;
 `;
 
-class LoginView extends React.Component {
+class HeaderMenu extends React.Component {
   onSubmit(event) {
     event.preventDefault();
 
@@ -56,26 +56,29 @@ class LoginView extends React.Component {
 
   render() {
     return (
-      <If condition={this.props.viewer.currentUser}>
-        <Root>
-          <LoggedInStatusWrapper>
-            <LoggedInStatus user={this.props.viewer.currentUser}/>
-          </LoggedInStatusWrapper>
-          <button onClick={this.logout.bind(this)}>Logout</button>
-        </Root>
-        <Else />
-        <form onSubmit={this.onSubmit.bind(this)}>
-          <input type="text" placeholder="Email Address" ref={node => this.emailTextbox = node}/>
-          <input type="password" placeholder="Password" ref={node => this.passwordTextbox = node}/>
-          <input type="submit" value="Login"/>
-          <Link to="users/register">Sign Up</Link>
-        </form>
-      </If>
+      <Choose>
+        <When condition={this.props.viewer.currentUser}>
+          <Root>
+            <LoggedInStatusWrapper>
+              <LoggedInStatus user={this.props.viewer.currentUser}/>
+            </LoggedInStatusWrapper>
+            {/*<button onClick={this.logout.bind(this)}>Logout</button>*/}
+          </Root>
+        </When>
+        <Otherwise>
+          <form onSubmit={this.onSubmit.bind(this)}>
+            <input type="text" placeholder="Email Address" ref={node => this.emailTextbox = node}/>
+            <input type="password" placeholder="Password" ref={node => this.passwordTextbox = node}/>
+            <input type="submit" value="Login"/>
+            <Link to="users/register">Sign Up</Link>
+          </form>
+        </Otherwise>
+      </Choose>
     );
   }
 }
 
-export default Relay.createContainer(LoginView, {
+export default Relay.createContainer(HeaderMenu, {
   fragments: {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {

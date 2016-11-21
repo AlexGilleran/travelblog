@@ -2,16 +2,36 @@ import React from 'react';
 import Relay from 'react-relay';
 import HeaderView from './header/header-view';
 import styled from 'styled-components';
-import responsive from '../styles/responsive';
+import {mediaQuery, contentWidth} from '../styles/responsive';
+import variables from '../styles/variables';
+import {combine} from '../styles/util';
 
-const Content = styled.div`
-  max-width: 786px;
-  margin: 10px auto 0 auto;
+const Content = styled.div`  
+  ${mediaQuery(variables.breakpoints.handheld, variables.breakpoints.tablet)`
+    padding-top: ${variables.headerHeight};
+    margin: 0 auto;
+  `};
   
-  ${responsive.handheld`
-    // width: 100%;
-    margin: 0 10px;
-    padding-top: 10px;
+  ${mediaQuery(variables.breakpoints.laptop, variables.breakpoints.desktop)`
+    margin: 10px auto 0 auto
+  `};
+  
+  ${mediaQuery(variables.breakpoints.handheld)`
+    width: ${variables.breakpoints.handheld.contentWidth};
+    padding-left: 10px;
+    padding-right: 10px;
+  `}
+  
+  ${mediaQuery(variables.breakpoints.tablet)`
+    max-width: ${variables.breakpoints.tablet.contentWidth};
+  `}
+  
+  ${mediaQuery(variables.breakpoints.laptop)`
+    max-width: ${variables.breakpoints.laptop.contentWidth};
+  `}
+  
+  ${mediaQuery(variables.breakpoints.desktop)`
+    max-width: ${variables.breakpoints.desktop.contentWidth};
   `}
 `;
 

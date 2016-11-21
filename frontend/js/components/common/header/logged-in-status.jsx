@@ -10,8 +10,8 @@ const Root = styled.div`
 `;
 
 const Avatar = styled.img`
-  height: 20px;
-  width: 20px;
+  height: 40px;
+  width: 40px;
   margin-right: 5px;
 `;
 
@@ -20,7 +20,7 @@ function LoggedInStatus(props) {
   return (
     <Root>
       <Avatar src={user.avatarUrl} />
-      <Link to={`/users/${user.userId}`}>{user.userName}</Link>
+      {/*<Link to={`/users/${user.userId}`}>{user.userName}</Link>*/}
     </Root>
   );
 }

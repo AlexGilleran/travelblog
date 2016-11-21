@@ -1,21 +1,32 @@
 import React from 'react';
 import Relay from 'react-relay';
-import LoginView from './login-view';
+import LoginView from './header-menu';
 import {Link} from 'react-router';
 import logo from '../logo.png';
 import styled from 'styled-components';
-import responsive from '../../styles/responsive';
+import {mediaQuery, contentWidth} from '../../styles/responsive';
+import variables from '../../styles/variables';
+import {combine} from '../../styles/util';
+
+
+const Background = styled.div`
+  width: 100%;
+  background: #AAA;
+  height: ${variables.headerHeight};
+  
+  ${mediaQuery(variables.breakpoints.handheld, variables.breakpoints.tablet)`
+    position: fixed;
+  `}
+`;
 
 const Root = styled.header`
-  width: 100%;
+  height: ${variables.headerHeight};
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #AAA;
   
-  ${responsive.handheld`
-    position: fixed;
-  `}
+  ${contentWidth}
 `;
 
 const Left = styled.div`
@@ -35,17 +46,19 @@ const TextLink = styled(Link)`
 class HeaderView extends React.Component {
   render() {
     return (
-      <Root>
-        <Left>
-          <Link to="/">
-            <Logo src={logo}/>
-          </Link>
-          <TextLink to="/">AlexBlog</TextLink>
-        </Left>
-        <div>
-          <LoginView viewer={this.props.viewer}/>
-        </div>
-      </Root>
+      <Background>
+        <Root>
+          <Left>
+            <Link to="/">
+              <Logo src={logo}/>
+            </Link>
+            <TextLink to="/">AlexBlog</TextLink>
+          </Left>
+          <div>
+            <LoginView viewer={this.props.viewer}/>
+          </div>
+        </Root>
+      </Background>
     );
   }
 }

@@ -3,7 +3,8 @@ import Relay from 'react-relay';
 import {Link} from 'react-router';
 import mapPicture from './map.jpg';
 import styled from 'styled-components';
-import responsive from '../styles/responsive';
+import variables from '../styles/variables';
+import {mediaQuery} from '../styles/responsive';
 
 const Root = styled.div`
   
@@ -13,7 +14,7 @@ const Cols = styled.div`
   display: flex;
   justify-content: space-around;
     
-  ${responsive.handheld`
+  ${mediaQuery(variables.breakpoints.handheld, variables.breakpoints.tablet)`
     flex-direction: column;
   `}
 `;
@@ -21,7 +22,7 @@ const Cols = styled.div`
 const BlogCol = styled.div`
   width: 50%;
   
-  ${responsive.handheld`
+  ${mediaQuery(variables.breakpoints.handheld, variables.breakpoints.tablet)`
     width: 100%;
     order: 1;
   `}
@@ -30,7 +31,7 @@ const BlogCol = styled.div`
 const MapCol = styled.div`
   width: 40%;
   
-  ${responsive.handheld`
+  ${mediaQuery(variables.breakpoints.handheld, variables.breakpoints.tablet)`
     width: 100%;
     order: 0;
   `}
