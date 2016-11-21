@@ -1,7 +1,18 @@
 import React from 'react';
 import Relay from 'react-relay';
 import {Link} from 'react-router';
-import UpdateCurrentUserMutation from '../../mutations/refresh-current-user-mutation';
+import UpdateCurrentUserMutation from '../../../mutations/refresh-current-user-mutation';
+import LoggedInStatus from './logged-in-status';
+import styled from 'styled-components';
+
+const Root = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const LoggedInStatusWrapper = styled.div`
+  margin-right: 5px;
+`;
 
 class LoginView extends React.Component {
   onSubmit(event) {
@@ -29,7 +40,7 @@ class LoginView extends React.Component {
       console.error(e)
     });
   }
-  
+
   logout() {
     fetch('/api/users/logout', {
       method: 'POST',
@@ -45,25 +56,21 @@ class LoginView extends React.Component {
 
   render() {
     return (
-      <div>
-        {/*<If condition={this.props.loginInProgress}>
-         <span>Logging in...</span>
-         </If>
-         <If condition={this.props.loginFailed}>
-         <span>Login failed: {this.props.loginFailureReason}</span>
-         </If>*/}
-        <If condition={this.props.viewer.currentUser}>
-          <span>Logged in.</span>
+      <If condition={this.props.viewer.currentUser}>
+        <Root>
+          <LoggedInStatusWrapper>
+            <LoggedInStatus user={this.props.viewer.currentUser}/>
+          </LoggedInStatusWrapper>
           <button onClick={this.logout.bind(this)}>Logout</button>
+        </Root>
         <Else />
-          <form onSubmit={this.onSubmit.bind(this)}>
-            <input type="text" placeholder="Email Address" ref={node => this.emailTextbox = node}/>
-            <input type="password" placeholder="Password" ref={node => this.passwordTextbox = node}/>
-            <input type="submit" value="Login"/>
-            <Link to="users/register">Sign Up</Link>
-          </form>
-        </If>
-      </div>
+        <form onSubmit={this.onSubmit.bind(this)}>
+          <input type="text" placeholder="Email Address" ref={node => this.emailTextbox = node}/>
+          <input type="password" placeholder="Password" ref={node => this.passwordTextbox = node}/>
+          <input type="submit" value="Login"/>
+          <Link to="users/register">Sign Up</Link>
+        </form>
+      </If>
     );
   }
 }
@@ -73,7 +80,7 @@ export default Relay.createContainer(LoginView, {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
         currentUser {
-          userId
+          ${LoggedInStatus.getFragment('user')}
         }
         ${UpdateCurrentUserMutation.getFragment('viewer')}
       }

@@ -6,7 +6,7 @@ import mapPicture from './map.jpg';
 import styled from 'styled-components';
 
 const LeftCol = styled.div`
-  width: 66%;
+  // width: 66%;
 `;
 
 class LoggedInHomeView extends React.Component {
@@ -17,13 +17,17 @@ class LoggedInHomeView extends React.Component {
     return (
       <div>
         <LeftCol>
-          <div>
-            Welcome back {currentUser.displayName}!
-          </div>
           <If condition={latestBlog}>
+            <h2>Your latest adventure...</h2>
             <LatestBlog latestBlog={latestBlog}/>
           </If>
           <h2>Your updates...</h2>
+          <ul>
+            <li>Blah {'<'}3'd your post!</li>
+            <li>25 new views for "x"</li>
+            <li>123 posted a new update:</li>
+          </ul>
+          
         </LeftCol>
       </div>
     );

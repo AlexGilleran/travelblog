@@ -1,4 +1,6 @@
+import 'normalize-css/normalize.css';
 require("../../less/style.less");
+
 
 import IsomorphicRelay from 'isomorphic-relay';
 import isoRelayRouter from 'isomorphic-relay-router';

@@ -3,15 +3,37 @@ import Relay from 'react-relay';
 import {Link} from 'react-router';
 import mapPicture from './map.jpg';
 import styled from 'styled-components';
+import responsive from '../styles/responsive';
 
 const Root = styled.div`
-  border: 1px black solid;
+  
 `;
 
-const BlogRow = styled.div`
+const Cols = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: space-around;
+    
+  ${responsive.handheld`
+    flex-direction: column;
+  `}
+`;
+
+const BlogCol = styled.div`
+  width: 50%;
+  
+  ${responsive.handheld`
+    width: 100%;
+    order: 1;
+  `}
+`;
+
+const MapCol = styled.div`
+  width: 40%;
+  
+  ${responsive.handheld`
+    width: 100%;
+    order: 0;
+  `}
 `;
 
 const WithMargin = `
@@ -19,12 +41,13 @@ const WithMargin = `
 `;
 
 const Map = styled.img`
-  height: 50px;
-  width: 100px;
-  ${WithMargin}
+  
+  height: 150px;
+  width: 100%;
+  
 `;
 
-const BlogTitle = styled.h3`
+const BlogTitle = styled.h2`
   ${WithMargin}
   display: inline-block;
 `;
@@ -33,12 +56,13 @@ const LastUpdate = styled.p`
   ${WithMargin}
 `;
 
-const NewPostButton = styled.button`
-`;
-
-const BlogRowLeft = styled.div`
-  display: flex;
-  align-items: center;
+const PostBox = styled.textarea`
+  text-align: center;
+  padding: 15px 10px 10px 10px;
+  height: 55px;
+  display: block;
+  width: 100%;
+  font-size: 20px;
 `;
 
 function LatestBlog(props) {
@@ -46,21 +70,20 @@ function LatestBlog(props) {
 
   return (
     <Root className={props.className}>
-      <div>
-        <h4>Your latest adventure...</h4>
-      </div>
-      <BlogRow>
-        <BlogRowLeft>
-          <Map src={mapPicture}/>
+      <Cols>
+        <BlogCol>
           <Link to={`/blogs/${latestBlog.blogId}`}>
             <BlogTitle>{latestBlog.name}</BlogTitle>
           </Link>
           <LastUpdate>
-            Last update: x
+            Last update: 2/2/2016 in Istanbul Turkey
           </LastUpdate>
-        </BlogRowLeft>
-        <NewPostButton>New Post</NewPostButton>
-      </BlogRow>
+          <PostBox placeholder="Write an update"/>
+        </BlogCol>
+        <MapCol>
+          <Map src={mapPicture}/>
+        </MapCol>
+      </Cols>
     </Root>
   );
 }
