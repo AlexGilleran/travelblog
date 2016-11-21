@@ -9,30 +9,13 @@ import {combine} from '../styles/util';
 const Content = styled.div`  
   ${mediaQuery(variables.breakpoints.handheld, variables.breakpoints.tablet)`
     padding-top: ${variables.headerHeight};
-    margin: 0 auto;
   `};
   
   ${mediaQuery(variables.breakpoints.laptop, variables.breakpoints.desktop)`
-    margin: 10px auto 0 auto
+    margin-top: 10px;
   `};
   
-  ${mediaQuery(variables.breakpoints.handheld)`
-    width: ${variables.breakpoints.handheld.contentWidth};
-    padding-left: 10px;
-    padding-right: 10px;
-  `}
-  
-  ${mediaQuery(variables.breakpoints.tablet)`
-    max-width: ${variables.breakpoints.tablet.contentWidth};
-  `}
-  
-  ${mediaQuery(variables.breakpoints.laptop)`
-    max-width: ${variables.breakpoints.laptop.contentWidth};
-  `}
-  
-  ${mediaQuery(variables.breakpoints.desktop)`
-    max-width: ${variables.breakpoints.desktop.contentWidth};
-  `}
+  ${contentWidth}
 `;
 
 class RootView extends React.Component {
