@@ -1,6 +1,6 @@
 import React from 'react';
 import Relay from 'react-relay';
-import HeaderView from './header/header-view';
+import HeaderView from './header/header';
 import styled from 'styled-components';
 import {mediaQuery, contentWidth} from '../styles/responsive';
 import variables from '../styles/variables';

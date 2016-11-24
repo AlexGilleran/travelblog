@@ -1,12 +1,12 @@
 import React from 'react';
 import Relay from 'react-relay';
-import LoginView from './header-menu';
 import {Link} from 'react-router';
 import logo from '../logo.png';
 import styled from 'styled-components';
 import {mediaQuery, contentWidth} from '../../styles/responsive';
 import variables from '../../styles/variables';
 import {combine} from '../../styles/util';
+import HeaderDock from './dock';
 
 
 const Background = styled.div`
@@ -55,7 +55,7 @@ class HeaderView extends React.Component {
             <TextLink to="/">AlexBlog</TextLink>
           </Left>
           <div>
-            <LoginView viewer={this.props.viewer}/>
+            <HeaderDock viewer={this.props.viewer}/>
           </div>
         </Root>
       </Background>
@@ -67,7 +67,7 @@ export default Relay.createContainer(HeaderView, {
   fragments: {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
-        ${LoginView.getFragment('viewer')}
+        ${HeaderDock.getFragment('viewer')}
       }
     `
   },

@@ -2,7 +2,7 @@ import React from 'react';
 import Relay from 'react-relay';
 import {Link} from 'react-router';
 import UpdateCurrentUserMutation from '../../../mutations/refresh-current-user-mutation';
-import LoggedInStatus from './logged-in-status';
+import Menu from './menu/menu';
 import styled from 'styled-components';
 
 const Root = styled.div`
@@ -10,11 +10,7 @@ const Root = styled.div`
   align-items: center;
 `;
 
-const LoggedInStatusWrapper = styled.div`
-  margin-right: 5px;
-`;
-
-class HeaderMenu extends React.Component {
+class Dock extends React.Component {
   onSubmit(event) {
     event.preventDefault();
 
@@ -59,10 +55,8 @@ class HeaderMenu extends React.Component {
       <Choose>
         <When condition={this.props.viewer.currentUser}>
           <Root>
-            <LoggedInStatusWrapper>
-              <LoggedInStatus user={this.props.viewer.currentUser}/>
-            </LoggedInStatusWrapper>
-            {/*<button onClick={this.logout.bind(this)}>Logout</button>*/}
+             <Menu user={this.props.viewer.currentUser}/>
+            {/* <button onClick={this.logout.bind(this)}>Logout</button>*/}
           </Root>
         </When>
         <Otherwise>
@@ -78,12 +72,12 @@ class HeaderMenu extends React.Component {
   }
 }
 
-export default Relay.createContainer(HeaderMenu, {
+export default Relay.createContainer(Dock, {
   fragments: {
     viewer: (variables) => Relay.QL`
       fragment on Viewer {
         currentUser {
-          ${LoggedInStatus.getFragment('user')}
+          ${Menu.getFragment('user')}
         }
         ${UpdateCurrentUserMutation.getFragment('viewer')}
       }
