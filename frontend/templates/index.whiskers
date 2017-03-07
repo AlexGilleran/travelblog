@@ -4,9 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Travel Blog</title>
-    {if cssBundle}
-      <link rel="stylesheet" type="text/css" href="{cssBundle}">
-    {/if}
   </head>
   <body>
     <div id="root" class="grid grid-pad">{>content}</div>

@@ -7,6 +7,7 @@ import EditEntryView from './components/entry/editor/entry-edit-view';
 import EntryReadView from './components/entry/view/entry-read-view';
 import RegisterView from './components/user/register-view';
 import UserView from './components/user/user-view';
+import Preview from './components/preview/preview';
 import {blog, viewer, entry} from './queries';
 
 export default (
@@ -50,6 +51,9 @@ export default (
         queries={{viewer}}
         prepareParams={prepareIds.bind(this, ["user"])}
       />
+    </Route>
+    <Route path="preview"
+      component={Preview}>
     </Route>
     <IndexRoute component={HomeView} queries={{viewer}}/>
   </Route>

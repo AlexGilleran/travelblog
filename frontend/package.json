@@ -11,7 +11,8 @@
     "dev-server-test": "webpack-dev-server --config js/webpack/dev-server-test.config.js --progress --colors --port 2992 --inline",
     "hot-dev-server": "webpack-dev-server --config js/webpack/hot-dev-server.config.js --hot --progress --colors --port 2992 --inline --host=0.0.0.0",
     "hot-dev-server-test": "webpack-dev-server --config js/webpack/hot-dev-server-test.config.js --hot --progress --colors --port 2992 --inline --host=0.0.0.0",
-    "build": "webpack --config js/webpack/prod.config.js --progress --profile --colors"
+    "build": "webpack --config js/webpack/prod.config.js --progress --profile --colors",
+    "preview": "webpack-dev-server --config js/webpack/preview.config.js --progress --colors --port 2992 --inline"
   },
   "dependencies": {
     "URIjs": "^1.14.1",
@@ -70,6 +71,7 @@
     "css-loader": "^0.10.1",
     "extract-text-webpack-plugin": "^0.3.8",
     "file-loader": "^0.8.1",
+    "html-webpack-plugin": "^2.24.1",
     "jsx-control-statements": "^3.1.2",
     "less-loader": "^2.2.0",
     "nodemon": "^1.9.2",
